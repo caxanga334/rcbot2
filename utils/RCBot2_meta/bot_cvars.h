@@ -72,6 +72,7 @@ extern ConVar rcbot_debug_iglev;
 extern ConVar rcbot_dont_move;
 extern ConVar rcbot_runplayercmd_dods;
 extern ConVar rcbot_runplayercmd_tf2;
+extern ConVar rcbot_runplayercmd_syn;
 extern ConVar rcbot_runplayercmd_hookonce;
 extern ConVar rcbot_ladder_offs;
 extern ConVar rcbot_ffa;

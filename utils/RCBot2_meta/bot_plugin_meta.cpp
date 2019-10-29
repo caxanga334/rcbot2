@@ -863,6 +863,8 @@ bool RCBotPluginMeta::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxle
 		rcbot_runplayercmd_tf2.SetValue(val);
 	if (pKVL->getInt("runplayermove_dods_win", &val))
 		rcbot_runplayercmd_dods.SetValue(val);
+	if (pKVL->getInt("runplayermove_syn_win", &val))
+		rcbot_runplayercmd_syn.SetValue(val);
 	if (pKVL->getInt("getweaponslot_win", &val))
 		rcbot_getweaponslot_offset.SetValue(val);
 	if (pKVL->getInt("removewearable_win", &val))
@@ -887,6 +889,8 @@ bool RCBotPluginMeta::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxle
 		rcbot_runplayercmd_tf2.SetValue(val);
 	if (pKVL->getInt("runplayermove_dods_linux", &val))
 		rcbot_runplayercmd_dods.SetValue(val);
+	if (pKVL->getInt("runplayermove_syn_linux", &val))
+		rcbot_runplayercmd_syn.SetValue(val);
 	if (pKVL->getInt("getweaponslot_linux", &val))
 		rcbot_getweaponslot_offset.SetValue(val);
 	if (pKVL->getInt("removewearable_linux", &val))
@@ -925,6 +929,8 @@ bool RCBotPluginMeta::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxle
 			SH_MANUALHOOK_RECONFIGURE(MHook_PlayerRunCmd, rcbot_runplayercmd_tf2.GetInt(), 0, 0);
 		else if (pMod->getModId() == MOD_DOD)
 			SH_MANUALHOOK_RECONFIGURE(MHook_PlayerRunCmd, rcbot_runplayercmd_dods.GetInt(), 0, 0);
+		else if (pMod->getModId() == MOD_SYNERGY)
+			SH_MANUALHOOK_RECONFIGURE(MHook_PlayerRunCmd, rcbot_runplayercmd_syn.GetInt(), 0, 0);
 	}
 	if (pMod->getModId() == MOD_TF2)
 	{

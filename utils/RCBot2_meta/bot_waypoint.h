@@ -135,7 +135,9 @@ public:
 	static const int W_FL_UNREACHABLE = 4;
 	static const int W_FL_LADDER = 8;
 	static const int W_FL_FLAG = 16;
+	static const int W_FL_COOP_GOAL = 16; // SYNERGY
 	static const int W_FL_CAPPOINT = 32;
+	static const int W_FL_COOP_MAPEND = 32; // SYNERGY
 	static const int W_FL_NOBLU = 64;
 	static const int W_FL_NOAXIS = 64;
 	static const int W_FL_NORED = 128;

@@ -353,6 +353,11 @@ void CClient :: think ()
 				giveMessage(CStrings::getString(BOT_WELCOME_MESSAGE));
 
 				giveMessage(CStrings::getString(CWaypoints::getWelcomeMessage()),5.0f);
+
+				CBotMod Mod;
+
+				if( Mod.getModId() == MOD_SYNERGY )
+					giveMessage("Synergy Version by caxanga334", 12.0f);
 			}
 		}
 

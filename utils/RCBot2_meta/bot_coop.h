@@ -38,9 +38,12 @@ class CBotCoop : public CBot
 public:
 	virtual void modThink ();
 
+	void getTasks(unsigned int iIgnore);
+
 	virtual bool isEnemy ( edict_t *pEdict, bool bCheckWeapons = true  );
 
 	virtual bool startGame ();
+	bool IsNPCEnemy(const char *classname);
 };
 
 #endif

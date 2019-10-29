@@ -78,6 +78,7 @@ ConVar rcbot_debug_iglev("rcbot_debug_iglev","0",0,"bot think ignores functions 
 ConVar rcbot_dont_move("rcbot_dontmove","0",0,"if 1 , bots will all move forward");
 ConVar rcbot_runplayercmd_dods("rcbot_runplayer_cmd_dods","417",0,"offset of the DOD:S PlayerRunCommand function");
 ConVar rcbot_runplayercmd_tf2("rcbot_runplayer_cmd_tf2","418",0,"offset of the TF2 PlayerRunCommand function");
+ConVar rcbot_runplayercmd_syn("rcbot_runplayer_cmd_syn","424", 0, "offset of the SYNERGY PlayerRunCommand function");
 ConVar rcbot_runplayercmd_hookonce("rcbot_runplayer_hookonce","1",0,"function will hook only once, if 0 it will unhook and rehook after every map");
 ConVar rcbot_ladder_offs("rcbot_ladder_offs","42",0,"difference in height for bot to think it has touched the ladder waypoint");
 ConVar rcbot_ffa("rcbot_ffa","0",0,"Free for all mode -- bots shoot everyone");
