@@ -63,6 +63,16 @@ bool CBotCoop :: startGame ()
 	return true;
 }
 
+void CSynergyMod::initMod()
+{
+	//
+}
+
+void CSynergyMod::mapInit()
+{
+	//
+}
+
 // checks if an NPC is hostile
 bool CBotCoop::IsNPCEnemy(const char *classname)
 {

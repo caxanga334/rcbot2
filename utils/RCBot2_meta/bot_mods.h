@@ -771,9 +771,9 @@ public:
 		setup("synergy","synergy",MOD_SYNERGY,BOTTYPE_COOP,"SYNERGY");
 	}
 
-	//void initMod ();
+	void initMod ();
 
-	//void mapInit ();
+	void mapInit ();
 
 	//void entitySpawn ( edict_t *pEntity );
 };
