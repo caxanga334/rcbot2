@@ -201,6 +201,52 @@ WeaponsData_t TF2Weaps[] =
 	{0, 0, "\0", 0, 0, 0, 0, 0, 0}//signal last weapon
 };	
 
+const char* g_szSYNERGYWeapons[] =
+{
+	"weapon_pistol",
+	"weapon_crowbar",
+	"weapon_357",
+	"weapon_smg1",
+	"weapon_ar2",
+	"weapon_frag",
+	"weapon_stunstick",
+	"weapon_crossbow",
+	"weapon_rpg",
+	"weapon_slam",
+	"weapon_shotgun",
+	"weapon_physcannon",
+	"weapon_deagle",
+	"weapon_pipe",
+	"weapon_mp5k",
+	"weapon_mg1",
+	"weapon_bugbait"
+};
+
+WeaponsData_t SYNERGYWeaps[] =
+{
+	/*
+		slot, id , weapon name, flags, min dist, max dist, ammo index, preference
+	*/
+		{2,SYN_WEAPON_PISTOL,		g_szSYNERGYWeapons[0],	WEAP_FL_PRIM_ATTACK | WEAP_FL_UNDERWATER,0,1000,-1,1,0},
+		{1,SYN_WEAPON_CROWBAR,	g_szSYNERGYWeapons[1],	WEAP_FL_PRIM_ATTACK | WEAP_FL_MELEE | WEAP_FL_UNDERWATER,0,128,-1,1,0},
+		{2,SYN_WEAPON_357,		g_szSYNERGYWeapons[2],	WEAP_FL_PRIM_ATTACK,0,768,-1,2,0},
+		{3,SYN_WEAPON_SMG1,		g_szSYNERGYWeapons[3],	WEAP_FL_PRIM_ATTACK | WEAP_FL_SEC_ATTACK,0,1400,-1,2,0},
+		{3,SYN_WEAPON_AR2,		g_szSYNERGYWeapons[4],	WEAP_FL_PRIM_ATTACK | WEAP_FL_SEC_ATTACK,0,1400,-1,3,0},
+		{5,SYN_WEAPON_FRAG,		g_szSYNERGYWeapons[5],	WEAP_FL_GRENADE | WEAP_FL_EXPLOSIVE,0,180,-1,1,0},
+		{1,SYN_WEAPON_STUNSTICK,	g_szSYNERGYWeapons[6],	WEAP_FL_PRIM_ATTACK | WEAP_FL_MELEE | WEAP_FL_UNDERWATER,0,128,-1,1,0},
+		{4,SYN_WEAPON_CROSSBOW,	g_szSYNERGYWeapons[7],	WEAP_FL_PRIM_ATTACK | WEAP_FL_SCOPE | WEAP_FL_UNDERWATER,0,2000,-1,2,0},
+		{5,SYN_WEAPON_RPG,		g_szSYNERGYWeapons[8],	WEAP_FL_PROJECTILE | WEAP_FL_EXPLOSIVE | WEAP_FL_PRIM_ATTACK | WEAP_FL_UNDERWATER,400,2000,-1,3,1000.0f},
+		{5,SYN_WEPAON_SLAM,		g_szSYNERGYWeapons[9],	WEAP_FL_EXPLOSIVE,0,180,-1,1,0},
+		{4,SYN_WEAPON_SHOTGUN,	g_szSYNERGYWeapons[10],	WEAP_FL_PRIM_ATTACK,0,768,-1,2,0},
+		{6,SYN_WEAPON_PHYSCANNON,	g_szSYNERGYWeapons[11],	WEAP_FL_GRAVGUN | WEAP_FL_PRIM_ATTACK,0,768,-1,4,0},
+		{2,SYN_WEAPON_DEAGLE, g_szSYNERGYWeapons[12], WEAP_FL_PRIM_ATTACK,0,768,-1,2,0},
+		{1,SYN_WEAPON_PIPE, g_szSYNERGYWeapons[13], WEAP_FL_PRIM_ATTACK | WEAP_FL_MELEE | WEAP_FL_UNDERWATER,0,128,-1,1,0},
+		{3,SYN_WEAPON_MP5K, g_szSYNERGYWeapons[14], WEAP_FL_PRIM_ATTACK,0,1400,-1,2,0},
+		{4,SYN_WEAPON_MG1, g_szSYNERGYWeapons[15], WEAP_FL_PRIM_ATTACK,0,1400,-1,3,0},
+		{6,SYN_WEAPON_BUGBAIT, g_szSYNERGYWeapons[16], WEAP_FL_PRIM_ATTACK | WEAP_FL_SEC_ATTACK,0,128,-1,0,0},
+		{ 0, 0, "\0", 0, 0, 0, 0, 0, 0 }//signal last weapon
+};
+
 bool CBotWeapon :: needToReload (CBot *pBot) 
 { 
 	if ( m_iClip1 )

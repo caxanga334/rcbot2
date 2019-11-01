@@ -36,14 +36,42 @@
 class CBotCoop : public CBot
 {
 public:
+	void UpdateMapGlobal();
+	void spawnInit();
+	void died(edict_t* pKiller, const char* pszWeapon);
+	void killed(edict_t* pVictim, char* weapon);
 	virtual void modThink ();
 
 	void getTasks(unsigned int iIgnore);
 
+	bool executeAction(eBotAction iAction);
+
 	virtual bool isEnemy ( edict_t *pEdict, bool bCheckWeapons = true  );
 
+	void init();
+
+	void setup();
+
 	virtual bool startGame ();
-	bool IsNPCEnemy(const char *classname);
+	bool setVisible(edict_t* pEntity, bool bVisible);
+
+	float getArmorPercent() { return (0.01f * m_pPlayerInfo->GetArmorValue()); }
+private:
+	MyEHandle m_NearestBreakable;
+	MyEHandle m_pHealthCharger;
+	MyEHandle m_pHealthKit;
+	MyEHandle m_pAmmoKit; // nearest healthkit
+	MyEHandle m_pBattery; // nearest battery
+	MyEHandle m_pCharger; // nearest charger
+	MyEHandle m_pNearbyWeapon;
+	MyEHandle m_pNearestButton;
+	MyEHandle m_pAmmoCrate;
+	edict_t* m_pCurrentWeapon;
+
+	CBaseHandle* m_Weapons;
+
+	float m_fUseButtonTime;
+	float m_fUseCrateTime;
 };
 
 #endif
