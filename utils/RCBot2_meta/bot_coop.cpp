@@ -118,7 +118,7 @@ void CBotCoop :: modThink ()
 		updateCondition(CONDITION_NEED_HEALTH);
 		updateCondition(CONDITION_CHANGED);
 	}
-	else
+	else if(getHealthPercent() > 0.36f)
 	{
 		removeCondition(CONDITION_NEED_HEALTH);
 	}
@@ -153,7 +153,7 @@ void CBotCoop::getTasks(unsigned int iIgnore)
 	ADD_UTILITY(BOT_UTIL_FIND_NEAREST_AMMO, (m_pAmmoKit.get() != NULL) && (getAmmo(0) < 5), 0.01f * (100 - getAmmo(0)));
 
 	// always able to roam around
-	ADD_UTILITY(BOT_UTIL_ROAM, true, 0.05f);
+	ADD_UTILITY(BOT_UTIL_ROAM, true, 0.01f);
 
 	// I have an enemy 
 	ADD_UTILITY(BOT_UTIL_FIND_LAST_ENEMY, wantToFollowEnemy() && !m_bLookedForEnemyLast && m_pLastEnemy && CBotGlobals::entityIsValid(m_pLastEnemy) && CBotGlobals::entityIsAlive(m_pLastEnemy), getHealthPercent() * (getArmorPercent() + 0.1));
@@ -212,13 +212,6 @@ void CBotCoop::getTasks(unsigned int iIgnore)
 	}
 
 	utils.freeMemory();
-
-/**	CWaypoint* pWaypoint = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_COOP_GOAL, 0, 0, false, this, false, 0, 0);
-
-	if (pWaypoint)
-	{
-		m_pSchedules->add(new CBotGotoOriginSched(pWaypoint->getOrigin()));
-	} **/
 }
 
 bool CBotCoop::executeAction(eBotAction iAction)
@@ -277,18 +270,26 @@ bool CBotCoop::executeAction(eBotAction iAction)
 	}
 	return false;
 	case BOT_UTIL_PICKUP_WEAPON:
+	{
 		m_pSchedules->add(new CBotPickupSched(m_pNearbyWeapon.get()));
 		return true;
+	}
 	case BOT_UTIL_FIND_NEAREST_HEALTH:
+	{
 		m_pSchedules->add(new CBotPickupSched(m_pHealthKit.get()));
 		return true;
+	}
 	case BOT_UTIL_HL2DM_FIND_ARMOR:
+	{
 		m_pSchedules->add(new CBotPickupSched(m_pBattery.get()));
 		return true;
+	}
 	case BOT_UTIL_FIND_NEAREST_AMMO:
+	{
 		m_pSchedules->add(new CBotPickupSched(m_pAmmoKit.get()));
 		m_fUtilTimes[iAction] = engine->Time() + randomFloat(5.0f, 10.0f);
 		return true;
+	}
 	case BOT_UTIL_HL2DM_USE_HEALTH_CHARGER:
 	{
 		CBotSchedule* pSched = new CBotSchedule();
@@ -385,6 +386,7 @@ bool CBotCoop::executeAction(eBotAction iAction)
 		break;
 	}
 	case BOT_UTIL_ROAM:
+	{
 		// roam
 		CWaypoint* pWaypoint = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_COOP_GOAL);
 
@@ -396,6 +398,7 @@ bool CBotCoop::executeAction(eBotAction iAction)
 
 		break;
 	}
+}
 
 	return false;
 }
@@ -414,7 +417,6 @@ bool CBotCoop::isEnemy(edict_t* pEdict, bool bCheckWeapons)
 	}
 
 	classname = pEdict->GetClassName();
-	CClients::clientDebugMsg(this, BOT_DEBUG_HUD, "CBotCoop::IsEnemy. classname: %s", classname);
 
 	if (strncmp(classname, "npc_", 4) == 0)
 	{
@@ -516,24 +518,24 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 	}
 	else
 	{
-		if (m_pAmmoKit == pEntity)
-			m_pAmmoKit = NULL;
-		else if (m_pAmmoCrate == pEntity)
-			m_pAmmoCrate = NULL;
-		else if (m_pHealthKit == pEntity)
-			m_pHealthKit = NULL;
-		else if (m_pBattery == pEntity)
-			m_pBattery = NULL;
-		else if (m_pCharger == pEntity)
-			m_pCharger = NULL;
-		else if (m_pHealthCharger == pEntity)
-			m_pHealthCharger = NULL;
-		else if (m_NearestBreakable == pEntity)
-			m_NearestBreakable = NULL;
-		else if (m_pNearbyWeapon == pEntity)
-			m_pNearbyWeapon = NULL;
-		else if (m_pNearestButton == pEntity)
-			m_pNearestButton = NULL;
+	if (m_pAmmoKit == pEntity)
+		m_pAmmoKit = NULL;
+	else if (m_pAmmoCrate == pEntity)
+		m_pAmmoCrate = NULL;
+	else if (m_pHealthKit == pEntity)
+		m_pHealthKit = NULL;
+	else if (m_pBattery == pEntity)
+		m_pBattery = NULL;
+	else if (m_pCharger == pEntity)
+		m_pCharger = NULL;
+	else if (m_pHealthCharger == pEntity)
+		m_pHealthCharger = NULL;
+	else if (m_NearestBreakable == pEntity)
+		m_NearestBreakable = NULL;
+	else if (m_pNearbyWeapon == pEntity)
+		m_pNearbyWeapon = NULL;
+	else if (m_pNearestButton == pEntity)
+		m_pNearestButton = NULL;
 	}
 
 	return bValid;
