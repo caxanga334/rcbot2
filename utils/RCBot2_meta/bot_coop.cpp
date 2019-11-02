@@ -405,9 +405,18 @@ bool CBotCoop::executeAction(eBotAction iAction)
 
 bool CBotCoop::isEnemy(edict_t* pEdict, bool bCheckWeapons)
 {
-	const char* classname;
+	extern ConVar rcbot_notarget;
+	const char* szclassname;
 
 	if (ENTINDEX(pEdict) == 0)
+		return false;
+
+	// if no target on - listen sever player is a non target
+	if (rcbot_notarget.GetBool())
+		return false;
+
+	// not myself
+	if (pEdict == m_pEdict)
 		return false;
 
 	// no shooting players
@@ -416,16 +425,13 @@ bool CBotCoop::isEnemy(edict_t* pEdict, bool bCheckWeapons)
 		return false;
 	}
 
-	classname = pEdict->GetClassName();
+	szclassname = pEdict->GetClassName();
 
-	if (strncmp(classname, "npc_", 4) == 0)
+	// todo: filter NPCs
+	if (strncmp(szclassname, "npc_", 4) == 0)
 	{
-		if (strcmp(classname, "npc_metropolice") == 0 || strcmp(classname, "npc_combine_s") == 0 || strcmp(classname, "npc_manhack") == 0 ||
-			strcmp(classname, "npc_zombie") == 0 || strcmp(classname, "npc_fastzombie") == 0 || strcmp(classname, "npc_poisonzombie") == 0 || strcmp(classname, "npc_zombine") == 0 ||
-			strcmp(classname, "npc_antlionguard") == 0)
-		{
-			return true;
-		}
+		CClients::clientDebugMsg(this, BOT_DEBUG_EDICTS, "IsEnemy found NPC: %s", szclassname);
+		return true;
 	}
 	return false;
 }
@@ -434,6 +440,8 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 {
 	static float fDist;
 	const char* szClassname;
+	szClassname = pEntity->GetClassName();
+	CClients::clientDebugMsg(this, BOT_DEBUG_EDICTS, "CBotCoop::setVisible | %s", szClassname);
 
 	bool bValid = CBot::setVisible(pEntity, bVisible);
 
@@ -442,7 +450,7 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 	// if no draw effect it is invisible
 	if (bValid && bVisible && !(CClassInterface::getEffects(pEntity) & EF_NODRAW))
 	{
-		szClassname = pEntity->GetClassName();
+		//szClassname = pEntity->GetClassName();
 
 		if ((strncmp(szClassname, "item_ammo", 9) == 0) &&
 			(!m_pAmmoKit.get() || (fDist < distanceFrom(m_pAmmoKit.get()))))
