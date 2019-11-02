@@ -146,6 +146,7 @@ public:
 	static const int W_FL_OPENS_LATER = 512;
 	static const int W_FL_ROCKET_JUMP = 1024;
 	static const int W_FL_BOMB_TO_OPEN = 1024; // DOD:S
+	static const int W_FL_USE_BUTTON = 1024; // SYNERGY
 	static const int W_FL_SNIPER = 2048;
 	static const int W_FL_AMMO = 4096;
 	static const int W_FL_RESUPPLY = 8192;

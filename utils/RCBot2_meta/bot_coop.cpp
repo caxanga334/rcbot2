@@ -31,6 +31,8 @@ void CBotCoop::setup()
 	CBot::setup();
 }
 
+
+
 bool CBotCoop::startGame()
 {
 	return true;
@@ -39,7 +41,6 @@ bool CBotCoop::startGame()
 void CSynergyMod::initMod()
 {
 	CBotGlobals::botMessage(NULL, 0, "Synergy Init.");
-	CBotGlobals::botMessage(NULL, 0, "Synergy: Max Clients %d", CBotGlobals::maxClients);
 	// load weapons
 	CWeapons::loadWeapons((m_szWeaponListName == NULL) ? "SYNERGY" : m_szWeaponListName, SYNERGYWeaps);
 }
@@ -49,18 +50,10 @@ void CSynergyMod::mapInit()
 	//
 }
 
-void CBotCoop::UpdateMapGlobal()
-{
-	edict_t* pGlobal = CClassInterface::FindEntityByClassnameNearest(Vector(0, 0, 0), "env_global", 65535);
-
-	if (pGlobal) // todo: find a way to read keyvalues
-	{
-		CBotGlobals::botMessage(NULL, 0, "Synergy: Found env_global.");
-	}
-}
-
 void CBotCoop::spawnInit()
 {
+	CBot::spawnInit();
+
 	m_CurrentUtil = BOT_UTIL_MAX;
 	// reset objects
 	m_pNearbyWeapon = NULL;
@@ -71,8 +64,6 @@ void CBotCoop::spawnInit()
 	m_pCharger = NULL;
 	m_fUseButtonTime = 0.0f;
 	m_fUseCrateTime = 0.0f;
-
-	this->UpdateMapGlobal();
 }
 
 /*
@@ -98,12 +89,26 @@ void CBotCoop::killed(edict_t* pVictim, char* weapon)
 {
 	if (pVictim == m_pLastEnemy)
 		m_pLastEnemy = NULL;
+
+	if( m_pButtons->holdingButton(IN_ATTACK) )
+	{
+		m_pButtons->letGo(IN_ATTACK);
+	}
+
+	if (m_pButtons->holdingButton(IN_ATTACK2))
+	{
+		m_pButtons->letGo(IN_ATTACK2);
+	}
+
+	m_pButtons->tap(IN_RELOAD);
 }
 
 void CBotCoop :: modThink ()
 {
 	// find enemies and health stations / objectives etc
 	m_fIdealMoveSpeed = CClassInterface::getMaxSpeed(m_pEdict);
+
+	CBotWeapon* pWeapon = getCurrentWeapon();
 
 	if (CClassInterface::onLadder(m_pEdict) != NULL)
 	{
@@ -121,6 +126,11 @@ void CBotCoop :: modThink ()
 	else if(getHealthPercent() > 0.36f)
 	{
 		removeCondition(CONDITION_NEED_HEALTH);
+	}
+
+	if (pWeapon && (pWeapon->getClip1(this) == 0) && (pWeapon->getAmmo(this) > 0))
+	{
+		m_pButtons->tap(IN_RELOAD);
 	}
 }
 
@@ -158,13 +168,13 @@ void CBotCoop::getTasks(unsigned int iIgnore)
 	// I have an enemy 
 	ADD_UTILITY(BOT_UTIL_FIND_LAST_ENEMY, wantToFollowEnemy() && !m_bLookedForEnemyLast && m_pLastEnemy && CBotGlobals::entityIsValid(m_pLastEnemy) && CBotGlobals::entityIsAlive(m_pLastEnemy), getHealthPercent() * (getArmorPercent() + 0.1));
 
-	if (!hasSomeConditions(CONDITION_SEE_CUR_ENEMY) && hasSomeConditions(CONDITION_SEE_LAST_ENEMY_POS) && m_pLastEnemy && m_fLastSeeEnemy && ((m_fLastSeeEnemy + 10.0) > engine->Time()) && m_pWeapons->hasWeapon(HL2DM_WEAPON_FRAG))
+	if (!hasSomeConditions(CONDITION_SEE_CUR_ENEMY) && hasSomeConditions(CONDITION_SEE_LAST_ENEMY_POS) && m_pLastEnemy && m_fLastSeeEnemy && ((m_fLastSeeEnemy + 10.0) > engine->Time()) && m_pWeapons->hasWeapon(SYN_WEAPON_FRAG))
 	{
 		float fDistance = distanceFrom(m_vLastSeeEnemyBlastWaypoint);
 
 		if ((fDistance > BLAST_RADIUS) && (fDistance < 1500))
 		{
-			CWeapon* pWeapon = CWeapons::getWeapon(HL2DM_WEAPON_FRAG);
+			CWeapon* pWeapon = CWeapons::getWeapon(SYN_WEAPON_FRAG);
 			CBotWeapon* pBotWeapon = m_pWeapons->getWeapon(pWeapon);
 
 			ADD_UTILITY(BOT_UTIL_THROW_GRENADE, pBotWeapon && (pBotWeapon->getAmmo(this) > 0), 1.0f - (getHealthPercent() * 0.2));
@@ -240,19 +250,27 @@ bool CBotCoop::executeAction(eBotAction iAction)
 
 		if (type == 'a') // ar2
 		{
-			pWeapon = m_pWeapons->getWeapon(CWeapons::getWeapon(HL2DM_WEAPON_AR2));
+			pWeapon = m_pWeapons->getWeapon(CWeapons::getWeapon(SYN_WEAPON_AR2));
+			if (pWeapon == NULL)
+			{
+				pWeapon = m_pWeapons->getWeapon(CWeapons::getWeapon(SYN_WEAPON_MG1));
+			}
 		}
 		else if (type == 'g') // grenade
 		{
-			pWeapon = m_pWeapons->getWeapon(CWeapons::getWeapon(HL2DM_WEAPON_FRAG));
+			pWeapon = m_pWeapons->getWeapon(CWeapons::getWeapon(SYN_WEAPON_FRAG));
 		}
 		else if (type == 'r') // rocket
 		{
-			pWeapon = m_pWeapons->getWeapon(CWeapons::getWeapon(HL2DM_WEAPON_RPG));
+			pWeapon = m_pWeapons->getWeapon(CWeapons::getWeapon(SYN_WEAPON_RPG));
 		}
 		else if (type == 's') // smg
 		{
-			pWeapon = m_pWeapons->getWeapon(CWeapons::getWeapon(HL2DM_WEAPON_SMG1));
+			pWeapon = m_pWeapons->getWeapon(CWeapons::getWeapon(SYN_WEAPON_SMG1));
+			if (pWeapon == NULL)
+			{
+				pWeapon = m_pWeapons->getWeapon(CWeapons::getWeapon(SYN_WEAPON_MP5K));
+			}
 		}
 
 		if (pWeapon && (pWeapon->getAmmo(this) < 1))
@@ -350,7 +368,7 @@ bool CBotCoop::executeAction(eBotAction iAction)
 		if (pWaypoint)
 		{
 			CBotSchedule* pSched = new CBotSchedule();
-			pSched->addTask(new CThrowGrenadeTask(m_pWeapons->getWeapon(CWeapons::getWeapon(HL2DM_WEAPON_FRAG)), getAmmo(CWeapons::getWeapon(HL2DM_WEAPON_FRAG)->getAmmoIndex1()), m_vLastSeeEnemyBlastWaypoint)); // first - throw
+			pSched->addTask(new CThrowGrenadeTask(m_pWeapons->getWeapon(CWeapons::getWeapon(SYN_WEAPON_FRAG)), getAmmo(CWeapons::getWeapon(SYN_WEAPON_FRAG)->getAmmoIndex1()), m_vLastSeeEnemyBlastWaypoint)); // first - throw
 			pSched->addTask(new CFindPathTask(pWaypoint->getOrigin())); // 2nd -- hide
 			m_pSchedules->add(pSched);
 			return true;
@@ -369,7 +387,7 @@ bool CBotCoop::executeAction(eBotAction iAction)
 			CBotTask* snipetask;
 
 			// use DOD task
-			snipetask = new CBotHL2DMSnipe(m_pWeapons->getWeapon(CWeapons::getWeapon(HL2DM_WEAPON_CROSSBOW)), pWaypoint->getOrigin(), pWaypoint->getAimYaw(), false, 0);
+			snipetask = new CBotHL2DMSnipe(m_pWeapons->getWeapon(CWeapons::getWeapon(SYN_WEAPON_CROSSBOW)), pWaypoint->getOrigin(), pWaypoint->getAimYaw(), false, 0);
 
 			findpath->setCompleteInterrupt(CONDITION_PUSH);
 			snipetask->setCompleteInterrupt(CONDITION_PUSH);
@@ -430,8 +448,14 @@ bool CBotCoop::isEnemy(edict_t* pEdict, bool bCheckWeapons)
 	// todo: filter NPCs
 	if (strncmp(szclassname, "npc_", 4) == 0)
 	{
-		CClients::clientDebugMsg(this, BOT_DEBUG_EDICTS, "IsEnemy found NPC: %s", szclassname);
-		return true;
+		if (strcmp(szclassname, "npc_metropolice") == 0 || strcmp(szclassname, "npc_combine_s") == 0 || strcmp(szclassname, "npc_manhack") == 0 ||
+			strcmp(szclassname, "npc_zombie") == 0 || strcmp(szclassname, "npc_fastzombie") == 0 || strcmp(szclassname, "npc_poisonzombie") == 0 || strcmp(szclassname, "npc_zombine") == 0 ||
+			strcmp(szclassname, "npc_antlionguard") == 0 || strcmp(szclassname, "npc_antlion") == 0 || strcmp(szclassname, "npc_headcrab") == 0 || strcmp(szclassname, "npc_headcrab_fast") == 0 ||
+			strcmp(szclassname, "npc_headcrab_black") == 0 || strcmp(szclassname, "npc_hunter") == 0 || strcmp(szclassname, "npc_fastzombie_torso") == 0 || strcmp(szclassname, "npc_zombie_torso") == 0 ||
+			strcmp(szclassname, "npc_barnacle") == 0)
+		{
+			return true;
+		}
 	}
 	return false;
 }
@@ -547,4 +571,39 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 	}
 
 	return bValid;
+}
+
+void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWaypoint)
+{
+	if (CWaypoints::validWaypointIndex(iPrevWaypoint) && CWaypoints::validWaypointIndex(iNextWaypoint))
+	{
+		CWaypoint* pPrev = CWaypoints::getWaypoint(iPrevWaypoint);
+		CWaypoint* pNext = CWaypoints::getWaypoint(iNextWaypoint);
+		// bot touched the first ladder waypoint
+		if ((!pPrev->hasFlag(CWaypointTypes::W_FL_LADDER)) && (pWaypoint->hasFlag(CWaypointTypes::W_FL_LADDER)) && (pNext->hasFlag(CWaypointTypes::W_FL_LADDER)))
+		{
+			m_pButtons->tap(IN_USE);
+			CClients::clientDebugMsg(this, BOT_DEBUG_NAV, "Bot touched first ladder waypoint");
+		}
+		// bot touched the last ladder waypoint
+		if ((pPrev->hasFlag(CWaypointTypes::W_FL_LADDER)) && (pWaypoint->hasFlag(CWaypointTypes::W_FL_LADDER)) && (!pNext->hasFlag(CWaypointTypes::W_FL_LADDER)))
+		{
+			m_pButtons->tap(IN_USE);
+			CClients::clientDebugMsg(this, BOT_DEBUG_NAV, "Bot touched last ladder waypoint");
+		}
+	}
+
+	CBot::touchedWpt(pWaypoint, iNextWaypoint, iPrevWaypoint);
+}
+
+// returns true if offset has been applied when not before
+bool CBotCoop::walkingTowardsWaypoint(CWaypoint* pWaypoint, bool* bOffsetApplied, Vector& vOffset)
+{
+	return CBot::walkingTowardsWaypoint(pWaypoint, bOffsetApplied, vOffset);
+}
+
+// Called when working out route
+bool CBotCoop::canGotoWaypoint(Vector vPrevWaypoint, CWaypoint* pWaypoint, CWaypoint* pPrev)
+{
+	return CBot::canGotoWaypoint(vPrevWaypoint, pWaypoint, pPrev);
 }

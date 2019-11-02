@@ -178,7 +178,7 @@ void CBotVisibles :: checkVisible ( edict_t *pEntity, int *iTicks, bool *bVisibl
 	if ( CBotGlobals::entityIsValid(pEntity) )
 	{
 		//if ( CClients::clientsDebugging() && CClients::get(0)->isDebuggingBot(m_pBot) && (ENTINDEX(pEntity)<CBotGlobals::maxClients()) )
-		//	debugoverlay->AddLineOverlay(m_pBot->getOrigin(),CBotGlobals::entityOrigin(pEntity),255,255,255,false,1);			
+		//	debugoverlay->AddLineOverlay(m_pBot->getOrigin(),CBotGlobals::entityOrigin(pEntity),255,255,255,false,1);
 
 		// if in view cone
 		if ( m_pBot->FInViewCone(pEntity) )
@@ -341,19 +341,20 @@ void CBotVisibles :: updateVisibles ()
 
 		pEntity = INDEXENT(m_iCurrentIndex);
 
-		if ( (pEntity != pGroundEntity) && (m_iCurrentIndex != iSpecialIndex)  )
+		if ( (pEntity != pGroundEntity) && (m_iCurrentIndex != iSpecialIndex) )
 		{
 			if ( CBotGlobals::entityIsValid(pEntity) )
-			{		
+			{
 				checkVisible(pEntity,&iTicks,&bVisible,m_iCurrentIndex);
-
 				setVisible(pEntity,bVisible);
 				m_pBot->setVisible(pEntity,bVisible);
 			}
 		}
 
 		m_iCurrentIndex ++;
-
+		
+		// m_iMaxIndex is limited to 33 which causes issues on Synergy
+		// Increasing it to something like 2048 crashes the game
 		if ( m_iCurrentIndex >= m_iMaxIndex )
 			m_iCurrentIndex = CBotGlobals::maxClients()+1; // back to start of non clients
 

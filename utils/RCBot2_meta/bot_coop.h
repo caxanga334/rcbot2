@@ -36,7 +36,6 @@
 class CBotCoop : public CBot
 {
 public:
-	void UpdateMapGlobal();
 	void spawnInit();
 	void died(edict_t* pKiller, const char* pszWeapon);
 	void killed(edict_t* pVictim, char* weapon);
@@ -54,6 +53,14 @@ public:
 
 	virtual bool startGame ();
 	bool setVisible(edict_t* pEntity, bool bVisible);
+
+	void touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWaypoint);
+
+	bool walkingTowardsWaypoint(CWaypoint* pWaypoint, bool* bOffsetApplied, Vector& vOffset);
+
+	bool canGotoWaypoint(Vector vPrevWaypoint, CWaypoint* pWaypoint, CWaypoint* pPrev);
+
+	virtual unsigned int maxEntityIndex() { return gpGlobals->maxEntities; }
 
 	float getArmorPercent() { return (0.01f * m_pPlayerInfo->GetArmorValue()); }
 private:

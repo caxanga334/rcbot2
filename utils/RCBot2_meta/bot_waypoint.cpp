@@ -3249,8 +3249,9 @@ void CWaypointTypes :: setup ()
 	addType(new CWaypointType(W_FL_TELEPORT_CHEAT,"teleport","bots will teleport to the next waypoint (cheat)",WptColor(255,255,255)));
 	addType(new CWaypointType(W_FL_OWNER_ONLY,"owneronly","only bot teams who own the area of the waypoint can use it",WptColor(0,150,150)));
 
-	addType(new CWaypointType(W_FL_COOP_MAPEND, "mapend", "Map end/changelevel here.", WptColor(255, 255, 0), (1 << MOD_SYNERGY)));
-	addType(new CWaypointType(W_FL_COOP_GOAL, "goal", "Bots will go to this waypoint to complete map goals.", WptColor(255, 255, 0), (1 << MOD_SYNERGY)));
+	addType(new CWaypointType(W_FL_COOP_MAPEND, "mapend", "Map end/changelevel here.", WptColor(255, 153, 255), (1 << MOD_SYNERGY)));
+	addType(new CWaypointType(W_FL_COOP_GOAL, "goal", "Bots will go to this waypoint to complete map goals.", WptColor(255, 153, 255), (1 << MOD_SYNERGY)));
+	addType(new CWaypointType(W_FL_USE_BUTTON, "use", "Bots will press a button/use doors at this waypoint.", WptColor(0, 255, 204), (1 << MOD_SYNERGY)));
 
 	//addType(new CWaypointType(W_FL_ATTACKPOINT,"squad_attackpoint","Tactical waypoint -- each squad will go to different attack points and signal others to go",WptColor(90,90,90)));
 }
