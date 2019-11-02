@@ -9,7 +9,7 @@
 ## Building
 ### Windows
 Make sure you have Visual Studio 2013 installed.
-Other than that it should compile fine, even with the latest Visual Studio 2017.
+Other than that it should compile fine, even with the latest Visual Studio 2017 and 2019.
 
 ### Linux
 * Go to `linux_sdk`
