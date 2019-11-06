@@ -1,4 +1,6 @@
-# RCBot2 for Windows and Linux (TF2, HL2:DM, DOD:S)
+# RCBot2 for Windows and Linux (TF2, HL2:DM, DOD:S, SYNERGY)
+
+Synergy support is work-in-progress.
 
 ## Information
 
