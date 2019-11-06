@@ -579,14 +579,14 @@ void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWayp
 	{
 		CWaypoint* pPrev = CWaypoints::getWaypoint(iPrevWaypoint);
 		CWaypoint* pNext = CWaypoints::getWaypoint(iNextWaypoint);
-		// bot touched the first ladder waypoint
-		if ((!pPrev->hasFlag(CWaypointTypes::W_FL_LADDER)) && (pWaypoint->hasFlag(CWaypointTypes::W_FL_LADDER)) && (pNext->hasFlag(CWaypointTypes::W_FL_LADDER)))
+		// bot touched the first ladder waypoint, 
+		if ( (pPrev->getFlags() & CWaypointTypes::W_FL_LADDER) == 0 && (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER))
 		{
 			m_pButtons->tap(IN_USE);
 			CClients::clientDebugMsg(this, BOT_DEBUG_NAV, "Bot touched first ladder waypoint");
 		}
 		// bot touched the last ladder waypoint
-		if ((pPrev->hasFlag(CWaypointTypes::W_FL_LADDER)) && (pWaypoint->hasFlag(CWaypointTypes::W_FL_LADDER)) && (!pNext->hasFlag(CWaypointTypes::W_FL_LADDER)))
+		if ((pNext->getFlags() & CWaypointTypes::W_FL_LADDER) == 0 && (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER))
 		{
 			m_pButtons->tap(IN_USE);
 			CClients::clientDebugMsg(this, BOT_DEBUG_NAV, "Bot touched last ladder waypoint");
