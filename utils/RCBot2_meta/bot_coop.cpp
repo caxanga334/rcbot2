@@ -16,6 +16,7 @@
 #include "bot_navigator.h"
 #include "bot_perceptron.h"
 #include "bot_waypoint_visibility.h"
+#include "bot_mods.h"
 
 #include "vstdlib/random.h" // for random functions
 
@@ -36,18 +37,6 @@ void CBotCoop::setup()
 bool CBotCoop::startGame()
 {
 	return true;
-}
-
-void CSynergyMod::initMod()
-{
-	CBotGlobals::botMessage(NULL, 0, "Synergy Init.");
-	// load weapons
-	CWeapons::loadWeapons((m_szWeaponListName == NULL) ? "SYNERGY" : m_szWeaponListName, SYNERGYWeaps);
-}
-
-void CSynergyMod::mapInit()
-{
-	//
 }
 
 void CBotCoop::spawnInit()
@@ -80,6 +69,7 @@ void CBotCoop::died(edict_t* pKiller, const char* pszWeapon)
 	}
 
 	m_vLastDiedOrigin = getOrigin();
+
 }
 
 /*
@@ -332,7 +322,7 @@ bool CBotCoop::executeAction(eBotAction iAction)
 		m_fUtilTimes[BOT_UTIL_HL2DM_USE_CHARGER] = engine->Time() + randomFloat(5.0f, 10.0f);
 		return true;
 	}
-	case BOT_UTIL_FIND_LAST_ENEMY:
+	case BOT_UTIL_FIND_LAST_ENEMY: // todo: update this code to support NPCs
 	{
 		Vector vVelocity = Vector(0, 0, 0);
 		CClient* pClient = CClients::get(m_pLastEnemy);
@@ -491,6 +481,16 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 		{
 			m_pBattery = pEntity;
 		}
+		else if ((strcmp(szClassname, "npc_alyx") == 0) &&
+			(!m_pNPCAlyx.get() || (fDist < distanceFrom(m_pNPCAlyx.get()))))
+		{
+			m_pNPCAlyx = pEntity;
+		}
+		else if ((strcmp(szClassname, "npc_barney") == 0) &&
+			(!m_pNPCBarney.get() || (fDist < distanceFrom(m_pNPCBarney.get()))))
+		{
+			m_pNPCBarney = pEntity;
+		}
 		else if (((strcmp(szClassname, "func_breakable") == 0) || (strncmp(szClassname, "prop_physics", 12) == 0)) && (CClassInterface::getPlayerHealth(pEntity) > 0) &&
 			(!m_NearestBreakable.get() || (fDist < distanceFrom(m_NearestBreakable.get()))))
 		{
@@ -568,6 +568,10 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 		m_pNearbyWeapon = NULL;
 	else if (m_pNearestButton == pEntity)
 		m_pNearestButton = NULL;
+	else if (m_pNPCAlyx == pEntity)
+		m_pNPCAlyx = NULL;
+	else if (m_pNPCBarney == pEntity)
+		m_pNPCBarney = NULL;
 	}
 
 	return bValid;

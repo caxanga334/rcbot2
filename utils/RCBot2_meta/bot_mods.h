@@ -39,6 +39,7 @@
 #include "bot_dod_bot.h"
 #include "bot_waypoint.h"
 #include "bot_tf2_points.h"
+#include "bot_coop.h"
 
 #define MAX_CAP_POINTS 32
 
@@ -49,6 +50,13 @@
 #define BOT_ADD_METHOD_DEFAULT 0
 #define BOT_ADD_METHOD_PUPPET 1
 #define BOT_ADD_PUPPET_COMMAND "bot"
+
+/* SYNERGY */
+#define SYN_MAPGLOBAL_NONE 0
+#define SYN_MAPGLOBAL_PRECRIMINAL 1 // gordon is pre-criminal
+#define SYN_MAPGLOBAL_ANTLIONSALLY 2 // antlions are ally
+#define SYN_MAPGLOBAL_SUPER_PHYSGUN 3 // gravity gun super mode
+/* END SYNERGY */
 
 class CBotNeuralNet;
 
@@ -774,6 +782,12 @@ public:
 	void initMod ();
 
 	void mapInit ();
+	
+	edict_t *GetRandomPlayer(edict_t* pIgnore);
+
+protected:
+
+	static int m_iMapGlobal;
 
 	//void entitySpawn ( edict_t *pEntity );
 };

@@ -73,6 +73,8 @@ private:
 	MyEHandle m_pNearbyWeapon;
 	MyEHandle m_pNearestButton;
 	MyEHandle m_pAmmoCrate;
+	MyEHandle m_pNPCAlyx; // allow bots to track alyx
+	MyEHandle m_pNPCBarney; // allow bots to track barney
 	edict_t* m_pCurrentWeapon;
 
 	CBaseHandle* m_Weapons;

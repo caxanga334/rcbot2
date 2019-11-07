@@ -222,6 +222,7 @@
     <ClCompile Include="bot_commands.cpp" />
     <ClCompile Include="bot_configfile.cpp" />
     <ClCompile Include="bot_coop.cpp" />
+    <ClCompile Include="bot_coop_mod.cpp" />
     <ClCompile Include="bot_css_bot.cpp" />
     <ClCompile Include="bot_dod_bot.cpp" />
     <ClCompile Include="bot_dod_mod.cpp" />
