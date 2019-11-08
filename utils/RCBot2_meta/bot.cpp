@@ -2987,21 +2987,27 @@ void CBot :: primaryAttack ( bool bHold, float fTime )
 	}
 }
 
+// taps the specificed button
 void CBot :: tapButton ( int iButton )
 {
 	m_pButtons->tap(iButton);
 }
+
+// taps the reload button
 void CBot :: reload ()
 {
 	if ( m_pButtons->canPressButton(IN_RELOAD) )
 		m_pButtons->tap(IN_RELOAD);
 }
+
+// taps the use button
 void CBot :: use ()
 {
 	if ( m_pButtons->canPressButton(IN_USE) )
 		m_pButtons->tap(IN_USE);
 }
 
+// taps the jump button
 void CBot :: jump ()
 {
 	if ( m_pButtons->canPressButton(IN_JUMP) )

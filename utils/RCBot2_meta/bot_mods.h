@@ -785,11 +785,14 @@ public:
 	
 	edict_t *GetRandomPlayer(edict_t* pIgnore);
 
+	// Gets the map global state
+	inline static int GetMapGlobal() { return m_iMapGlobal; }
+
+	//void entitySpawn ( edict_t *pEntity );
+
 protected:
 
 	static int m_iMapGlobal;
-
-	//void entitySpawn ( edict_t *pEntity );
 };
 
 #define NEWENUM typedef enum {

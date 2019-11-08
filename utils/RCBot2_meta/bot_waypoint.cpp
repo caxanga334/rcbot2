@@ -3211,10 +3211,10 @@ void CWaypointTypes :: setup ()
 	addType(new CWaypointType(W_FL_NOALLIES,"noallies","DOD allies team can't use this waypoint",WptColor(255,0,0),(1<<MOD_DOD)));
 
 	addType(new CWaypointType(W_FL_FLAG,"flag","bot will find a flag here",WptColor(255,255,0),(1<<MOD_TF2)));
-	addType(new CWaypointType(W_FL_HEALTH,"health","bot can sometimes get health here",WptColor(255,255,255),(1<<MOD_TF2)|(1<<MOD_HLDM2)));
+	addType(new CWaypointType(W_FL_HEALTH,"health","bot can sometimes get health here",WptColor(255,255,255),(1<<MOD_TF2)|(1<<MOD_HLDM2) | (1 << MOD_SYNERGY)));
 	addType(new CWaypointType(W_FL_ROCKET_JUMP,"rocketjump","TF2 a bot can rocket jump here",WptColor(10,100,0),(1<<MOD_TF2)));
-	addType(new CWaypointType(W_FL_AMMO,"ammo","bot can sometimes get ammo here",WptColor(50,100,10),(1<<MOD_TF2)|(1<<MOD_HLDM2)));
-	addType(new CWaypointType(W_FL_RESUPPLY,"resupply","TF2 bot can always get ammo and health here",WptColor(255,100,255),(1<<MOD_TF2)));
+	addType(new CWaypointType(W_FL_AMMO,"ammo","bot can sometimes get ammo here",WptColor(50,100,10),(1<<MOD_TF2)|(1<<MOD_HLDM2)|(1 << MOD_SYNERGY)));
+	addType(new CWaypointType(W_FL_RESUPPLY,"resupply","TF2 resupply locker. Synergy ammo crate",WptColor(255,100,255),(1<<MOD_TF2) | (1 << MOD_SYNERGY)));
 	addType(new CWaypointType(W_FL_SENTRY,"sentry","TF2 engineer bot can build here",WptColor(255,0,0),(1<<MOD_TF2)));
 	addType(new CWaypointType(W_FL_DOUBLEJUMP,"doublejump","TF2 scout can double jump here",WptColor(10,10,100),(1<<MOD_TF2)));
 	addType(new CWaypointType(W_FL_TELE_ENTRANCE,"teleentrance","TF2 engineer bot can build tele entrance here",WptColor(50,50,150),(1<<MOD_TF2)));

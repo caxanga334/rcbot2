@@ -53,6 +53,8 @@
 
 #include "vstdlib/random.h" // for random functions
 
+int CSynergyMod::m_iMapGlobal = SYN_MAPGLOBAL_NONE;
+
 void CSynergyMod::initMod()
 {
 	CBotGlobals::botMessage(NULL, 0, "Synergy Init.");
@@ -62,7 +64,30 @@ void CSynergyMod::initMod()
 
 void CSynergyMod::mapInit()
 {
-	// todo: find a way to read the map global state.
+	CBotGlobals::botMessage(NULL, 0, "Synergy: Map Init.");
+	static char *szmapname = CBotGlobals::getMapName();
+	// hard coding these until another solution is found.
+	if (strncmp(szmapname, "d1_trainstation", 15) == 0)
+	{
+		m_iMapGlobal = SYN_MAPGLOBAL_PRECRIMINAL; // TRAIN STATION
+	}
+	else if (strncmp(szmapname, "d2_coast_12", 11) == 0)
+	{
+		m_iMapGlobal = SYN_MAPGLOBAL_ANTLIONSALLY;
+	}
+	else if (strncmp(szmapname, "d2_prison_01", 11) == 0)
+	{
+		m_iMapGlobal = SYN_MAPGLOBAL_ANTLIONSALLY;
+	}
+	else if (strncmp(szmapname, "d3_citadel", 10) == 0)
+	{
+		m_iMapGlobal = SYN_MAPGLOBAL_SUPER_PHYSGUN;
+	}
+	else
+	{
+		m_iMapGlobal = SYN_MAPGLOBAL_NONE;
+	}
+	CBotGlobals::botMessage(NULL, 0, "Synergy m_iMapGlobal %d.", m_iMapGlobal);
 }
 
 // Gets a random Player

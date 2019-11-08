@@ -134,8 +134,19 @@ void CBotCoop :: modThink ()
 	m_iHealthPack = CClassInterface::getSynPlrHealthPack(m_pEdict);
 
 	CBotWeapon* pWeapon = getCurrentWeapon();
+	int iCurrentWpt = m_pNavigator->getCurrentWaypointID();
+	CWaypoint* pWpt = CWaypoints::getWaypoint(iCurrentWpt);
 
-	if (CClassInterface::onLadder(m_pEdict) != NULL)
+	/**if (CClassInterface::onLadder(m_pEdict) != NULL)
+	{
+		setMoveLookPriority(MOVELOOK_OVERRIDE);
+		setLookAtTask(LOOK_WAYPOINT);
+		m_pButtons->holdButton(IN_FORWARD, 0, 1, 0);
+		setMoveLookPriority(MOVELOOK_MODTHINK);
+	}**/
+
+	// ladder behavior
+	if (pWpt->getFlags() & CWaypointTypes::W_FL_LADDER)
 	{
 		setMoveLookPriority(MOVELOOK_OVERRIDE);
 		setLookAtTask(LOOK_WAYPOINT);
@@ -156,6 +167,11 @@ void CBotCoop :: modThink ()
 	if (pWeapon && (pWeapon->getClip1(this) == 0) && (pWeapon->getAmmo(this) > 0))
 	{
 		m_pButtons->tap(IN_RELOAD);
+	}
+
+	if (m_pButtons->holdingButton(IN_ATTACK2) && m_pEnemy == NULL)
+	{
+		m_pButtons->letGo(IN_ATTACK2);
 	}
 }
 
@@ -431,7 +447,32 @@ bool CBotCoop::executeAction(eBotAction iAction)
 	case BOT_UTIL_ROAM:
 	{
 		// roam
-		CWaypoint* pWaypoint = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_COOP_GOAL);
+		CWaypoint* pWaypoint = NULL;
+
+		int iRandom = RandomInt(1, 3);
+
+		switch (iRandom)
+		{
+		case 1:
+		{
+			pWaypoint = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_COOP_GOAL);
+			CClients::clientDebugMsg(this, BOT_DEBUG_UTIL, "BOT_UTIL_ROAM Random Case: Goal");
+		}
+		case 2:
+		{
+			pWaypoint = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_COOP_MAPEND);
+			if (pWaypoint == NULL) // use GOAL if no MAPEND exist
+			{
+				pWaypoint = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_COOP_GOAL);
+			}
+			CClients::clientDebugMsg(this, BOT_DEBUG_UTIL, "BOT_UTIL_ROAM Random Case: Map End");
+		}
+		case 3: // any waypoint
+		{
+			pWaypoint = CWaypoints::randomWaypointGoal(-1);
+			CClients::clientDebugMsg(this, BOT_DEBUG_UTIL, "BOT_UTIL_ROAM Random Case: Any");
+		}
+		}
 
 		if (pWaypoint)
 		{
@@ -450,6 +491,10 @@ bool CBotCoop::isEnemy(edict_t* pEdict, bool bCheckWeapons)
 {
 	extern ConVar rcbot_notarget;
 	const char* szclassname;
+	static int iGlobalState = CSynergyMod::GetMapGlobal();
+
+	if (iGlobalState == SYN_MAPGLOBAL_PRECRIMINAL)
+		return false;
 
 	if (ENTINDEX(pEdict) == 0)
 		return false;
@@ -473,6 +518,9 @@ bool CBotCoop::isEnemy(edict_t* pEdict, bool bCheckWeapons)
 	// todo: filter NPCs
 	if (strncmp(szclassname, "npc_", 4) == 0)
 	{
+		if ((strcmp(szclassname, "npc_antlion") == 0) && iGlobalState == SYN_MAPGLOBAL_ANTLIONSALLY)
+			return false;
+
 		if (strcmp(szclassname, "npc_metropolice") == 0 || strcmp(szclassname, "npc_combine_s") == 0 || strcmp(szclassname, "npc_manhack") == 0 ||
 			strcmp(szclassname, "npc_zombie") == 0 || strcmp(szclassname, "npc_fastzombie") == 0 || strcmp(szclassname, "npc_poisonzombie") == 0 || strcmp(szclassname, "npc_zombine") == 0 ||
 			strcmp(szclassname, "npc_antlionguard") == 0 || strcmp(szclassname, "npc_antlion") == 0 || strcmp(szclassname, "npc_headcrab") == 0 || strcmp(szclassname, "npc_headcrab_fast") == 0 ||
@@ -614,7 +662,7 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 
 void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWaypoint)
 {
-	int iTouchedWpt = CWaypoints::getWaypointIndex(pWaypoint);
+	/**int iTouchedWpt = CWaypoints::getWaypointIndex(pWaypoint);
 	CClients::clientDebugMsg(this, BOT_DEBUG_NAV, "CBotCoop::touchedWpt Touched: %d, Next: %d, Prev: %d", iTouchedWpt, iNextWaypoint, iPrevWaypoint);
 	if (CWaypoints::validWaypointIndex(iPrevWaypoint) && CWaypoints::validWaypointIndex(iNextWaypoint))
 	{
@@ -632,6 +680,12 @@ void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWayp
 			m_pButtons->tap(IN_USE);
 			CClients::clientDebugMsg(this, BOT_DEBUG_NAV, "Bot touched last ladder waypoint");
 		}
+	} **/
+
+	// Tells bots to mount/dismount ladders by using pressing use
+	if ((pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER) && (pWaypoint->getFlags() & CWaypointTypes::W_FL_USE_BUTTON))
+	{
+		m_pButtons->tap(IN_USE);
 	}
 
 	CBot::touchedWpt(pWaypoint, iNextWaypoint, iPrevWaypoint);
