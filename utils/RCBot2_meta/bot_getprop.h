@@ -156,6 +156,8 @@ typedef enum
 	GETPROP_TF2_CHARGE_RESIST_TYPE,
 	GETPROP_TF2_ROUNDSTATE,
 	GETPROP_TF2DESIREDCLASS, //Jrob
+	GETPROP_SYN_HEALTHPACK,
+	GETPROP_SYN_VEHICLE_ENTITY,
 	GET_PROPDATA_MAX
 }getpropdata_id;
 
@@ -709,6 +711,14 @@ public:
 	{
 		return g_GetProps[GETPROP_SENTRYGUN_PLACING].getBool(pSentry,false);
 	}
+
+	// Synergy
+
+	// Amount of health pack the player contains
+	inline static int getSynPlrHealthPack(edict_t* edict) { return g_GetProps[GETPROP_SYN_HEALTHPACK].getInt(edict, 0); }
+
+	// Get the vehicle entity of the player
+	inline static edict_t* getSynPlrVehicle(edict_t* edict) { return g_GetProps[GETPROP_SYN_VEHICLE_ENTITY].getEntity(edict); }
 
 private:
 	static CClassInterfaceValue g_GetProps[GET_PROPDATA_MAX];

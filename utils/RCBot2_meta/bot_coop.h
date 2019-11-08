@@ -81,6 +81,8 @@ private:
 
 	float m_fUseButtonTime;
 	float m_fUseCrateTime;
+
+	int m_iHealthPack;
 };
 
 #endif
