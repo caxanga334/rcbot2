@@ -12,6 +12,7 @@ UTILS_RCBOT2_META_OBJS= \
 	$(UTILS_RCBOT2_META_OBJ_DIR)/bot_commands.o \
 	$(UTILS_RCBOT2_META_OBJ_DIR)/bot_configfile.o \
 	$(UTILS_RCBOT2_META_OBJ_DIR)/bot_coop.o \
+	$(UTILS_RCBOT2_META_OBJ_DIR)/bot_coop_mod.o \
 	$(UTILS_RCBOT2_META_OBJ_DIR)/bot_css_bot.o \
 	$(UTILS_RCBOT2_META_OBJ_DIR)/bot_dod_bot.o \
 	$(UTILS_RCBOT2_META_OBJ_DIR)/bot_dod_mod.o \
