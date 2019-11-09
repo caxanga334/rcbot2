@@ -1544,7 +1544,7 @@ const char *RCBotPluginMeta::GetLicense()
 
 const char *RCBotPluginMeta::GetVersion()
 {
-	return "1.01 (r487-apg-ch)";
+	return "1.05 (r489-synergy)";
 }
 
 const char *RCBotPluginMeta::GetDate()
@@ -1564,7 +1564,7 @@ const char *RCBotPluginMeta::GetAuthor()
 
 const char *RCBotPluginMeta::GetDescription()
 {
-	return "Bot for HL2DM, TF2 and DOD:S";
+	return "Bot for HL2DM, TF2, DOD:S and Synergy";
 }
 
 const char *RCBotPluginMeta::GetName()

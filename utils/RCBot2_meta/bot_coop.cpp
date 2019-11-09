@@ -137,16 +137,7 @@ void CBotCoop :: modThink ()
 	int iCurrentWpt = m_pNavigator->getCurrentWaypointID();
 	CWaypoint* pWpt = CWaypoints::getWaypoint(iCurrentWpt);
 
-	/**if (CClassInterface::onLadder(m_pEdict) != NULL)
-	{
-		setMoveLookPriority(MOVELOOK_OVERRIDE);
-		setLookAtTask(LOOK_WAYPOINT);
-		m_pButtons->holdButton(IN_FORWARD, 0, 1, 0);
-		setMoveLookPriority(MOVELOOK_MODTHINK);
-	}**/
-
-	// ladder behavior
-	if (pWpt->getFlags() & CWaypointTypes::W_FL_LADDER)
+	if (CClassInterface::onLadder(m_pEdict) != NULL || (pWpt != NULL && (pWpt->getFlags() & CWaypointTypes::W_FL_LADDER)))
 	{
 		setMoveLookPriority(MOVELOOK_OVERRIDE);
 		setLookAtTask(LOOK_WAYPOINT);
