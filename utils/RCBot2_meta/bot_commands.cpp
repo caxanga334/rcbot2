@@ -1701,6 +1701,14 @@ eBotCommandResult CWaypointLoadCommand :: execute ( CClient *pClient, const char
 //usage \"memorycheck <classname> <offset> <type>\"");
 eBotCommandResult CDebugMstrOffsetSearch::execute(CClient *pClient, const char *pcmd, const char *arg1, const char *arg2, const char *arg3, const char *arg4, const char *arg5)
 {
+	CBotMod* pMod = CBotGlobals::getCurrentMod();
+
+	if (pMod && pMod->getModId() != MOD_TF2)
+	{
+		CBotGlobals::botMessage(pClient->getPlayer(), 0, "This command is for Team Fortress 2 only.");
+		return COMMAND_ERROR;
+	}
+
 	if (strcmp("cp_dustbowl", STRING(gpGlobals->mapname)) != 0)
 	{
 		CBotGlobals::botMessage(pClient->getPlayer(), 0, "Command can only be used on cp_dustbowl -- change the map first");
@@ -1748,6 +1756,7 @@ eBotCommandResult CDebugMstrOffsetSearch::execute(CClient *pClient, const char *
 		offset++;
 	}
 
+	return COMMAND_ACCESSED;
 }
 
 //usage \"memorycheck <classname> <offset> <type>\"");

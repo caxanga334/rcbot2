@@ -6,7 +6,7 @@
  * ======================================================
  *
  * This software is provided 'as-is', without any express or implied warranty.
- * In no event will the authors be held liable for any damages arising from 
+ * In no event will the authors be held liable for any damages arising from
  * the use of this software.
  *
  * This sample plugin is public domain.
@@ -80,8 +80,8 @@ SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *,
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 #endif
 
-SH_DECL_MANUALHOOK2_void(MHook_PlayerRunCmd, 0, 0, 0, CUserCmd*, IMoveHelper*); 
-SH_DECL_MANUALHOOK4(MHook_GiveNamedItem, 0, 0, 0,CBaseEntity*, const char *,int,CEconItemView*,bool); 
+SH_DECL_MANUALHOOK2_void(MHook_PlayerRunCmd, 0, 0, 0, CUserCmd*, IMoveHelper*);
+SH_DECL_MANUALHOOK4(MHook_GiveNamedItem, 0, 0, 0,CBaseEntity*, const char *,int,CEconItemView*,bool);
 
 SH_DECL_MANUALHOOK1_void(MHook_EquipWearable, 0, 0, 0, CEconWearable*);
 SH_DECL_MANUALHOOK1_void(MHook_EquipWeapon, 0, 0, 0, CBaseEntity*);
@@ -119,7 +119,7 @@ IGameEventManager2 *gameevents = NULL;
 IServerPluginCallbacks *vsp_callbacks = NULL;
 ICvar *icvar = NULL;
 IVEngineServer *engine = NULL;  // helper functions (messaging clients, loading content, making entities, running commands, etc)
-IFileSystem *filesystem = NULL;  // file I/O 
+IFileSystem *filesystem = NULL;  // file I/O
 IGameEventManager2 *gameeventmanager = NULL;
 IGameEventManager *gameeventmanager1 = NULL;  // game events interface
 IPlayerInfoManager *playerinfomanager = NULL;  // game dll interface to interact with players
@@ -197,7 +197,7 @@ CON_COMMAND(rcbot_printattribs, "print attributes")
 CON_COMMAND(rcbot_setattrib, "set an attribute")
 {
 	if (args.ArgC() > 2)
-	{		
+	{
 		edict_t *pPlayer = CClients::getListenServerClient();
 
 		CBaseEntity *pEntity = RCBotPluginMeta::TF2_getPlayerWeaponSlot(pPlayer, TF2_SLOT_PRMRY);
@@ -207,7 +207,7 @@ CON_COMMAND(rcbot_setattrib, "set an attribute")
 			edict_t *pEdict = servergameents->BaseEntityToEdict(pEntity);
 
 			if (pEdict && !pEdict->IsFree())
-			{			
+			{
 				const char *strAttrib = args.Arg(1);
 				float flVal = atof(args.Arg(2));
 				//void (edict_t *pEdict, const char *szName, float flVal)
@@ -258,7 +258,7 @@ bool RCBotPluginMeta :: ClearAttributeCache(edict_t *pedict)
 {
 	if (hSDKOnAttribValuesChanged == INVALID_HANDLE) return false;
 
-	if (pedict == NULL || pedict->IsFree() ) 
+	if (pedict == NULL || pedict->IsFree() )
 		return false;
 
 	new offs = GetEntSendPropOffs(entity, "m_AttributeList", true);
@@ -293,7 +293,7 @@ void RCBotPluginMeta::TF2_equipWearable(edict_t *pPlayer, CBaseEntity *pWearable
 
 	SH_MCALL(pEnt, MHook_EquipWearable)(reinterpret_cast<CEconWearable*>(pWearable));
 }
-/*			
+/*
 "CAttributeManager::OnAttributeValuesChanged"	//use instead of ClearCache/NotifyManagerOfAttributeValueChanges
 {
 	"windows"	"12"
@@ -316,7 +316,7 @@ bool RCBotPluginMeta::TF2_ClearAttributeCache(edict_t *pEdict)
 		return false;
 
 	int offset = 12;
-	
+
 	*reinterpret_cast<unsigned int*>(&OnAttributeValuesChanged) = mem[offset];
 
 	if (!OnAttributeValuesChanged)
@@ -580,11 +580,11 @@ void RCBotPluginMeta::Hook_PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	edict_t *pEdict = servergameents->BaseEntityToEdict(pPlayer);
 
 	pBot = CBots::getBotPointer(pEdict);
-	
+
 	if ( pBot )
 	{
 		static CBotCmd *cmd;
-		
+
 		cmd = pBot->getUserCMD();
 
 		// put the bot's commands into this move frame
@@ -602,9 +602,9 @@ void RCBotPluginMeta::Hook_PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 		g_pLastBot = static_cast<CBotTF2*>(pBot);
 	}
 
-//g_pSM->LogMessage(NULL, "H %i %i %f %f %f %f %i", ucmd->command_number, ucmd->tick_count, ucmd->viewangles.x, ucmd->viewangles.y, ucmd->viewangles.z, ucmd->forwardmove, ucmd->buttons); 
+//g_pSM->LogMessage(NULL, "H %i %i %f %f %f %f %i", ucmd->command_number, ucmd->tick_count, ucmd->viewangles.x, ucmd->viewangles.y, ucmd->viewangles.z, ucmd->forwardmove, ucmd->buttons);
 
-RETURN_META(MRES_IGNORED); 
+RETURN_META(MRES_IGNORED);
 }
 
 
@@ -645,10 +645,10 @@ CBaseEntity *RCBotPluginMeta::Hook_GiveNamedItem( const char *name, int subtype,
 	{
 		static_cast<CBotTF2*>(pBot)->PostGiveNamedItem(cscript);
 	}
-	
-	RETURN_META_VALUE(MRES_IGNORED, NULL); 
+
+	RETURN_META_VALUE(MRES_IGNORED, NULL);
 }
-/** 
+/**
  * Something like this is needed to register cvars/CON_COMMANDs.
  */
 class BaseAccessor : public IConCommandBaseAccessor
@@ -678,7 +678,7 @@ bf_write *RCBotPluginMeta::Hook_MessageBegin(IRecipientFilter *filter, int msg_t
 
 	if (bfound)
 	{
-		
+
 		int msgid = 0;
 		int imsgsize = 0;
 		char msgbuf[64];
@@ -692,7 +692,7 @@ bf_write *RCBotPluginMeta::Hook_MessageBegin(IRecipientFilter *filter, int msg_t
 	}
 	else
 		current_msg_buffer[0] = 0;
-	
+
 	current_msg = SH_CALL(engine, &IVEngineServer::UserMessageBegin)(filter, msg_type);
 
 	if (current_msg)
@@ -742,10 +742,10 @@ void RCBotPluginMeta::Hook_WriteFloat(float val)
 bool RCBotPluginMeta::Hook_WriteString(const char *pStr)
 {
 	/*char *tocat = new char[strlen(pStr) + 16];
-	
+
 	sprintf(tocat, "\nWriteString(%s)", pStr);
 	strcat(current_msg_buffer, tocat);
-	
+
 	delete tocat;*/
 
 	RETURN_META_VALUE(MRES_IGNORED, false);
@@ -777,7 +777,7 @@ bool RCBotPluginMeta::Load(const PluginId id, ISmmAPI* ismm, char* error, const 
 
 	PLUGIN_SAVEVARS();
 
-	GET_V_IFACE_CURRENT(GetEngineFactory, enginetrace, IEngineTrace, INTERFACEVERSION_ENGINETRACE_SERVER);	
+	GET_V_IFACE_CURRENT(GetEngineFactory, enginetrace, IEngineTrace, INTERFACEVERSION_ENGINETRACE_SERVER);
 	GET_V_IFACE_CURRENT(GetEngineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
 	GET_V_IFACE_CURRENT(GetEngineFactory, gameevents, IGameEventManager2, INTERFACEVERSION_GAMEEVENTSMANAGER2);
 	GET_V_IFACE_CURRENT(GetEngineFactory, helpers, IServerPluginHelpers, INTERFACEVERSION_ISERVERPLUGINHELPERS);
@@ -814,7 +814,7 @@ bool RCBotPluginMeta::Load(const PluginId id, ISmmAPI* ismm, char* error, const 
 
 	/*SH_ADD_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &RCBotPluginMeta::Hook_MessageBegin, false);
 	SH_ADD_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &RCBotPluginMeta::Hook_MessageEnd, false);*/
-	
+
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, server, this, &RCBotPluginMeta::Hook_LevelInit, true);
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, server, this, &RCBotPluginMeta::Hook_ServerActivate, true);
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, GameFrame, server, this, &RCBotPluginMeta::Hook_GameFrame, true);
@@ -837,7 +837,6 @@ bool RCBotPluginMeta::Load(const PluginId id, ISmmAPI* ismm, char* error, const 
 	ConCommandBaseMgr::OneTimeInit(&s_BaseAccessor);
 #endif
 
-
 	// Read Signatures and Offsets
 	CBotGlobals::initModFolder();
 	CBotGlobals::readRCBotFolder();
@@ -859,7 +858,7 @@ bool RCBotPluginMeta::Load(const PluginId id, ISmmAPI* ismm, char* error, const 
 
 #ifdef _WIN32
 
-	if (pKVL->getInt("givenameditem_win", &val))		
+	if (pKVL->getInt("givenameditem_win", &val))
 		rcbot_givenameditem_offset.SetValue(val);
 	if (pKVL->getInt("equipwearable_win", &val))
 		rcbot_equipwearable_offset.SetValue(val);
@@ -970,12 +969,12 @@ bool RCBotPluginMeta::Load(const PluginId id, ISmmAPI* ismm, char* error, const 
 	// Find the RCBOT2 Path from metamod VDF
 	extern IFileSystem *filesystem;
 	KeyValues *mainkv = new KeyValues("metamodplugin");
-	
+
 	const char *rcbot2path;
 	CBotGlobals::botMessage(NULL, 0, "Reading rcbot2 path from VDF...");
-	
+
 	mainkv->LoadFromFile(filesystem, "addons/metamod/rcbot2.vdf", "MOD");
-	
+
 	mainkv = mainkv->FindKey("Metamod Plugin");//A possible memory leak? [APG]RoboCop[CL]
 
 	if (mainkv)
@@ -992,12 +991,12 @@ bool RCBotPluginMeta::Load(const PluginId id, ISmmAPI* ismm, char* error, const 
 	CWaypointTypes::setup();
 	CWaypoints::setupVisibility();
 
-	CBotConfigFile::reset();	
+	CBotConfigFile::reset();
 	CBotConfigFile::load();
 
 	CBotMenuList::setupMenus();
 
-	//CRCBotPlugin::ShowLicense();	
+	//CRCBotPlugin::ShowLicense();
 
 	//RandomSeed((unsigned int)time(NULL));
 
@@ -1062,7 +1061,7 @@ bool RCBotPluginMeta::FireGameEvent(IGameEvent * pevent, bool bDontBroadcast)
 	static char szKey[128];
 	static char szValue[128];
 
-	CBotEvents::executeEvent(static_cast<void*>(pevent),TYPE_IGAMEEVENT);	
+	CBotEvents::executeEvent(static_cast<void*>(pevent),TYPE_IGAMEEVENT);
 
 RETURN_META_VALUE(MRES_IGNORED, true);
 }
@@ -1080,13 +1079,13 @@ bool RCBotPluginMeta::Unload(char *error, size_t maxlen)
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientSettingsChanged, gameclients, this, &RCBotPluginMeta::Hook_ClientSettingsChanged, false);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientConnect, gameclients, this, &RCBotPluginMeta::Hook_ClientConnect, false);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientCommand, gameclients, this, &RCBotPluginMeta::Hook_ClientCommand, false);
-	
+
 	//SH_REMOVE_MANUALHOOK(MHook_PlayerRunCmd, player_vtable, SH_STATIC(Hook_Function2), false);
 
 	// if another instance is running dont run through this
 	//if ( !bInitialised )
 	//	return;
-	
+
 	CBots::freeAllMemory();
 	CStrings::freeAllMemory();
 	CBotGlobals::freeMemory();
@@ -1115,7 +1114,7 @@ bool RCBotPluginMeta::Unload(char *error, size_t maxlen)
 		if ( !puppet_bot_cmd->IsFlagSet(FCVAR_CHEAT) )
 		{
 			int *m_nFlags = reinterpret_cast<int*>(reinterpret_cast<unsigned long>(puppet_bot_cmd) + BOT_CONVAR_FLAGS_OFFSET); // 20 is offset to flags
-			
+
 			*m_nFlags |= FCVAR_CHEAT;
 		}
 	}
@@ -1141,7 +1140,7 @@ void RCBotPluginMeta::Hook_ServerActivate(edict_t *pEdictList, const int edictCo
 
 void RCBotPluginMeta::AllPluginsLoaded()
 {
-	/* This is where we'd do stuff that relies on the mod or other plugins 
+	/* This is where we'd do stuff that relies on the mod or other plugins
 	 * being initialized (for example, cvars added and events registered).
 	 */
 }
@@ -1176,7 +1175,7 @@ void RCBotPluginMeta::Hook_ClientCommand(edict_t *pEntity)
 
 	// is bot command?
 	if ( CBotGlobals::m_pCommands->isCommand(pcmd) )
-	{		
+	{
 		//eBotCommandResult iResult = CBotGlobals::m_pCommands->execute(pClient,engine->Cmd_Argv(1),engine->Cmd_Argv(2),engine->Cmd_Argv(3),engine->Cmd_Argv(4),engine->Cmd_Argv(5),engine->Cmd_Argv(6));
 		eBotCommandResult iResult = CBotGlobals::m_pCommands->execute(pClient,args.Arg(1),args.Arg(2),args.Arg(3),args.Arg(4),args.Arg(5),args.Arg(6));
 
@@ -1190,11 +1189,11 @@ void RCBotPluginMeta::Hook_ClientCommand(edict_t *pEntity)
 		}
 		else if ( iResult == COMMAND_NOT_FOUND )
 		{
-			CBotGlobals::botMessage(pEntity,0,"bot command not found");	
+			CBotGlobals::botMessage(pEntity,0,"bot command not found");
 		}
 		else if ( iResult == COMMAND_ERROR )
 		{
-			CBotGlobals::botMessage(pEntity,0,"bot command returned an error");	
+			CBotGlobals::botMessage(pEntity,0,"bot command returned an error");
 		}
 
 		RETURN_META(MRES_SUPERCEDE);
@@ -1221,7 +1220,7 @@ void RCBotPluginMeta::Hook_ClientCommand(edict_t *pEntity)
 	// capture some client commands e.g. voice commands
 	pMod->clientCommand(pEntity,args.ArgC(),pcmd,args.Arg(1),args.Arg(2));
 
-	RETURN_META(MRES_IGNORED); 
+	RETURN_META(MRES_IGNORED);
 }
 
 void RCBotPluginMeta::Hook_ClientSettingsChanged(edict_t *pEdict)
@@ -1251,15 +1250,15 @@ void RCBotPluginMeta::Hook_ClientPutInServer(edict_t *pEntity, char const *playe
 
 	if ( CBots::controlBots() )
 		is_Rcbot = CBots::handlePlayerJoin(pEntity,playername);
-	
+
 	if ( !is_Rcbot && pClient )
-	{	
+	{
 		if ( !engine->IsDedicatedServer() )
 		{
 			if ( CClients::noListenServerClient() )
 			{
 				// give listenserver client all access to bot commands
-				CClients::setListenServerClient(pClient);		
+				CClients::setListenServerClient(pClient);
 				pClient->setAccessLevel(CMD_ACCESS_ALL);
 				pClient->resetMenuCommands();
 			}
@@ -1478,7 +1477,7 @@ bool RCBotPluginMeta::Hook_LevelInit(const char *pMapName,
 
 	CBotGlobals::setMapRunning(true);
 	CBotConfigFile::reset();
-	
+
 	if ( mp_teamplay )
 		CBotGlobals::setTeamplay(mp_teamplay->GetBool());
 	else
@@ -1489,7 +1488,7 @@ bool RCBotPluginMeta::Hook_LevelInit(const char *pMapName,
 	CBots::mapInit();
 
 	CBotMod *pMod = CBotGlobals::getCurrentMod();
-	
+
 	if ( pMod )
 		pMod->mapInit();
 
@@ -1519,7 +1518,7 @@ void RCBotPluginMeta::Hook_LevelShutdown()
 	CClients::initall();
 	CWaypointDistances::save();
 
-	CBots::freeMapMemory();	
+	CBots::freeMapMemory();
 	CWaypoints::init();
 
 	CBotGlobals::setMapRunning(false);
@@ -1548,11 +1547,7 @@ const char *RCBotPluginMeta::GetLicense()
 
 const char *RCBotPluginMeta::GetVersion()
 {
-<<<<<<< HEAD
-	return "1.05 (r489-synergy)";
-=======
-	return "1.04 (r491-apg-ch)";
->>>>>>> 7b3bbaff03ea1be7afdd9389c22f18e05900a24f
+	return "1.05 (r492-synergy)";
 }
 
 const char *RCBotPluginMeta::GetDate()
