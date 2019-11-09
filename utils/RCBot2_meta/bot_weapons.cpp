@@ -268,10 +268,8 @@ int CBotWeapon :: getAmmo (CBot *pBot, int type )
 	if ( type == AMMO_SEC )
 		return pBot->getAmmo(m_pWeaponInfo->getAmmoIndex2());
 
-
 	return 0;
 }
-
 
 bool CBotWeapons::hasExplosives( void )
 {
@@ -291,7 +289,6 @@ bool CBotWeapons::hasExplosives( void )
 	return false;
 }
 
-
 bool CBotWeapons::hasWeapon(int id)
 {
 	for (int i = 0; i < MAX_WEAPONS; i++)
@@ -308,6 +305,7 @@ bool CBotWeapons::hasWeapon(int id)
 	}
 	return false;
 }
+
 // Bot Weapons
 CBotWeapons::CBotWeapons(CBot *pBot)
 {
@@ -347,7 +345,6 @@ edict_t *CWeapons :: findWeapon ( edict_t *pPlayer, const char *pszWeaponName )
 	return NULL;
 }
 
-
 bool CBotWeapons::update(bool bOverrideAllFromEngine)
 {
 	// create mask of weapons data
@@ -363,7 +360,9 @@ bool CBotWeapons::update(bool bOverrideAllFromEngine)
 	{
 		// create a 'hash' of current weapons
 		pWeapon = (m_Weapon_iter == NULL) ? NULL : INDEXENT(m_Weapon_iter->GetEntryIndex());
-		iWeaponsSignature += ((unsigned int)pWeapon) + ((pWeapon == NULL) ? 0 : (unsigned int)CClassInterface::getWeaponState(pWeapon));
+		iWeaponsSignature += reinterpret_cast<unsigned int>(pWeapon) + ((pWeapon == NULL)
+			                                                ? 0
+			                                                : static_cast<unsigned int>(CClassInterface::getWeaponState(pWeapon)));
 		m_Weapon_iter++;
 	}
 
@@ -734,7 +733,7 @@ void CWeapons::loadWeapons(const char *szWeaponListName, WeaponsData_t *pDefault
 {
 	if ((szWeaponListName != NULL) && (szWeaponListName[0] != 0))
 	{
-		KeyValues *kv = new KeyValues("Weapons");
+		KeyValues *kv = new KeyValues("Weapons");//A possible memory leak? [APG]RoboCop[CL]
 		char szFilename[1024];
 
 		CBotGlobals::buildFileName(szFilename, "weapons", BOT_CONFIG_FOLDER, "ini", false);
@@ -749,7 +748,7 @@ void CWeapons::loadWeapons(const char *szWeaponListName, WeaponsData_t *pDefault
 				{
 					kv = kv->GetFirstSubKey();
 
-					if (0)
+					if (false)
 						kv = kv->GetFirstTrueSubKey();
 
 					while (kv != NULL)

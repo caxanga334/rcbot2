@@ -28,6 +28,7 @@
  *    version.
  *
  */
+ 
 #include "engine_wrappers.h"
 
 #include "vector.h"
@@ -415,6 +416,7 @@ Vector CBotSquad :: GetFormationVector ( edict_t *pEdict )
 			vBase = -v_forward + v_right;
 		}
 		break;
+	default: ;
 	}
 	
 	vBase = (vBase * m_fDesiredSpread) * iPosition;

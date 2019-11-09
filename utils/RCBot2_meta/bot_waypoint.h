@@ -293,7 +293,7 @@ public:
 		return (m_iFlags & iFlag) > 0;
 	}
 
-	inline void move ( Vector origin )
+	inline void move ( const Vector origin )
 	{
 		// move to new origin
 		m_vOrigin = origin;

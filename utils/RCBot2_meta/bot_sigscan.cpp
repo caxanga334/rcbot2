@@ -1,3 +1,36 @@
+/*
+ *    part of https://rcbot2.svn.sourceforge.net/svnroot/rcbot2
+ *
+ *    This file is part of RCBot.
+ *
+ *    RCBot by Paul Murphy adapted from Botman's HPB Bot 2 template.
+ *
+ *    RCBot is free software; you can redistribute it and/or modify it
+ *    under the terms of the GNU General Public License as published by the
+ *    Free Software Foundation; either version 2 of the License, or (at
+ *    your option) any later version.
+ *
+ *    RCBot is distributed in the hope that it will be useful, but
+ *    WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *    General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with RCBot; if not, write to the Free Software Foundation,
+ *    Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ *    In addition, as a special exception, the author gives permission to
+ *    link the code of this program with the Half-Life Game Engine ("HL
+ *    Engine") and Modified Game Libraries ("MODs") developed by Valve,
+ *    L.L.C ("Valve").  You must obey the GNU General Public License in all
+ *    respects for all of the code used other than the HL Engine and MODs
+ *    from Valve.  If you modify this file, you may extend this exception
+ *    to your version of the file, but you are not obligated to do so.  If
+ *    you do not wish to do so, delete this exception statement from your
+ *    version.
+ *
+ */
+
 #ifdef WIN32
 #include <Windows.h>
 #else
@@ -19,12 +52,14 @@
 #include "interface.h"
 #include "engine/iserverplugin.h"
 #include "tier2/tier2.h"
+
 #ifdef __linux__
 #include "shake.h"    //bir3yk
 #ifndef sscanf_s
 #define sscanf_s sscanf
 #endif
 #endif
+
 #include "eiface.h"
 #include "bot_const.h"
 #include "bot.h"
@@ -215,7 +250,7 @@ bool CSignatureFunction::getLibraryInfo(const void *libPtr, DynLibInfo &lib)
 
 void *CSignatureFunction::findPattern(const void *libPtr, const char *pattern, size_t len)
 {
-	DynLibInfo lib;
+	DynLibInfo lib{};
 	bool found;
 	char *ptr, *end;
 
@@ -261,7 +296,7 @@ void *CSignatureFunction::findSignature(void *addrInBase, const char *signature)
 
 	if (real_bytes >= 1)
 	{
-		return findPattern(addrInBase, (char*)real_sig, real_bytes);
+		return findPattern(addrInBase, reinterpret_cast<char*>(real_sig), real_bytes);
 	}
 
 	return NULL;
@@ -334,8 +369,6 @@ CEconItemSchema *CGetEconItemSchema::callme()
 	return pret;
 }
 
-
-
 CSetRuntimeAttributeValue::CSetRuntimeAttributeValue(CRCBotKeyValueList *list, void *pAddrBase)
 {
 #ifdef _WIN32
@@ -350,7 +383,7 @@ bool CSetRuntimeAttributeValue::callme(edict_t *pEnt, CAttributeList *list, CEco
 	union {
 		int (CAttributeList::*SetRunTimeAttributeValue)(CEconItemAttributeDefinition*, float);
 		void* addr;
-	} u;
+	} u{};
 
 	int bret = 0;
 	void *thefunc = m_func;
@@ -410,13 +443,12 @@ CEconItemAttributeDefinition *CGetAttributeDefinitionByID::callme(CEconItemSchem
 #else
 		FUNC_GET_ATTRIB_BY_NAME func = (FUNC_GET_ATTRIB_BY_NAME)thefunc;
 
-		pret = (void*)func(schema, id);
+		pret = (void*)func(schema, id); //Clang hates this line [APG]RoboCop[CL]
 #endif
 	}
 
-	return (CEconItemAttributeDefinition*)pret;
+	return static_cast<CEconItemAttributeDefinition*>(pret);
 }
-
 
 CGetAttributeDefinitionByName::CGetAttributeDefinitionByName(CRCBotKeyValueList *list, void *pAddrBase)
 {
@@ -449,7 +481,7 @@ CEconItemAttributeDefinition *CGetAttributeDefinitionByName::callme(CEconItemSch
 #endif
 	}
 
-	return (CEconItemAttributeDefinition*)pret;
+	return static_cast<CEconItemAttributeDefinition*>(pret);
 }
 
 
@@ -484,7 +516,7 @@ CEconItemAttribute *CAttributeList_GetAttributeByID::callme(CAttributeList *list
 #endif
 	}
 
-	return (CEconItemAttribute*)pret;
+	return static_cast<CEconItemAttribute*>(pret);
 }
 
 // TF2 Attributes - Flamin Sarge
@@ -509,7 +541,7 @@ bool TF2_SetAttrib(edict_t *pedict, const char *strAttrib, float flVal)
 
 	CEconItemAttributeDefinition *pAttribDef = g_pGetAttributeDefinitionByID->callme(pSchema, id);
 
-	if ((unsigned int)pAttribDef < 0x10000)
+	if (reinterpret_cast<unsigned int>(pAttribDef) < 0x10000)
 	{
 		return false;
 	}
@@ -543,7 +575,7 @@ CEconItemAttribute *TF2Attrib_GetByName(edict_t *entity, const char *strAttrib)
 	if (pList == NULL)
 		return NULL;
 
-	if (*(int*)((unsigned long)pList + 4) == 0x0)
+	if (*reinterpret_cast<int*>(reinterpret_cast<unsigned long>(pList) + 4) == 0x0)
 	{
 		throw "Invalid Attribute List?";
 
@@ -559,14 +591,14 @@ CEconItemAttribute *TF2Attrib_GetByName(edict_t *entity, const char *strAttrib)
 		return NULL;
 	CEconItemAttributeDefinition *pAttribDef = g_pGetAttributeDefinitionByName->callme(pSchema, strAttrib);
 
-	if ((unsigned int)pAttribDef < 0x10000)
+	if (reinterpret_cast<unsigned int>(pAttribDef) < 0x10000)
 		return NULL;
 
-	unsigned short int iDefIndex = *(unsigned short int*)(((unsigned long)pAttribDef) + 4);
+	unsigned short int iDefIndex = *reinterpret_cast<unsigned short int*>(reinterpret_cast<unsigned long>(pAttribDef) + 4);
 
 	CEconItemAttribute *pAttrib = g_pAttribList_GetAttributeByID->callme(pList, iDefIndex);
 
-	if ((unsigned int)pAttrib < 0x10000)
+	if (reinterpret_cast<unsigned int>(pAttrib) < 0x10000)
 		pAttrib = NULL;
 
 	return pAttrib;
@@ -588,7 +620,7 @@ bool TF2_setAttribute(edict_t *pEdict, const char *szName, float flVal)
 			return false;
 	}
 
-	if (((unsigned int)pAttrib) < 0x10000)
+	if (reinterpret_cast<unsigned int>(pAttrib) < 0x10000)
 	{
 		return TF2_SetAttrib(pEdict, szName, flVal);
 	}

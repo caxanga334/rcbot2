@@ -159,7 +159,9 @@ void CClient :: playSound ( const char *pszSound )
 	}
 }
 
-void CClient :: autoEventWaypoint ( int iType, float fRadius, bool bAtOtherOrigin, int iTeam, Vector vOrigin, bool bIgnoreTeam, bool bAutoType )
+void CClient::autoEventWaypoint(const int iType, const float fRadius, const bool bAtOtherOrigin, int iTeam,
+                                const Vector vOrigin,
+                                const bool bIgnoreTeam, const bool bAutoType)
 {
 	m_iAutoEventWaypoint = iType;
 	m_fAutoEventWaypointRadius = fRadius;
@@ -187,7 +189,7 @@ void CClient :: autoEventWaypoint ( int iType, float fRadius, bool bAtOtherOrigi
 	}	
 }
 
-void CClient :: teleportTo (Vector vOrigin)
+void CClient :: teleportTo (const Vector vOrigin)
 {
 	m_bIsTeleporting = true;
 	m_fTeleportTime = engine->Time()+0.1f;
@@ -209,7 +211,7 @@ void CClient :: teleportTo (Vector vOrigin)
 class CBotFunc_HighFiveSearch : public IBotFunction
 {
 public:
-	CBotFunc_HighFiveSearch ( edict_t *pPlayer, int iTeam )
+	CBotFunc_HighFiveSearch ( edict_t *pPlayer, const int iTeam )
 	{
 		m_pPlayer = pPlayer;
 		m_iTeam = iTeam;
@@ -217,7 +219,7 @@ public:
 		m_fNearestDist = 0;
 	}
 
-	void execute ( CBot *pBot )
+	void execute ( CBot *pBot ) override
 	{
 		if ( (pBot->getEdict() != m_pPlayer) && (pBot->getTeam() == m_iTeam) && pBot->isVisible(m_pPlayer) )
 		{
@@ -286,7 +288,7 @@ void CClient :: think ()
 
 				if ( pBot != NULL )
 				{
-					((CBotTF2*)pBot)->highFivePlayer(m_pPlayer,CClassInterface::getTF2TauntYaw(m_pPlayer));
+					static_cast<CBotTF2*>(pBot)->highFivePlayer(m_pPlayer,CClassInterface::getTF2TauntYaw(m_pPlayer));
 					m_fMonitorHighFiveTime = engine->Time() + 3.0f;
 				}				
 
@@ -428,7 +430,7 @@ void CClient :: think ()
 					if ( msg[i] == 0 )
 						break;
 					i++;
-				}while ( 1 ) ;
+				}while ( true ) ;
 				//int ent_index, int line_offset, float duration, int r, int g, int b, int a, const char *format, ...
 			//	debugoverlay->AddEntityTextOverlay();
 #endif
@@ -837,8 +839,8 @@ void CClient :: think ()
 #ifndef __linux__
 					if ( m_bDebugAutoWaypoint && !engine->IsDedicatedServer() )
 					{
-						debugoverlay->AddLineOverlay(vCheckOrigin+Vector(0,0,16),vCheckOrigin-Vector(0,0,16),255,255,255,0,2);
-						debugoverlay->AddLineOverlay(vPlayerOrigin,vCheckOrigin,255,255,255,0,2);
+						debugoverlay->AddLineOverlay(vCheckOrigin+Vector(0,0,16),vCheckOrigin-Vector(0,0,16),255,255,255,false,2);
+						debugoverlay->AddLineOverlay(vPlayerOrigin,vCheckOrigin,255,255,255,false,2);
 					}
 #endif					
 					if ( tr->fraction < 1.0 )
@@ -947,7 +949,7 @@ void CClient :: think ()
 	}
 }
 
-void CClient::giveMessage(char *msg,float fTime)
+void CClient::giveMessage(char *msg, const float fTime)
 {
 	extern ConVar rcbot_tooltips;
 
@@ -958,7 +960,7 @@ void CClient::giveMessage(char *msg,float fTime)
 	}
 }
 
-void CClients::giveMessage(char *msg,float fTime, edict_t *pPlayer )
+void CClients::giveMessage( char *msg, const float fTime, edict_t *pPlayer )
 {
 	CClient *pClient;
 
@@ -1009,7 +1011,7 @@ void CClient :: clientActive ()
 	if ( playerinfo )
 	{
 		// store steam id
-		m_szSteamID = (char*)playerinfo->GetNetworkIDString();
+		m_szSteamID = const_cast<char*>(playerinfo->GetNetworkIDString());
 	
 		// check my access levels
 		CAccessClients::checkClientAccess(this);
@@ -1152,7 +1154,7 @@ CClient *CClients :: findClientBySteamID ( char *szSteamID )
 	return NULL;
 }
 
-void CClients::clientDebugMsg(CBot *pBot, int iLev, const char *fmt, ... )
+void CClients::clientDebugMsg(CBot *pBot, const int iLev, const char *fmt, ... )
 {
 	va_list argptr; 
 	static char string[1024];
@@ -1184,7 +1186,7 @@ const char *g_szDebugTags[15] =
 };
 
 
-void CClients :: clientDebugMsg ( int iLev, const char *szMsg, CBot *pBot )
+void CClients :: clientDebugMsg ( const int iLev, const char *szMsg, CBot *pBot )
 {
 	CClient *pClient;
 
@@ -1215,7 +1217,7 @@ int CClients :: slotOfEdict ( edict_t *pPlayer )
 	return ENTINDEX(pPlayer)-1;
 }
 
-bool CClients :: clientsDebugging (int iLev)
+bool CClients :: clientsDebugging (const int iLev)
 {
 	if ( iLev == 0 )
 		return m_bClientsDebugging;

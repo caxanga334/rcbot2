@@ -197,7 +197,7 @@
       <AdditionalOptions>/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5 /D SE_LEFT4DEAD2=6 /D SE_ALIENSWARM=7 %(AdditionalOptions)</AdditionalOptions>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointModel>Precise</FloatingPointModel>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -220,6 +220,7 @@
     <ClCompile Include="bot_buttons.cpp" />
     <ClCompile Include="bot_client.cpp" />
     <ClCompile Include="bot_commands.cpp" />
+    <ClCompile Include="bot_config.cpp" />
     <ClCompile Include="bot_configfile.cpp" />
     <ClCompile Include="bot_coop.cpp" />
     <ClCompile Include="bot_coop_mod.cpp" />

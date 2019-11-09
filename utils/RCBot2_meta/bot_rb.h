@@ -1,5 +1,9 @@
 #ifndef __RCBOT_RB_H__
 #define __RCBOT_RB_H__
+#include <vector>
+#include "bot_tf2_points.h"
+
+class CBotOperator;
 
 class CBotRule
 {
@@ -8,15 +12,17 @@ public:
 	{
 	}
 private:
-	vector<CBotOperator> m_Rules;
+	std::vector<CBotOperator> m_Rules;
 };
 
 class CBotOperator
 {
 public:
-	CBotOperator ( CBotFactOpertor op ) : m_op(op)
+	CBotOperator ( CBotFactOperator op ) : m_op(op)
 	{		
 	}
+
+	CBotOperator();
 
 	virtual bool operate ( bool bVal, CBotOperator *pNext )
 	{
@@ -31,12 +37,15 @@ public:
 		case OP_OR:
 		case OP_AND_NOT:
 		case OP_OR_NOT:
+		
+		default: ;
 		}
+		return false;
 	}
 
 	virtual bool value()
 	{
-		return -1;
+		return true;
 	}
 private:
 	CBotFactOperator m_op;
@@ -45,7 +54,7 @@ private:
 class CBotFact : public CBotOperator
 {
 public:
-	CBotFact ( unsigned int iFactId ) : m_fid(iFactId)
+	CBotFact ( unsigned int iFactId ) : CBotOperator(), m_fid(iFactId)
 	{
 	}
 
@@ -58,6 +67,7 @@ public:
 	{
 		return m_bVal;
 	}
+
 private:
 	unsigned int m_fid;
 	bool m_bVal;

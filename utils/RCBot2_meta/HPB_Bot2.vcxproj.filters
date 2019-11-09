@@ -150,6 +150,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="bot_coop_mod.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bot_config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

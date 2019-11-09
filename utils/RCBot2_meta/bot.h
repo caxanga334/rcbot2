@@ -221,7 +221,7 @@ class CBroadcastVoiceCommand : public IBotFunction
 {
 public:
 	CBroadcastVoiceCommand (edict_t *pPlayer, byte voicecmd) { m_pPlayer = pPlayer; m_VoiceCmd = voicecmd; };
-	void execute ( CBot *pBot );
+	void execute ( CBot *pBot ) override;
 
 private:
 	edict_t *m_pPlayer;
@@ -603,7 +603,7 @@ public:
 	inline edict_t *getEnemy () { return m_pEnemy; }
 
 
-	inline void setMoveTo ( Vector vNew )
+	inline void setMoveTo ( const Vector vNew )
 	{
 		if ( m_iMoveLookPriority >= m_iMovePriority )
 		{
@@ -775,11 +775,11 @@ public:
 
 	virtual void touchedWpt ( CWaypoint *pWaypoint, int iNextWaypoint = -1, int iPrevWaypoint = -1 );
 
-	inline void setAiming ( Vector aiming ) { m_vWaypointAim = aiming; }
+	inline void setAiming ( const Vector aiming ) { m_vWaypointAim = aiming; }
 
 	inline Vector getAiming () { return m_vWaypointAim; }
 
-	inline void setLookVector ( Vector vLook ) { m_vLookVector = vLook; }
+	inline void setLookVector ( const Vector vLook ) { m_vLookVector = vLook; }
 
 	inline Vector getLookVector () { return m_vLookVector; }
 
@@ -916,7 +916,7 @@ public:
 
 protected:
 
-	inline void setLookAt ( Vector vNew )
+	inline void setLookAt ( const Vector vNew )
 	{
 		m_vLookAt = vNew;
 		m_bLookAtIsValid = true;
@@ -1143,7 +1143,7 @@ public:
 
 	CAddbot ()
 	{
-		memset(this,sizeof(CAddbot),0);
+		memset(this, 0, sizeof(CAddbot));
 	};
 
 	const char *m_szClass;

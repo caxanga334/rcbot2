@@ -86,10 +86,10 @@ public:
 
 	virtual bool ShouldHitEntity( IHandleEntity *pServerEntity, int contentsMask )
 	{ 
-		if ( m_pPlayer && (pServerEntity == (IHandleEntity*)m_pPlayer->GetIServerEntity()) )
+		if ( m_pPlayer && (pServerEntity == static_cast<IHandleEntity*>(m_pPlayer->GetIServerEntity())) )
 			return false;
 
-		if ( m_pHit && (pServerEntity == (IHandleEntity*)m_pHit->GetIServerEntity()) )
+		if ( m_pHit && (pServerEntity == static_cast<IHandleEntity*>(m_pHit->GetIServerEntity())) )
 			return false;
 
 		return true; 
@@ -194,7 +194,7 @@ bool CBotGlobals::dirExists(const char *path)
 
 void CBotGlobals::readRCBotFolder()
 {
-	KeyValues *mainkv = new KeyValues("Metamod Plugin");
+	KeyValues *mainkv = new KeyValues("Metamod Plugin");//A possible memory leak? [APG]RoboCop[CL]
 
 	if (mainkv->LoadFromFile(filesystem, "addons/metamod/rcbot2.vdf", "MOD")) {
 		char folder[256] = "\0";
@@ -221,12 +221,14 @@ void CBotGlobals::readRCBotFolder()
 	mainkv->deleteThis();
 }
 
-float CBotGlobals :: grenadeWillLand ( Vector vOrigin, Vector vEnemy, float fProjSpeed, float fGrenadePrimeTime, float *fAngle )
+float CBotGlobals::grenadeWillLand(const Vector vOrigin, const Vector vEnemy, const float fProjSpeed,
+                                   const float fGrenadePrimeTime,
+                                   float* fAngle)
 {
 	static float g;
 	extern ConVar *sv_gravity;
 	Vector v_comp = vEnemy-vOrigin;
-	float fDistance = v_comp.Length();
+	const float fDistance = v_comp.Length();
 
 	v_comp = v_comp/fDistance;
 
@@ -254,7 +256,7 @@ float CBotGlobals :: grenadeWillLand ( Vector vOrigin, Vector vEnemy, float fPro
 		// within one second of going off
 		if ( fabs(t-fGrenadePrimeTime) < 1.0f )
 		{
-			float ffinaly =  vOrigin.z + (vvert*t) - ((g*0.5)*(t*t));
+			const float ffinaly =  vOrigin.z + (vvert*t) - ((g*0.5)*(t*t));
 
 			return ( fabs(ffinaly - vEnemy.z) < BLAST_RADIUS ); // ok why not
 		}
@@ -278,7 +280,7 @@ edict_t *CBotGlobals :: findPlayerByTruncName ( const char *name )
 
 		if( pent && CBotGlobals::isNetworkable(pent) )
 		{
-			int length = strlen(name);						 
+			int length = strlen(name);//strlen called too often resulting lag? [APG]RoboCop[CL]					 
 
 			char arg_lwr[128];
 			char pent_lwr[128];
@@ -359,7 +361,7 @@ private:
 	int m_collisionGroup;
 };
 
-bool CBotGlobals :: checkOpensLater ( Vector vSrc, Vector vDest )
+bool CBotGlobals :: checkOpensLater ( const Vector vSrc, const Vector vDest )
 {
 	CTraceFilterSimple traceFilter( NULL, NULL, MASK_PLAYERSOLID );
 
@@ -369,7 +371,7 @@ bool CBotGlobals :: checkOpensLater ( Vector vSrc, Vector vDest )
 }
 
 
-bool CBotGlobals :: isVisibleHitAllExceptPlayer ( edict_t *pPlayer, Vector vSrc, Vector vDest, edict_t *pDest )
+bool CBotGlobals :: isVisibleHitAllExceptPlayer ( edict_t *pPlayer, const Vector vSrc, const Vector vDest, edict_t *pDest )
 {
 	const IHandleEntity *ignore = pPlayer->GetIServerEntity();
 
@@ -380,7 +382,7 @@ bool CBotGlobals :: isVisibleHitAllExceptPlayer ( edict_t *pPlayer, Vector vSrc,
 	return (traceVisible(pDest));
 }
 
-bool CBotGlobals :: isVisible ( edict_t *pPlayer, Vector vSrc, Vector vDest)
+bool CBotGlobals :: isVisible ( edict_t *pPlayer, const Vector vSrc, const Vector vDest)
 {
 	CTraceFilterWorldAndPropsOnly filter;
 
@@ -389,7 +391,7 @@ bool CBotGlobals :: isVisible ( edict_t *pPlayer, Vector vSrc, Vector vDest)
 	return (traceVisible(NULL));
 }
 
-bool CBotGlobals :: isVisible ( edict_t *pPlayer, Vector vSrc, edict_t *pDest )
+bool CBotGlobals :: isVisible ( edict_t *pPlayer, const Vector vSrc, edict_t *pDest )
 {
 	//CTraceFilterWorldAndPropsOnly filter;//	CTraceFilterHitAll filter;
 
@@ -400,7 +402,7 @@ bool CBotGlobals :: isVisible ( edict_t *pPlayer, Vector vSrc, edict_t *pDest )
 	return (traceVisible(pDest));
 }
 
-bool CBotGlobals :: isShotVisible ( edict_t *pPlayer, Vector vSrc, Vector vDest, edict_t *pDest )
+bool CBotGlobals :: isShotVisible ( edict_t *pPlayer, const Vector vSrc, const Vector vDest, edict_t *pDest )
 {
 	//CTraceFilterWorldAndPropsOnly filter;//	CTraceFilterHitAll filter;
 
@@ -411,7 +413,7 @@ bool CBotGlobals :: isShotVisible ( edict_t *pPlayer, Vector vSrc, Vector vDest,
 	return (traceVisible(pDest));
 }
 
-bool CBotGlobals :: isVisible (Vector vSrc, Vector vDest)
+bool CBotGlobals :: isVisible (const Vector vSrc, const Vector vDest)
 {
 	CTraceFilterWorldAndPropsOnly filter;
 
@@ -420,7 +422,7 @@ bool CBotGlobals :: isVisible (Vector vSrc, Vector vDest)
 	return traceVisible(NULL);
 }
 
-void CBotGlobals :: traceLine (Vector vSrc, Vector vDest, unsigned int mask, ITraceFilter *pFilter)
+void CBotGlobals :: traceLine (const Vector vSrc, const Vector vDest, unsigned int mask, ITraceFilter *pFilter)
 {
 	Ray_t ray;
 	memset(&m_TraceResult,0,sizeof(trace_t));
@@ -428,7 +430,7 @@ void CBotGlobals :: traceLine (Vector vSrc, Vector vDest, unsigned int mask, ITr
 	enginetrace->TraceRay( ray, mask, pFilter, &m_TraceResult );
 }
 
-float CBotGlobals :: quickTraceline (edict_t *pIgnore,Vector vSrc, Vector vDest)
+float CBotGlobals :: quickTraceline (edict_t *pIgnore, const Vector vSrc, const Vector vDest)
 {
 	CTraceFilterVis filter = CTraceFilterVis(pIgnore);
 
@@ -439,7 +441,7 @@ float CBotGlobals :: quickTraceline (edict_t *pIgnore,Vector vSrc, Vector vDest)
 	return m_TraceResult.fraction;
 }
 
-float CBotGlobals :: DotProductFromOrigin ( edict_t *pEnemy, Vector pOrigin )
+float CBotGlobals :: DotProductFromOrigin ( edict_t *pEnemy, const Vector pOrigin )
 {
 	static Vector vecLOS;
 	static float flDot;
@@ -467,7 +469,7 @@ float CBotGlobals :: DotProductFromOrigin ( edict_t *pEnemy, Vector pOrigin )
 }
 
 
-float CBotGlobals :: DotProductFromOrigin ( Vector vPlayer, Vector vFacing, QAngle eyes )
+float CBotGlobals :: DotProductFromOrigin ( const Vector vPlayer, const Vector vFacing, const QAngle eyes )
 {
 	static Vector vecLOS;
 	static float flDot;
@@ -722,14 +724,14 @@ bool CBotGlobals :: setWaypointDisplayType ( int iType )
 	return false;
 }
 // work on this
-bool CBotGlobals :: walkableFromTo (edict_t *pPlayer, Vector v_src, Vector v_dest)
+bool CBotGlobals :: walkableFromTo (edict_t *pPlayer, const Vector v_src, const Vector v_dest)
 {   
 	extern ConVar rcbot_wptplace_width;
 	CTraceFilterVis filter = CTraceFilterVis(pPlayer);
 	float fDistance = sqrt((v_dest - v_src).LengthSqr());
 	CClient *pClient = CClients::get(pPlayer);
 	Vector vcross = v_dest - v_src;
-	Vector vleftsrc,vleftdest, vrightsrc,vrightdest;
+	Vector vleftsrc, vleftdest, vrightsrc, vrightdest;
 	float fWidth = rcbot_wptplace_width.GetFloat();
 
 	if ( v_dest == v_src )
@@ -1132,7 +1134,7 @@ void CBotGlobals :: fixFloatDegrees360 ( float *pFloat )
 		*pFloat += 360;
 }
 
-float CBotGlobals :: yawAngleFromEdict (edict_t *pEntity,Vector vOrigin)
+float CBotGlobals :: yawAngleFromEdict (edict_t *pEntity, const Vector vOrigin)
 {
 	/*
 	float fAngle;
@@ -1175,7 +1177,7 @@ float CBotGlobals :: yawAngleFromEdict (edict_t *pEntity,Vector vOrigin)
 
 }
 
-void CBotGlobals::teleportPlayer ( edict_t *pPlayer, Vector v_dest )
+void CBotGlobals::teleportPlayer ( edict_t *pPlayer, const Vector v_dest )
 {
 	CClient *pClient = CClients::get(pPlayer);
 	

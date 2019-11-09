@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #endif
+
 #include "bot_som.h"
 #include "bot_mtrand.h"
 
@@ -147,7 +148,7 @@ CSomNeuron :: ~CSomNeuron ()
 	fWeights.clear();
 }
 
-CSomNeuron :: CSomNeuron ()
+CSomNeuron :: CSomNeuron (): m_iX(0), m_iY(0)
 {
 	m_iId = 0;
 	return;

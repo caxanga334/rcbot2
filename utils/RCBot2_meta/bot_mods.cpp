@@ -56,8 +56,8 @@ void CBotMods :: parseFile ()
 	unsigned int i,j;
 	char val[256];
 
-	eModId modtype;
-	eBotType bottype;
+	eModId modtype = {};
+	eBotType bottype = {};
 	char steamfolder[256];
 	char gamefolder[256];
 	char weaponlist[64];
@@ -337,7 +337,8 @@ void CBotMods :: readMods()
 
 //////////////////////////////////////////////////////////////////////////////
 
-void CBotMod :: setup ( const char *szModFolder, const char *szSteamFolder, eModId iModId, eBotType iBotType, const char *szWeaponListName )
+void CBotMod::setup(const char* szModFolder, const char* szSteamFolder, const eModId iModId, const eBotType iBotType,
+                    const char* szWeaponListName)
 {
 	m_szModFolder = CStrings::getString(szModFolder);
 	m_szSteamFolder = CStrings::getString(szSteamFolder);

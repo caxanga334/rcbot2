@@ -46,7 +46,7 @@ float CWaypointLocations :: m_fIgnoreSize = 0;
 Vector CWaypointLocations :: m_vIgnoreLoc = Vector(0,0,0);
 bool CWaypointLocations :: m_bIgnoreBox = false;
 
-#define READ_LOC(loc) abs((int)((int)(loc + HALF_MAX_MAP_SIZE) / BUCKET_SPACING));
+#define READ_LOC(loc) abs((int)((int)((loc) + HALF_MAX_MAP_SIZE) / BUCKET_SPACING));
 
 unsigned char *CWaypointLocations :: resetFailedWaypoints (dataUnconstArray<int> *iIgnoreWpts)
 {
@@ -68,10 +68,10 @@ unsigned char *CWaypointLocations :: resetFailedWaypoints (dataUnconstArray<int>
 	return g_iFailedWaypoints;
 }
 
-#define CLAMP_TO_ZERO(x) x=(x<0)?0:x
-#define CLAMP_TO(x,clamp) x=(x>clamp)?clamp:x
+#define CLAMP_TO_ZERO(x) x=((x)<0)?0:x
+#define CLAMP_TO(x,clamp) x=((x)>(clamp))?(clamp):x
 
-void CWaypointLocations :: getMinMaxs ( int iLoc, int jLoc, int kLoc, 
+void CWaypointLocations :: getMinMaxs (const int iLoc, const int jLoc, const int kLoc, 
 									    int *iMinLoci, int *iMinLocj, int *iMinLock,
 									    int *iMaxLoci, int *iMaxLocj, int *iMaxLock )
 {
@@ -246,7 +246,7 @@ void CWaypointLocations :: AutoPathInBucket ( edict_t *pPlayer, int i, int j, in
 
 	//while ( !tempStack.IsEmpty() )
 	dataUnconstArray<int> *arr = &(m_iLocations[i][j][k]);
-	short int size = (short int)arr->Size();
+	short int size = static_cast<short int>(arr->Size());
 	
 	for ( int l = 0; l < size; l ++ )
 	{
@@ -311,7 +311,7 @@ void CWaypointLocations :: DeleteWptLocation ( int iIndex, const float *fOrigin 
 
 ///////////////
 // return nearest waypoint that can be used to cover from vCoverFrom vector
-int CWaypointLocations :: GetCoverWaypoint ( Vector vPlayerOrigin, Vector vCoverFrom, 
+int CWaypointLocations :: GetCoverWaypoint ( const Vector vPlayerOrigin, const Vector vCoverFrom, 
 											dataUnconstArray<int> *iIgnoreWpts, Vector *vGoalOrigin, 
 											int iTeam, float fMinDist, float fMaxDist )
 {
@@ -383,7 +383,7 @@ void CWaypointLocations :: FindNearestCoverWaypointInBucket ( int i, int j, int 
 	int iSelectedIndex;
 	float fDist;
 	dataUnconstArray<int> *arr = &(m_iLocations[i][j][k]);
-	short int size = (short int)arr->Size();
+	short int size = static_cast<short int>(arr->Size());
 	//CBotMod *curmod = CBotGlobals::getCurrentMod();
 
 	for ( int l = 0; l < size; l ++ )
@@ -493,7 +493,7 @@ void CWaypointLocations :: FindNearestBlastInBucket ( int i, int j, int k, const
 	bool bAdd;
 	
 	dataUnconstArray<int> *arr = &(m_iLocations[i][j][k]);
-	short int size = (short int)arr->Size();
+	short int size = static_cast<short int>(arr->Size());
 	CBotMod *curmod = CBotGlobals::getCurrentMod();
 
 	for ( register short int l = 0; l < size; l ++ )
@@ -575,7 +575,7 @@ void CWaypointLocations :: FindNearestInBucket ( int i, int j, int k, const Vect
 	CBotMod *curmod = CBotGlobals::getCurrentMod();
 	
 	dataUnconstArray<int> *arr = &(m_iLocations[i][j][k]);
-	short int size = (short int)arr->Size();
+	short int size = static_cast<short int>(arr->Size());
 	
 	for ( int l = 0; l < size; l ++ )
 	//while ( !tempStack.IsEmpty() )
@@ -622,7 +622,8 @@ void CWaypointLocations :: FindNearestInBucket ( int i, int j, int k, const Vect
 
 		if ( bIsBot )
 		{
-			if ( curr_wpt->getFlags() & (CWaypointTypes::W_FL_DOUBLEJUMP | CWaypointTypes::W_FL_ROCKET_JUMP | CWaypointTypes::W_FL_JUMP | CWaypointTypes::W_FL_OPENS_LATER) ) // fix : bit OR
+			if (curr_wpt->getFlags() & (CWaypointTypes::W_FL_DOUBLEJUMP | CWaypointTypes::W_FL_ROCKET_JUMP |
+				CWaypointTypes::W_FL_JUMP | CWaypointTypes::W_FL_OPENS_LATER)) // fix : bit OR
 				continue;
 		}
 
@@ -675,7 +676,7 @@ int CWaypointLocations :: NearestWaypoint ( const Vector &vOrigin, float fNeares
 										   int iIgnoreWpt, bool bGetVisible, bool bGetUnReachable, 
 										   bool bIsBot, dataUnconstArray<int> *iFailedWpts, 
 										   bool bNearestAimingOnly, int iTeam, bool bCheckArea,
-										   bool bGetVisibleFromOther, Vector vOther, int iFlagsOnly, 
+										   bool bGetVisibleFromOther, const Vector vOther, int iFlagsOnly, 
 										   edict_t *pPlayer, bool bIgnorevOther, float fIgnoreSize )
 {
 	int iNearestIndex = -1;
@@ -779,7 +780,7 @@ void CWaypointLocations :: DrawWaypoints ( CClient *pClient, float fDist )
 			for ( k = iMinLock; k <= iMaxLock; k++ )
 			{
 				arr = &(m_iLocations[i][j][k]);
-				size = (short int)arr->Size();
+				size = static_cast<short int>(arr->Size());
 				
 				for ( short int l = 0; l < size; l ++ )
 				//while ( !tempStack.IsEmpty() )

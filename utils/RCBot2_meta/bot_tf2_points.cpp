@@ -10,11 +10,11 @@
 class CBotFuncResetAttackPoint : public IBotFunction
 {
 public:
-	CBotFuncResetAttackPoint(int team) { iTeam = team; }
+	CBotFuncResetAttackPoint(const int team) { iTeam = team; }
 	void execute ( CBot *pBot )
 	{
 		if ( pBot->getTeam() == iTeam )
-			((CBotTF2*)pBot)->updateAttackPoints();
+			static_cast<CBotTF2*>(pBot)->updateAttackPoints();
 	}
 private:
 	int iTeam;	
@@ -23,11 +23,11 @@ private:
 class CBotFuncResetDefendPoint : public IBotFunction
 {
 public:
-	CBotFuncResetDefendPoint(int team) { iTeam = team; }
+	CBotFuncResetDefendPoint(const int team) { iTeam = team; }
 	void execute ( CBot *pBot )
 	{
 		if ( pBot->getTeam() == iTeam )
-			((CBotTF2*)pBot)->updateDefendPoints();
+			static_cast<CBotTF2*>(pBot)->updateDefendPoints();
 	}
 private:
 	int iTeam;	
@@ -39,7 +39,7 @@ class CBotFuncPointsUpdated : public IBotFunction
 public:
 	void execute ( CBot *pBot )
 	{
-		((CBotTF2*)pBot)->pointsUpdated();
+		static_cast<CBotTF2*>(pBot)->pointsUpdated();
 	}	
 };
 
@@ -88,7 +88,7 @@ void CTFObjectiveResource::updatePoints()
 
 }
 // INPUT = Waypoint Area
-bool CTFObjectiveResource :: isWaypointAreaValid ( int wptarea, int waypointflags ) 
+bool CTFObjectiveResource :: isWaypointAreaValid (const int wptarea, const int waypointflags) 
 {
 //	CWaypoint *pWaypoint;
 
@@ -128,7 +128,7 @@ bool CTFObjectiveResource :: isWaypointAreaValid ( int wptarea, int waypointflag
 	return m_ValidAreas[wptarea-1];*/
 }
 
-bool CTFObjectiveResource::isCPValidWptArea ( int iWptArea, int iTeam, ePointAttackDefend_s type )
+bool CTFObjectiveResource::isCPValidWptArea (const int iWptArea, const int iTeam, const ePointAttackDefend_s type)
 {
 	if ( iWptArea == 0 )
 		return true;
@@ -140,7 +140,7 @@ bool CTFObjectiveResource::isCPValidWptArea ( int iWptArea, int iTeam, ePointAtt
 }
 
 // Returns TRUE if waypoint area is worth attacking or defending at this moment
-bool CTFObjectiveResource::testProbWptArea ( int iWptArea, int iTeam )
+bool CTFObjectiveResource::testProbWptArea ( const int iWptArea, const int iTeam )
 {
 	int iCpIndex = m_WaypointAreaToIndexTranslation[iWptArea];
 
@@ -153,10 +153,14 @@ bool CTFObjectiveResource::testProbWptArea ( int iWptArea, int iTeam )
 	if ( (iWptArea < 1) || (iWptArea > MAX_CONTROL_POINTS) )
 		return true;
 
-	return isCPValid(iCpIndex,iTeam,TF2_POINT_ATTACK) ? (randomFloat(0.0f,1.0f) > m_ValidPoints[iTeam-2][TF2_POINT_ATTACK][iCpIndex].fProb) : ( isCPValid(iCpIndex,iTeam,TF2_POINT_DEFEND) ? (randomFloat(0.0f,1.0f) > m_ValidPoints[iTeam-2][TF2_POINT_DEFEND][iCpIndex].fProb) : true );
+	return isCPValid(iCpIndex, iTeam, TF2_POINT_ATTACK)
+		       ? (randomFloat(0.0f, 1.0f) > m_ValidPoints[iTeam - 2][TF2_POINT_ATTACK][iCpIndex].fProb)
+		       : (isCPValid(iCpIndex, iTeam, TF2_POINT_DEFEND)
+			          ? (randomFloat(0.0f, 1.0f) > m_ValidPoints[iTeam - 2][TF2_POINT_DEFEND][iCpIndex].fProb)
+			          : true);
 }
 
-bool CTFObjectiveResource::isCPValid ( int iCPIndex, int iTeam, ePointAttackDefend_s type )
+bool CTFObjectiveResource::isCPValid (const int iCPIndex, const int iTeam, const ePointAttackDefend_s type)
 {
 	if ( (iCPIndex < 0) || (iCPIndex >= MAX_CONTROL_POINTS) )
 		return false;
@@ -166,7 +170,7 @@ bool CTFObjectiveResource::isCPValid ( int iCPIndex, int iTeam, ePointAttackDefe
 
 // TO DO  - Base on waypoint danger
 // base on base point -- if already have attack point and base point -- less focus on base point
-int CTFObjectiveResource::getRandomValidPointForTeam ( int team, ePointAttackDefend_s type)
+int CTFObjectiveResource::getRandomValidPointForTeam (const int team, const ePointAttackDefend_s type)
 {
 	TF2PointProb_t *arr = NULL;
 	vector<int> points;
@@ -261,7 +265,7 @@ bool CTeamControlPointRound :: isPointInRound ( edict_t *point_pent )
 	{
 		CBaseHandle *hndl;
 
-		hndl = (CBaseHandle *)&(m_ControlPoints[i]); 
+		hndl = static_cast<CBaseHandle *>(&(m_ControlPoints[i])); 
 
 		if ( hndl )
 		{ 
@@ -303,7 +307,9 @@ CTeamControlPointRound *CTeamControlPointMaster:: getCurrentRound ( )
 	CTeamControlPointRound *fromserverent = (CTeamControlPointRound*)p->GetIServerEntity();*/
 
 	// Fix for later TF2 2016 Engine? [APG]RoboCop[CL]
-	return (CTeamControlPointRound*)((unsigned long)pent + (unsigned long)rcbot_const_point_master_offset.GetInt());
+	return reinterpret_cast<CTeamControlPointRound*>(reinterpret_cast<unsigned long>(pent) + static_cast<unsigned long>(
+		rcbot_const_point_master_offset.
+		GetInt()));
 }
 
 //////////////////
@@ -409,7 +415,7 @@ void CTFObjectiveResource::	debugprint ( void )
 	CBotGlobals::botMessage(pEdict,0,"m_iOwner[8]\t[%s,%s,%s,%s,%s,%s,%s,%s]",(m_iOwner[0]==2)?"red":((m_iOwner[0]==3)?"blue":"unassigned"),(m_iOwner[1]==2)?"red":((m_iOwner[1]==3)?"blue":"unassigned"),(m_iOwner[2]==2)?"red":((m_iOwner[2]==3)?"blue":"unassigned"),(m_iOwner[3]==2)?"red":((m_iOwner[3]==3)?"blue":"unassigned"),(m_iOwner[4]==2)?"red":((m_iOwner[4]==3)?"blue":"unassigned"),(m_iOwner[5]==2)?"red":((m_iOwner[5]==3)?"blue":"unassigned"),(m_iOwner[6]==2)?"red":((m_iOwner[6]==3)?"blue":"unassigned"),(m_iOwner[7]==2)?"red":((m_iOwner[7]==3)?"blue":"unassigned"));
 }
 
-int CTFObjectiveResource::NearestArea ( Vector vOrigin )
+int CTFObjectiveResource::NearestArea (const Vector vOrigin)
 {
 	int iNearest = -1;
 	float fNearest = 2048.0f;
@@ -438,7 +444,7 @@ int CTFObjectiveResource::NearestArea ( Vector vOrigin )
 }*/
 
 
-bool CTFObjectiveResource :: updateDefendPoints ( int team )
+bool CTFObjectiveResource :: updateDefendPoints (const int team)
 {
 	/*int other = (team==2)?3:2;
 
@@ -748,7 +754,7 @@ bool CTFObjectiveResource :: updateDefendPoints ( int team )
 	for ( int i = 0; i < *m_iNumControlPoints; i ++ )
 	{
 		byte j;
-		byte *barr = (byte*)&(arr[i]);
+		byte *barr = reinterpret_cast<byte*>(&(arr[i]));
 
 		for ( j = 0; j < sizeof(TF2PointProb_t); j ++ )
 			signature = signature + ((barr[j]*(i+1))+j);
@@ -805,7 +811,7 @@ void CTFObjectiveResource :: think ()
 }
 
 // return true if bots should change attack point
-bool CTFObjectiveResource :: updateAttackPoints ( int team )
+bool CTFObjectiveResource :: updateAttackPoints (const int team)
 {	
 	int prev;
 	int signature = 0;
@@ -1021,7 +1027,7 @@ bool CTFObjectiveResource :: updateAttackPoints ( int team )
 	for ( int i = 0; i < *m_iNumControlPoints; i ++ )
 	{
 		byte j;
-		byte *barr = (byte*)&(arr[i]);
+		byte *barr = reinterpret_cast<byte*>(&(arr[i]));
 
 		for ( j = 0; j < sizeof(TF2PointProb_t); j ++ )
 			signature = signature + ((barr[j]*(i+1))+j);

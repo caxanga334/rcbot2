@@ -28,6 +28,7 @@
  *    version.
  *
  */
+ 
 #include "in_buttons.h"
 #include "bot.h"
 #include "bot_hldm_bot.h"
@@ -40,12 +41,10 @@
 #include "bot_utility.h"
 #include "bot_task.h"
 #include "bot_schedule.h"
-#include "bot_waypoint.h"
 #include "bot_weapons.h"
 #include "bot_mtrand.h"
 #include "bot_waypoint_locations.h"
 #include "bot_getprop.h"
-
 
 extern ConVar rcbot_jump_obst_dist;
 extern ConVar rcbot_jump_obst_speed;
@@ -195,7 +194,7 @@ bool CHLDMBot :: isEnemy ( edict_t *pEdict,bool bCheckWeapons )
 }
 
 // from the bots UTILITIES , execute the given action
-bool CHLDMBot :: executeAction ( eBotAction iAction )
+bool CHLDMBot :: executeAction (const eBotAction iAction)
 {
 	switch ( iAction )
 	{
@@ -616,19 +615,20 @@ void CHLDMBot :: modThink ()
 
 bool CHLDMBot::checkStuck()
 {
-	static bool bStuck;
+    static bool bStuck;
 
-	if ( (bStuck = CBot::checkStuck()) == true )
-	{
-		if ( m_pWeapons->hasWeapon(HL2DM_WEAPON_PHYSCANNON) )
-		{// check stuck on object
+    if ( (bStuck = CBot::checkStuck()) == true )
+    {
+        if ( m_pWeapons->hasWeapon(HL2DM_WEAPON_PHYSCANNON) )
+        {// check stuck on object
 
-			CBotWeapon *currentWeapon = getCurrentWeapon();
+            CBotWeapon *currentWeapon = getCurrentWeapon();
 
-			if ( ( currentWeapon->getID() == HL2DM_WEAPON_PHYSCANNON ) && ( m_pCarryingObject ) )
-			{
-				primaryAttack();
-			}
+            // Fix by Ducky/pongo1231
+            if ( currentWeapon && currentWeapon->getID() == HL2DM_WEAPON_PHYSCANNON && m_pCarryingObject )
+            {
+                primaryAttack();
+            }
 			else if ( m_NearestPhysObj && (distanceFrom(m_NearestPhysObj)<100) )
 			{
 				if ( !m_pSchedules->hasSchedule(SCHED_GRAVGUN_PICKUP) )
@@ -716,7 +716,7 @@ void CHLDMBot :: handleWeapons ()
 	}
 }
 // update some edicts in my memory if I see them or not
-bool CHLDMBot :: setVisible ( edict_t *pEntity, bool bVisible )
+bool CHLDMBot :: setVisible ( edict_t *pEntity, const bool bVisible )
 {
 	static float fDist;
 	const char *szClassname;

@@ -118,7 +118,8 @@ int UTIL_FindAttributeID ( vector<CAttributeID*> *list, const char *name )
 	return -1;
 }
 
-CTF2Loadout :: CTF2Loadout ( const char *pszClassname, int iIndex, int iQuality, int iMinLevel, int iMaxLevel )
+CTF2Loadout::CTF2Loadout(const char* pszClassname, const int iIndex, const int iQuality, const int iMinLevel,
+                         const int iMaxLevel)
 {
 	m_pszClassname = CStrings::getString(pszClassname);
 	m_iIndex = iIndex;
@@ -182,7 +183,7 @@ void CSCICopy(CEconItemView *olditem, CEconItemView *newitem)
 }
 
 
-void CAttributeLookup::addAttribute(const char *pszAttrib, int id)
+void CAttributeLookup::addAttribute(const char *pszAttrib, const int id)
 {
 	attributes.push_back(new CAttributeID(id, pszAttrib));
 }
@@ -279,7 +280,7 @@ const char *CTF2Loadout :: getScript ( CEconItemView *script )
 	return m_pszClassname;
 }*/
 
-CTF2Loadout *CTeamFortress2Mod :: getRandomHat ( int iClass )
+CTF2Loadout *CTeamFortress2Mod :: getRandomHat (const int iClass )
 {
 	int iSize;
 
@@ -303,7 +304,7 @@ bool CTeamFortress2Mod::isSuddenDeath()
 
 	if (pGameRules)
 	{
-		int iRoundState = CClassInterface::TF2_getRoundState(pGameRules);
+		const int iRoundState = CClassInterface::TF2_getRoundState(pGameRules);
 		 
 		return iRoundState == RoundState_Stalemate;
 	}
@@ -318,7 +319,7 @@ bool CTeamFortress2Mod::isSuddenDeath()
 void CTeamFortress2Mod::setupLoadOutWeapons()
 {
 	extern IFileSystem *filesystem;
-	KeyValues *mainkv = new KeyValues("tfweapons");
+	KeyValues *mainkv = new KeyValues("tfweapons");//A possible memory leak? [APG]RoboCop[CL]
 
 	KeyValues *kv;
 	KeyValues *usedbyclass;
@@ -385,6 +386,7 @@ void CTeamFortress2Mod::setupLoadOutWeapons()
 						// search prefabs for "valve"
 					}
 				}
+				// NULL used in arithmetic in *szPrefab - [APG]RoboCop[CL]
 				else if ((szPrefab != NULL) && (*szPrefab != NULL))
 				{
 					prefab = prefabs->FindKey(szPrefab);
@@ -537,7 +539,8 @@ void CTeamFortress2Mod::setupLoadOutWeapons()
 
 					if (pWeapon->getSlot() != islot)
 					{
-						CBotGlobals::botMessage(NULL, 1, "Weapon Slot mismatch for %s - set as %d -- should be %d", pWeapon->getWeaponName(), pWeapon->getSlot(), islot);
+						CBotGlobals::botMessage(NULL, 1, "Weapon Slot mismatch for %s - set as %d -- should be %d",
+						                        pWeapon->getWeaponName(), pWeapon->getSlot(), islot);
 						continue;
 					}
 
@@ -697,11 +700,11 @@ CTF2Loadout *CTeamFortress2Mod::findRandomWeaponLoadOut ( int iclass, const char
 bool CTeamFortress2Mod :: checkWaypointForTeam(CWaypoint *pWpt, int iTeam)
 {
 // Returns true if team can go to waypoint
-	return m_bRoundOver || ((!pWpt->hasFlag(CWaypointTypes::W_FL_NOBLU)||(iTeam!=TF2_TEAM_BLUE))&&(!pWpt->hasFlag(CWaypointTypes::W_FL_NORED)||(iTeam!=TF2_TEAM_RED)));
+	return m_bRoundOver || ((!pWpt->hasFlag(CWaypointTypes::W_FL_NOBLU) || (iTeam != TF2_TEAM_BLUE)) && (!pWpt->
+		hasFlag(CWaypointTypes::W_FL_NORED) || (iTeam != TF2_TEAM_RED)));
 }
 	
-
-bool CTeamFortress2Mod :: isWaypointAreaValid ( int iWptArea, int iWptFlags )
+bool CTeamFortress2Mod :: isWaypointAreaValid (const int iWptArea, const int iWptFlags )
 {
 	return CTeamFortress2Mod::m_ObjectiveResource.isWaypointAreaValid(iWptArea,iWptFlags);
 }
@@ -1040,7 +1043,7 @@ int CTeamFortress2Mod :: getSentryLevel ( edict_t *pSentry )
 
 int CTeamFortress2Mod :: getDispenserLevel ( edict_t *pDispenser )
 {
-	string_t model = pDispenser->GetIServerEntity()->GetModelName();
+	const string_t model = pDispenser->GetIServerEntity()->GetModelName();
 	const char *szmodel = model.ToCStr();
 
 	if ( strcmp(szmodel,"models/buildables/dispenser_light.mdl") == 0 )
@@ -1063,7 +1066,7 @@ int CTeamFortress2Mod :: getEnemyTeam ( int iTeam )
 
 */
 
-bool CTeamFortress2Mod :: isDispenser ( edict_t *pEntity, int iTeam, bool checkcarrying )
+bool CTeamFortress2Mod :: isDispenser ( edict_t *pEntity, const int iTeam, const bool checkcarrying )
 {
 	return (!iTeam || (iTeam == getTeam(pEntity))) && (strcmp(pEntity->GetClassName(),"obj_dispenser")==0) && (checkcarrying||!CClassInterface::isSentryGunBeingPlaced(pEntity));
 }
@@ -1127,7 +1130,7 @@ float CTeamFortress2Mod :: getTeleportTime ( edict_t *pOwner )
 	return m_Teleporters[ENTINDEX(pOwner)-1].m_fLastTeleported;
 }
 
-bool CTeamFortress2Mod :: isSentry ( edict_t *pEntity, int iTeam, bool checkcarrying )
+bool CTeamFortress2Mod :: isSentry ( edict_t *pEntity, int iTeam, const bool checkcarrying )
 {
 	return (!iTeam || (iTeam == getTeam(pEntity))) && (strcmp(pEntity->GetClassName(),"obj_sentrygun")==0) && (checkcarrying||!CClassInterface::isSentryGunBeingPlaced(pEntity));
 }
@@ -1137,17 +1140,17 @@ bool CTeamFortress2Mod::isTankBoss(edict_t *pEntity)
 	return (strcmp(pEntity->GetClassName(), "tank_boss") == 0);
 }
 
-bool CTeamFortress2Mod :: isTeleporter ( edict_t *pEntity, int iTeam, bool checkcarrying )
+bool CTeamFortress2Mod :: isTeleporter ( edict_t *pEntity, int iTeam, const bool checkcarrying )
 {
 	return (!iTeam || (iTeam == getTeam(pEntity))) && (strcmp(pEntity->GetClassName(),"obj_teleporter")==0) && (checkcarrying||!CClassInterface::isSentryGunBeingPlaced(pEntity));
 }
 
-bool CTeamFortress2Mod :: isTeleporterEntrance ( edict_t *pEntity, int iTeam, bool checkcarrying )
+bool CTeamFortress2Mod :: isTeleporterEntrance ( edict_t *pEntity, int iTeam, const bool checkcarrying )
 {
 	return isTeleporter(pEntity,iTeam) && CClassInterface::isTeleporterMode(pEntity,TELE_ENTRANCE) && (checkcarrying||!CClassInterface::isSentryGunBeingPlaced(pEntity));
 }
 
-bool CTeamFortress2Mod :: isTeleporterExit ( edict_t *pEntity, int iTeam, bool checkcarrying )
+bool CTeamFortress2Mod :: isTeleporterExit ( edict_t *pEntity, int iTeam, const bool checkcarrying )
 {
 	return isTeleporter(pEntity,iTeam) && CClassInterface::isTeleporterMode(pEntity,TELE_EXIT) && (checkcarrying||!CClassInterface::isSentryGunBeingPlaced(pEntity));
 }
@@ -1157,7 +1160,7 @@ bool CTeamFortress2Mod :: isPipeBomb ( edict_t *pEntity, int iTeam)
 	return (!iTeam || (iTeam == getTeam(pEntity))) && (strcmp(pEntity->GetClassName(),"tf_projectile_pipe_remote")==0);
 }
 
-bool CTeamFortress2Mod :: isHurtfulPipeGrenade ( edict_t *pEntity, edict_t *pPlayer, bool bCheckOwner )
+bool CTeamFortress2Mod :: isHurtfulPipeGrenade ( edict_t *pEntity, edict_t *pPlayer, const bool bCheckOwner )
 {
 	if ( strcmp(pEntity->GetClassName(),"tf_projectile_pipe")==0 )
 	{
@@ -1226,11 +1229,11 @@ edict_t *CTeamFortress2Mod :: getTeleporterExit ( edict_t *pTele )
 				return pExit;
 			}
 
-			return false;
+			return 0;
 		}
 	}
 
-	return false;
+	return 0;
 }
 
 // check if the entity is a health kit
@@ -1239,7 +1242,7 @@ bool CTeamFortress2Mod :: isHealthKit ( edict_t *pEntity )
 	return strncmp(pEntity->GetClassName(),"item_healthkit",14)==0;
 }
 
-bool CTeamFortress2Mod :: isAreaOwnedByTeam (int iArea, int iTeam)
+bool CTeamFortress2Mod :: isAreaOwnedByTeam (const int iArea, const int iTeam)
 {
 	if ( CTeamFortress2Mod::m_ObjectiveResource.isInitialised() )
 	{
@@ -1422,7 +1425,7 @@ CWaypoint *CTeamFortress2Mod :: getBestWaypointMVM ( CBot *pBot, int iFlags )
 }
 
 // check voice commands
-void CTeamFortress2Mod:: clientCommand ( edict_t *pEntity, int argc, const char *pcmd, const char *arg1, const char *arg2 )
+void CTeamFortress2Mod:: clientCommand ( edict_t *pEntity, const int argc, const char *pcmd, const char *arg1, const char *arg2 )
 {
 	if ( argc > 2 )
 	{
@@ -1455,7 +1458,7 @@ void CTeamFortress2Mod:: clientCommand ( edict_t *pEntity, int argc, const char 
 }
 
 // to fixed
-void CTeamFortress2Mod :: teleporterBuilt ( edict_t *pOwner, eEngiBuild type, edict_t *pBuilding )
+void CTeamFortress2Mod :: teleporterBuilt ( edict_t *pOwner, const eEngiBuild type, edict_t *pBuilding )
 {
 	int team;
 
@@ -1492,7 +1495,7 @@ int CTeamFortress2Mod ::getHighestScore ()
 
 		if ( edict && CBotGlobals::entityIsValid(edict) )
 		{
-			score = (short int)CClassInterface::getTF2Score(edict);
+			score = static_cast<short int>(CClassInterface::getTF2Score(edict));
 		
 			if ( score > highest )
 			{
@@ -1506,7 +1509,7 @@ int CTeamFortress2Mod ::getHighestScore ()
 
 // check if there is another building near where I want to build
 // check quickly by using the storage of sentryguns etc in the mod class
-bool CTeamFortress2Mod::buildingNearby ( int iTeam, Vector vOrigin )
+bool CTeamFortress2Mod::buildingNearby (const int iTeam, const Vector vOrigin)
 {
 	edict_t *pPlayer;
 	short int i;
@@ -1582,6 +1585,7 @@ edict_t *CTeamFortress2Mod::getBuilding (eEngiBuild object, edict_t *pOwner)
 		if ( m_Teleporters[i].entrance.get() != NULL )
 			return m_Teleporters[i].entrance.get();
 		return m_Teleporters[i].exit.get();
+	default: ;
 	}
 
 	return NULL;
@@ -1623,12 +1627,13 @@ edict_t *CTeamFortress2Mod ::getBuildingOwner (eEngiBuild object, short index)
 			tele++;
 		}
 		break;
+	default: ;
 	}
 
 	return NULL;
 }
 
-edict_t *CTeamFortress2Mod :: nearestDispenser ( Vector vOrigin, int team )
+edict_t *CTeamFortress2Mod :: nearestDispenser (const Vector vOrigin, const int team )
 {
 	edict_t *pNearest = NULL;
 	edict_t *pDisp;
@@ -1748,11 +1753,11 @@ void CTeamFortress2Mod::updatePointMaster()
 
 			CBaseEntity *pMasterEntity = servergameents->EdictToBaseEntity(pMaster);
 
-			//local variable is initialized but not referenced - [APG]RoboCop[CL]
+			//full_size is initialized but not referenced - [APG]RoboCop[CL]
 			unsigned long full_size = sizeof(pMasterEntity);
-			unsigned long mempoint = ((unsigned long)pMasterEntity) + rcbot_const_point_master_offset.GetInt();
+			unsigned long mempoint = reinterpret_cast<unsigned long>(pMasterEntity) + rcbot_const_point_master_offset.GetInt();
 
-			m_PointMaster = (CTeamControlPointMaster*)mempoint;
+			m_PointMaster = reinterpret_cast<CTeamControlPointMaster*>(mempoint);
 			m_PointMasterResource = pMaster;
 #else
 			extern ConVar rcbot_const_point_master_offset;
@@ -1765,7 +1770,7 @@ void CTeamFortress2Mod::updatePointMaster()
 
 			//extern ConVar rcbot_const_round_offset;
 
-			int idx = m_PointMaster->m_iCurrentRoundIndex;
+			const int idx = m_PointMaster->m_iCurrentRoundIndex;
 			int size = m_PointMaster->m_ControlPointRounds.Size();
 
 			if (idx >= 0 && size >= 0 && idx < 100 && size < 100) 
@@ -1778,7 +1783,9 @@ void CTeamFortress2Mod::updatePointMaster()
 					{
 						CBaseEntity *pent = m_PointMaster->m_ControlPointRounds[r];
 
-						CTeamControlPointRound* pointRound = (CTeamControlPointRound*)((unsigned long)pent + (unsigned long)rcbot_const_point_master_offset.GetInt());
+						CTeamControlPointRound* pointRound = reinterpret_cast<CTeamControlPointRound*>(reinterpret_cast<
+								unsigned long>(pent) + static_cast<unsigned long>(rcbot_const_point_master_offset.
+							GetInt()));
 
 						CBotGlobals::botMessage(NULL, 0, "Control Points for Round %d", r);
 
@@ -1807,12 +1814,16 @@ void CTeamFortress2Mod::updatePointMaster()
 
 				if (infoCount == 0) 
 				{
-					CBotGlobals::botMessage(NULL, 0, "If you are playing cp_* maps, and you get this message, something might be wrong with your mstr_offset!");
+					CBotGlobals::botMessage(
+						NULL, 0,
+						"If you are playing cp_* maps, and you get this message, something might be wrong with your mstr_offset!");
 				}
 			} 
 			else 
 			{
-				CBotGlobals::botMessage(NULL, 0, "If you are playing cp_* maps, and you get this message, something might be wrong with your mstr_offset!");
+				CBotGlobals::botMessage(
+					NULL, 0,
+					"If you are playing cp_* maps, and you get this message, something might be wrong with your mstr_offset!");
 			}
 		}
 	}
@@ -1823,7 +1834,7 @@ void CTeamFortress2Mod::updatePointMaster()
 	}
 }
 
-edict_t *CTeamFortress2Mod :: getPayloadBomb ( int team )
+edict_t *CTeamFortress2Mod :: getPayloadBomb (const int team )
 {
 	if ( team == TF2_TEAM_BLUE )
 		return m_pPayLoadBombBlue;
@@ -1856,7 +1867,7 @@ void CTeamFortress2Mod :: roundReset ()
 	if ( m_ObjectiveResource.isInitialised() )
 	{
 		extern ConVar rcbot_tf2_autoupdate_point_time;
-		int numpoints = m_ObjectiveResource.GetNumControlPoints();
+		const int numpoints = m_ObjectiveResource.GetNumControlPoints();
 		int i;
 
 		for ( i = 0; i < numpoints; i ++ )
@@ -1883,7 +1894,6 @@ void CTeamFortress2Mod :: roundReset ()
 	m_iFlagCarrierTeam = 0;
 	m_pPayLoadBombBlue = NULL;
 	m_pPayLoadBombRed = NULL;
-
 
 	if ( isMapType(TF_MAP_MVM) )	
 	{
@@ -1920,7 +1930,7 @@ void CTeamFortress2Mod :: roundReset ()
 	}
 }
 
-void CTeamFortress2Mod::sentryBuilt(edict_t *pOwner, eEngiBuild type, edict_t *pBuilding )
+void CTeamFortress2Mod::sentryBuilt(edict_t *pOwner, const eEngiBuild type, edict_t *pBuilding )
 {
 	static short int index;
 	static tf_sentry_t *temp;
@@ -1957,7 +1967,7 @@ bool CTeamFortress2Mod::isSentryGun (edict_t *pEdict )
 	return false;
 }
 
-void CTeamFortress2Mod::dispenserBuilt(edict_t *pOwner, eEngiBuild type, edict_t *pBuilding )
+void CTeamFortress2Mod::dispenserBuilt(edict_t *pOwner, const eEngiBuild type, edict_t *pBuilding )
 {
 	static short int index;
 	static tf_disp_t *temp;
@@ -2020,11 +2030,11 @@ bool CTeamFortress2Mod::isDefending ( edict_t *pPlayer )//, int iCapIndex = -1 )
 
 bool CTeamFortress2Mod::isCapping ( edict_t *pPlayer )//, int iCapIndex = -1 )
 {
-	int index = (1<<(ENTINDEX(pPlayer)-1));
+	const int index = (1<<(ENTINDEX(pPlayer)-1));
 
 	if ( m_ObjectiveResource.GetNumControlPoints() > 0 )
 	{
-		int iTeam = CClassInterface::getTeam(pPlayer);
+		const int iTeam = CClassInterface::getTeam(pPlayer);
 
 		int i = 0;
 
@@ -2058,7 +2068,7 @@ unsigned int CTF2Loadout::copyAttributesIntoArray ( CEconItemAttribute *pArray, 
 	return m_Attributes.size();
 }
 
-void CTF2Loadout :: addAttribute ( int id, float fval )
+void CTF2Loadout :: addAttribute (const int id, const float fval )
 {
 	m_Attributes.push_back(new CEconItemAttribute(id,fval));
 }

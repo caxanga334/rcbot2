@@ -30,11 +30,9 @@
  */
 
 #include "bot_mtrand.h"
-
 #include "bot.h"
 #include "bot_ga.h"
 #include "bot_globals.h"
-
 
 const int CGA :: g_iDefaultMaxPopSize = 16;
 const float CGA :: g_fCrossOverRate = 0.7f;
@@ -45,7 +43,7 @@ const float CGA :: g_fMaxPerturbation = 0.3f;
 // POPULATION
 ////////////////////
 
-IIndividual *CPopulation :: get ( int iIndex )
+IIndividual *CPopulation :: get ( const int iIndex )
 {
 	return m_theIndividuals[iIndex];
 }

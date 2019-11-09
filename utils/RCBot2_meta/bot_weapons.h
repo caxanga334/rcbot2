@@ -34,14 +34,11 @@
 #include <vector>
 using namespace std;
 
-
-
 extern const char *g_szTF2Weapons[];
 
 #include "shareddefs.h"
 
 class CBot;
-
 
 extern int m_TF2AmmoIndices[];
 
@@ -58,15 +55,15 @@ typedef struct
 	float m_fProjSpeed;
 }WeaponsData_t;
 
-enum 
+enum
 {
 	TF2_WEAPON_BAT = 0,
 	TF2_WEAPON_BOTTLE, //1
 	TF2_WEAPON_FIREAXE, //2
-	TF2_WEAPON_CLUB, //3 
-	TF2_WEAPON_KNIFE, //4 
-	TF2_WEAPON_FISTS, //5 
-	TF2_WEAPON_SHOVEL, //6 
+	TF2_WEAPON_CLUB, //3
+	TF2_WEAPON_KNIFE, //4
+	TF2_WEAPON_FISTS, //5
+	TF2_WEAPON_SHOVEL, //6
 	TF2_WEAPON_WRENCH,//7
 	TF2_WEAPON_BONESAW,//8
 	TF2_WEAPON_SHOTGUN_PRIMARY,//9
@@ -111,7 +108,7 @@ enum
 	TF2_WEAPON_MAX
 };
 /*
-enum 
+enum
 {
 	TF2_WEAPON_BAT = 0,
 	TF2_WEAPON_BONESAW,
@@ -162,7 +159,7 @@ enum
 	HL2DM_WEAPON_STUNSTICK,
 	HL2DM_WEAPON_CROSSBOW,
 	HL2DM_WEAPON_RPG,
-	HL2DM_WEAPON_SLAM,	
+	HL2DM_WEAPON_SLAM,
 	HL2DM_WEAPON_SHOTGUN,
 	HL2DM_WEAPON_PHYSCANNON,
 	HL2DM_WEAPON_MAX
@@ -191,7 +188,7 @@ enum
 	DOD_WEAPON_RIFLEGREN_US,
 	DOD_WEAPON_RIFLEGREN_GER,
 	DOD_WEAPON_FRAG_US,
-	DOD_WEAPON_FRAG_GER, 
+	DOD_WEAPON_FRAG_GER,
 	DOD_WEAPON_SMOKE_US,
 	DOD_WEAPON_SMOKE_GER,
 	DOD_WEAPON_BOMB,
@@ -307,9 +304,9 @@ public:
 	inline bool isShortWeaponName ( const char *szWeaponName )
 	{
 		static int start;
-		
+
 		start = strlen(m_szWeaponName) - strlen(szWeaponName);
-		
+
 		if ( start < 0 )
 			return false;
 
@@ -325,7 +322,7 @@ public:
 	{
 		return hasAllFlags(WEAP_FL_SCOPE);
 	}
-					
+
 	inline bool canDeflectRockets()
 	{
 		return hasAllFlags(WEAP_FL_DEFLECTROCKETS);
@@ -350,7 +347,7 @@ public:
 	{
 		return (fDistance<m_fPrimMaxWeaponShootDist);
 	}
-	
+
 	inline float primaryMaxRange ( )
 	{
 		return (m_fPrimMaxWeaponShootDist);
@@ -441,14 +438,14 @@ public:
 		return m_szWeaponName;
 	}
 
-	inline const int getID () const
+	inline int getID() const
 	{
 		return m_iWeaponId;
 	}
 
 	inline void setPrimaryRange ( float fMinRange, float fMaxRange )
 	{
-		m_fPrimMinWeaponShootDist = fMinRange; 
+		m_fPrimMinWeaponShootDist = fMinRange;
 		m_fPrimMaxWeaponShootDist = fMaxRange;
 	}
 
@@ -458,12 +455,12 @@ public:
 		m_fSecMaxWeaponShootDist = fMaxRange;
 	}
 
-	inline int getAmmoIndex1 ()
+	inline int getAmmoIndex1 () const
 	{
 		return m_iAmmoIndex1;
 	}
 
-	inline int getAmmoIndex2 ()
+	inline int getAmmoIndex2 () const
 	{
 		return m_iAmmoIndex2;
 	}
@@ -562,7 +559,7 @@ public:
 	CBotWeapon ()
 	{
 		m_pWeaponInfo = NULL;
-		m_bHasWeapon = false;		
+		m_bHasWeapon = false;
 		m_iWeaponIndex = 0;
 		m_pEnt = NULL;
 		m_iClip1 = NULL;
@@ -586,7 +583,7 @@ public:
 
 	inline bool primaryGreaterThanRange ( float fDistance )
 	{
-		return m_pWeaponInfo->primaryGreaterThanRange(fDistance); 
+		return m_pWeaponInfo->primaryGreaterThanRange(fDistance);
 	}
 
 	inline bool needsDeployedOrZoomed ()
@@ -599,13 +596,12 @@ public:
 		return m_pWeaponInfo->isGravGun();
 	}
 
-
 	inline bool isExplosive ()
 	{
 		return m_pWeaponInfo->isExplosive();
 	}
 
-	inline bool isZoomable () 
+	inline bool isZoomable ()
 	{
 		return m_pWeaponInfo->isZoomable();
 	}
@@ -659,7 +655,7 @@ public:
 	{
 		return m_pWeaponInfo->getProjectileSpeed();
 	}
-					
+
 	inline bool canDeflectRockets()
 	{
 		return m_pWeaponInfo->canDeflectRockets();
@@ -675,7 +671,7 @@ public:
 		return m_pWeaponInfo->isMelee();
 	}
 
-	inline bool isMeleeSecondary () 
+	inline bool isMeleeSecondary ()
 	{
 		return m_pWeaponInfo->isMeleeSecondary();
 	}
@@ -711,20 +707,20 @@ public:
 
 	int getAmmo ( CBot *pBot, int type = AMMO_PRIM );
 
-	int getClip1 ( CBot *pBot ) 
-	{ 
-		if ( m_iClip1 ) 
-			return *m_iClip1; 
-		
-		return 0; 
+	int getClip1 ( CBot *pBot )
+	{
+		if ( m_iClip1 )
+			return *m_iClip1;
+
+		return 0;
 	}
 
-	int getClip2 ( CBot *pBot ) 
-	{ 
-		if ( m_iClip2 ) 
-			return *m_iClip2; 
-		
-		return 0; 
+	int getClip2 ( CBot *pBot )
+	{
+		if ( m_iClip2 )
+			return *m_iClip2;
+
+		return 0;
 	}
 
 	CWeapon *getWeaponInfo () { return m_pWeaponInfo; }
@@ -754,7 +750,7 @@ private:
 };
 
 // Weapons that
-class CBotWeapons 
+class CBotWeapons
 {
 public:
 /////////////////////////////////////
@@ -805,7 +801,7 @@ private:
 	// checksum mask of weapons bot already has so we know if we need to update or not
 	unsigned int m_iWeaponsSignature;
 
-	// weapons local to the bot only 
+	// weapons local to the bot only
 	// (holds ammo/preference etc and link to actual weapon)
 	CBotWeapon m_theWeapons[MAX_WEAPONS];//[MAX_WEAPONS];
 

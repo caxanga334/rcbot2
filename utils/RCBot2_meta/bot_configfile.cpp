@@ -40,9 +40,11 @@
 #include "interface.h"
 #include "engine/iserverplugin.h"
 #include "iplayerinfo.h"
+
 #ifdef __linux__
 #include "shake.h"    //bir3yk
 #endif
+
 #include "IEngineTrace.h" // for traceline functions
 #include "tier2/tier2.h"
 #include "IEffects.h"
@@ -56,6 +58,7 @@
 #include "ndebugoverlay.h"
 #include "server_class.h"
 #include "time.h"
+
 #include "bot.h"
 #include "bot_commands.h"
 #include "bot_client.h"
@@ -171,7 +174,7 @@ void CRCBotTF2UtilFile :: init()
 	}
 }
 
-void CRCBotTF2UtilFile :: addUtilPerturbation (eBotAction iAction, eTF2UtilType iUtil, float fUtility[9][2])
+void CRCBotTF2UtilFile :: addUtilPerturbation (const eBotAction iAction, const eTF2UtilType iUtil, float fUtility[9][2])
 {
 	short unsigned int i;
 
@@ -192,7 +195,7 @@ void CRCBotTF2UtilFile :: loadConfig()
 
 	 init();
 
-	 for ( iFile = BOT_ATT_UTIL; iFile < UTIL_TYPE_MAX; iFile = (eTF2UtilType)((int)iFile+1) )
+	 for ( iFile = BOT_ATT_UTIL; iFile < UTIL_TYPE_MAX; iFile = static_cast<eTF2UtilType>(static_cast<int>(iFile) + 1) )
 	 {
 		 if ( iFile == BOT_ATT_UTIL )
 		 {
@@ -208,7 +211,7 @@ void CRCBotTF2UtilFile :: loadConfig()
 
 		if ( fp )
 		{
-			eBotAction iUtil = (eBotAction)0;
+			eBotAction iUtil = static_cast<eBotAction>(0);
 
 			while ( fgets(line,255,fp) != NULL )
 			{
@@ -240,7 +243,7 @@ void CRCBotTF2UtilFile :: loadConfig()
 
 						addUtilPerturbation(iUtil,iFile,iClassList);
 
-						iUtil = (eBotAction)((int)iUtil+1);
+						iUtil = static_cast<eBotAction>((int)iUtil + 1);
 
 						if ( iUtil >= BOT_UTIL_MAX )
 							break;

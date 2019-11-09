@@ -31,17 +31,14 @@
 #ifndef __RCBOT_NAVIGATOR_H__
 #define __RCBOT_NAVIGATOR_H__
 
-#include "bot_genclass.h"
-
 #include <vector>
 #include <queue>
 using namespace std;
 
 #include "bot.h"
 #include "bot_waypoint.h"
-
-#include "bot_belief.h"
 #include "bot_genclass.h"
+#include "bot_belief.h"
 
 class CNavMesh;
 class CWaypointVisibilityTable;
@@ -142,13 +139,13 @@ public:
 
 protected:
 	Vector m_vGoal;
-	float m_fGoalDistance;
+	float m_fGoalDistance = 0;
 	Vector m_vPreviousPoint;
 	Vector m_vDangerPoint;
-	bool m_bDangerPoint;
-	short int m_iBeliefTeam;
-	bool m_bBeliefChanged;
-	bool m_bLoadBelief;
+	bool m_bDangerPoint = false;
+	short int m_iBeliefTeam = 0;
+	bool m_bBeliefChanged = false;
+	bool m_bLoadBelief = false;
 };
 
 #define FL_ASTAR_CLOSED		1
@@ -170,10 +167,10 @@ public:
 	//////////////////////////////////////////////////////	
 	inline void setHeuristic ( float fHeuristic ) { m_fHeuristic = fHeuristic; setFlag(FL_HEURISTIC_SET); }
 	inline bool heuristicSet () { return hasFlag(FL_HEURISTIC_SET); }
-	inline const float getHeuristic () { return m_fHeuristic; } const
-	
+	inline float getHeuristic() { return m_fHeuristic; }
+
 	////////////////////////////////////////////////////////
-	inline void setFlag ( int iFlag ) { m_iFlags |= iFlag; }
+	inline void setFlag(int iFlag) { m_iFlags |= iFlag; }
 	inline bool hasFlag ( int iFlag ) { return ((m_iFlags & iFlag) == iFlag); }
 	inline void removeFlag ( int iFlag ) { m_iFlags &= ~iFlag; }
 	/////////////////////////////////////////////////////////
@@ -188,8 +185,8 @@ public:
 			setFlag(FL_ASTAR_PARENT);
 	}
 	////////////////////////////////////////////////////////
-	inline const float getCost () { return m_fCost; } const
-	inline void setCost ( float fCost ) { m_fCost = fCost; }
+	inline float getCost() { return m_fCost; }
+	inline void setCost(float fCost) { m_fCost = fCost; }
 	////////////////////////////////////////////////////////
 	// for comparison
 	bool precedes ( AStarNode *other ) const
@@ -367,8 +364,8 @@ class CWaypointNavigator : public IBotNavigator
 {
 public:
 	CWaypointNavigator ( CBot *pBot ) 
-	{ 
-		init();
+	{
+		CWaypointNavigator::init();
 		m_pBot = pBot; 
 		m_fNextClearFailedGoals = 0;
 		m_bDangerPoint = false;

@@ -64,7 +64,7 @@ void CBotGAValues :: crossOver ( IIndividual *other )
 	unsigned int iPoint = randomInt(0,m_theValues.size());
 	float fTemp;
 
-	CBotGAValues *vother = (CBotGAValues*)other;
+	CBotGAValues *vother = static_cast<CBotGAValues*>(other);
 
 	unsigned int i;
 
@@ -124,7 +124,7 @@ IIndividual *CBotGAValues :: copy ()
 	return individual;
 }
 
-void CBotGAValues :: setVector ( vector<float> values )
+void CBotGAValues :: setVector ( const vector<float> values )
 {
 	for ( unsigned int i = 0; i < values.size(); i ++ )
 		m_theValues.push_back(values[i]);
