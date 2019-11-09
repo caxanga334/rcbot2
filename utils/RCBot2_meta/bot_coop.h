@@ -36,6 +36,7 @@
 class CBotCoop : public CBot
 {
 public:
+	virtual bool isSYN() { return true; }
 	void spawnInit();
 	void died(edict_t* pKiller, const char* pszWeapon);
 	void killed(edict_t* pVictim, char* weapon);

@@ -132,6 +132,7 @@ void CBotCoop :: modThink ()
 	// find enemies and health stations / objectives etc
 	m_fIdealMoveSpeed = CClassInterface::getMaxSpeed(m_pEdict);
 	m_iHealthPack = CClassInterface::getSynPlrHealthPack(m_pEdict);
+	CClients::clientDebugMsg(this, BOT_DEBUG_THINK, "iHealthPack: %d, Speed: %f", m_iHealthPack, m_fIdealMoveSpeed);
 
 	CBotWeapon* pWeapon = getCurrentWeapon();
 	int iCurrentWpt = m_pNavigator->getCurrentWaypointID();
