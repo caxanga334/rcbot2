@@ -48,6 +48,7 @@
 #include "bot_dod_bot.h"
 #include "bot_squads.h"
 #include "bot_waypoint_visibility.h"
+#include "bot_coop.h"
 
 
 extern ConVar *sv_gravity;

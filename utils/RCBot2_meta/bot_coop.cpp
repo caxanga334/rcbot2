@@ -224,6 +224,11 @@ void CBotCoop::getTasks(unsigned int iIgnore)
 		}
 	}
 
+	if ((m_pNPCAlyx.get() != NULL || m_pNPCBarney.get() != NULL) && m_pEnemy == NULL)
+	{
+		ADD_UTILITY(BOT_UTIL_SYN_GOTO_NPC, true, RandomFloat(0.0f, 0.3f));
+	}
+
 
 	utils.execute();
 
@@ -474,6 +479,36 @@ bool CBotCoop::executeAction(eBotAction iAction)
 
 		break;
 	}
+	case BOT_UTIL_SYN_GOTO_NPC:
+	{
+		CWaypoint* pWaypoint = NULL;
+		Vector vNPC = NULL;
+
+		if (m_pNPCAlyx != NULL)
+		{
+			vNPC = CBotGlobals::entityOrigin(m_pNPCAlyx);
+			pWaypoint = CWaypoints::getWaypoint(CWaypoints::nearestWaypointGoal(-1, vNPC, 512.0f));
+
+			if (pWaypoint)
+			{
+				m_pSchedules->add(new CBotGotoOriginSched(pWaypoint->getOrigin()));
+				return true;
+			}
+		}
+
+		if (m_pNPCBarney != NULL)
+		{
+			vNPC = CBotGlobals::entityOrigin(m_pNPCBarney);
+			pWaypoint = CWaypoints::getWaypoint(CWaypoints::nearestWaypointGoal(-1, vNPC, 512.0f));
+
+			if (pWaypoint)
+			{
+				m_pSchedules->add(new CBotGotoOriginSched(pWaypoint->getOrigin()));
+				return true;
+			}
+		}
+		break;
+	}
 }
 
 	return false;
@@ -670,8 +705,6 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWaypoint)
 {
 	int iTouchedWpt = CWaypoints::getWaypointIndex(pWaypoint);
-
-	CClients::clientDebugMsg(this, BOT_DEBUG_NAV, "CBotCoop::touchedWpt Touched: %d, Next: %d, Prev: %d", iTouchedWpt, iNextWaypoint, iPrevWaypoint);
 
 	if (CWaypoints::validWaypointIndex(iPrevWaypoint) && CWaypoints::validWaypointIndex(iNextWaypoint))
 	{
