@@ -492,6 +492,7 @@ void CClassInterface:: init ()
 		// Synergy
 		DEFINE_GETPROP(GETPROP_SYN_HEALTHPACK, "CSynergyPlayer", "m_iHealthPack", 0);
 		DEFINE_GETPROP(GETPROP_SYN_VEHICLE_ENTITY, "CSynergyPlayer", "m_hVehicle", 0);
+		DEFINE_GETPROP(GETPROP_SYN_VEHICLE_PLAYER, "CPropVehicleDriveable", "m_hPlayer", 0);
 
 		for ( unsigned int i = 0; i < GET_PROPDATA_MAX; i ++ )
 		{

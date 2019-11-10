@@ -115,3 +115,9 @@ edict_t *CSynergyMod::GetRandomPlayer(edict_t *pIgnore)
 
 	return NULL;
 }
+
+void CSynergyMod::addWaypointFlags(edict_t* pPlayer, edict_t* pEdict, int* iFlags, int* iArea, float* fMaxDistance)
+{
+	if (strncmp(pEdict->GetClassName(), "trigger_hurt", 12) == 0)
+		*iFlags |= CWaypointTypes::W_FL_TRIGGER_HURT;
+}

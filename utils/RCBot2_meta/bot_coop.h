@@ -33,6 +33,19 @@
 #ifndef __BOT_COOP_H__
 #define __BOT_COOP_H__
 
+#include "bot_utility.h"
+
+typedef enum
+{
+	SYN_VC_HELP = 0,
+	SYN_VC_INCOMING = 1,
+	SYN_VC_ENEMY = 2,
+	SYN_VC_FOLLOW = 3,
+	SYN_VC_LETSGO = 4,
+	SYN_VC_LEAD = 5,
+	SYN_VC_INVALID = 6,
+}eSYNVoiceCMD;
+
 class CBotCoop : public CBot
 {
 public:
@@ -48,11 +61,15 @@ public:
 
 	virtual bool isEnemy ( edict_t *pEdict, bool bCheckWeapons = true  );
 
+	void voiceCommand(int cmd) override;
+	virtual void hearVoiceCommand(edict_t* pPlayer, byte cmd);
+
 	void init();
 
 	void setup();
 
 	virtual bool startGame ();
+	virtual bool checkStuck();
 	bool setVisible(edict_t* pEntity, bool bVisible);
 
 	void touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWaypoint);

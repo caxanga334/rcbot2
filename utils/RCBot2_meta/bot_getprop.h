@@ -158,6 +158,7 @@ typedef enum
 	GETPROP_TF2DESIREDCLASS, //Jrob
 	GETPROP_SYN_HEALTHPACK,
 	GETPROP_SYN_VEHICLE_ENTITY,
+	GETPROP_SYN_VEHICLE_PLAYER,
 	GET_PROPDATA_MAX
 }getpropdata_id;
 
@@ -720,6 +721,9 @@ public:
 
 	// Get the vehicle entity of the player
 	inline static edict_t* getSynPlrVehicle(edict_t* edict) { return g_GetProps[GETPROP_SYN_VEHICLE_ENTITY].getEntity(edict); }
+
+	// Get the driver of the given vehicle edict
+	inline static edict_t* getSynVehicleDriver(edict_t* edict) { return g_GetProps[GETPROP_SYN_VEHICLE_PLAYER].getEntity(edict); }
 
 private:
 	static CClassInterfaceValue g_GetProps[GET_PROPDATA_MAX];

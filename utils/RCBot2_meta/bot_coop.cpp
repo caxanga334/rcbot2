@@ -525,6 +525,21 @@ bool CBotCoop::isEnemy(edict_t* pEdict, bool bCheckWeapons)
 	return false;
 }
 
+void CBotCoop::voiceCommand(const int cmd)
+{
+	char vcmd[32];
+
+	sprintf(vcmd, "menuselect %d", cmd);
+
+	helpers->ClientCommand(m_pEdict, "voice_menu 0");
+	helpers->ClientCommand(m_pEdict, vcmd);
+}
+
+void CBotCoop::hearVoiceCommand(edict_t* pPlayer, byte cmd)
+{
+	CBotGlobals::botMessage(NULL, 0, "CBotCoop::hearVoiceCommand");
+}
+
 bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 {
 	static float fDist;
@@ -654,8 +669,10 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 
 void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWaypoint)
 {
-	/**int iTouchedWpt = CWaypoints::getWaypointIndex(pWaypoint);
+	int iTouchedWpt = CWaypoints::getWaypointIndex(pWaypoint);
+
 	CClients::clientDebugMsg(this, BOT_DEBUG_NAV, "CBotCoop::touchedWpt Touched: %d, Next: %d, Prev: %d", iTouchedWpt, iNextWaypoint, iPrevWaypoint);
+
 	if (CWaypoints::validWaypointIndex(iPrevWaypoint) && CWaypoints::validWaypointIndex(iNextWaypoint))
 	{
 		CWaypoint* pPrev = CWaypoints::getWaypoint(iPrevWaypoint);
@@ -663,22 +680,18 @@ void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWayp
 		// bot touched the first ladder waypoint, 
 		if ( (pPrev->getFlags() & CWaypointTypes::W_FL_LADDER) == 0 && (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER))
 		{
-			m_pButtons->tap(IN_USE);
+			//m_pButtons->tap(IN_USE);
 			CClients::clientDebugMsg(this, BOT_DEBUG_NAV, "Bot touched first ladder waypoint");
 		}
 		// bot touched the last ladder waypoint
 		if ((pNext->getFlags() & CWaypointTypes::W_FL_LADDER) == 0 && (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER))
 		{
-			m_pButtons->tap(IN_USE);
+			//m_pButtons->tap(IN_USE);
+			use();
+			jump();
 			CClients::clientDebugMsg(this, BOT_DEBUG_NAV, "Bot touched last ladder waypoint");
 		}
-	} **/
-
-	// Tells bots to mount/dismount ladders by using pressing use
-	if ((pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER) && (pWaypoint->getFlags() & CWaypointTypes::W_FL_USE_BUTTON))
-	{
-		m_pButtons->tap(IN_USE);
-	}
+	} 
 
 	CBot::touchedWpt(pWaypoint, iNextWaypoint, iPrevWaypoint);
 }
@@ -693,4 +706,9 @@ bool CBotCoop::walkingTowardsWaypoint(CWaypoint* pWaypoint, bool* bOffsetApplied
 bool CBotCoop::canGotoWaypoint(Vector vPrevWaypoint, CWaypoint* pWaypoint, CWaypoint* pPrev)
 {
 	return CBot::canGotoWaypoint(vPrevWaypoint, pWaypoint, pPrev);
+}
+
+bool CBotCoop::checkStuck()
+{
+	return CBot::checkStuck();
 }

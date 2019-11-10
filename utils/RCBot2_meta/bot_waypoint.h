@@ -151,6 +151,7 @@ public:
 	static const int W_FL_AMMO = 4096;
 	static const int W_FL_RESUPPLY = 8192;
 	static const int W_FL_BOMBS_HERE = 8192;
+	static const int W_FL_TRIGGER_HURT = 8192; // Synergy
 	static const int W_FL_SENTRY = 16384;
 	static const int W_FL_MACHINEGUN = 16384;
 	static const int W_FL_DOUBLEJUMP = 32768;

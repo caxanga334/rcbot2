@@ -3246,6 +3246,7 @@ void CWaypointTypes :: setup ()
 	addType(new CWaypointType(W_FL_COOP_MAPEND, "mapend", "Map end/changelevel here.", WptColor(255, 153, 255), (1 << MOD_SYNERGY)));
 	addType(new CWaypointType(W_FL_COOP_GOAL, "goal", "Bots will go to this waypoint to complete map goals.", WptColor(255, 153, 255), (1 << MOD_SYNERGY)));
 	addType(new CWaypointType(W_FL_USE_BUTTON, "use", "Bots will press a button/use doors at this waypoint.", WptColor(0, 255, 204), (1 << MOD_SYNERGY)));
+	addType(new CWaypointType(W_FL_TRIGGER_HURT, "hurt", "Bots will take damage/die if they go here.", WptColor(255, 20, 50), (1 << MOD_SYNERGY)));
 
 	//addType(new CWaypointType(W_FL_ATTACKPOINT,"squad_attackpoint","Tactical waypoint -- each squad will go to different attack points and signal others to go",WptColor(90,90,90)));
 }

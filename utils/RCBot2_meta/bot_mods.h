@@ -785,6 +785,8 @@ public:
 	
 	edict_t *GetRandomPlayer(edict_t* pIgnore);
 
+	void addWaypointFlags(edict_t* pPlayer, edict_t* pEdict, int* iFlags, int* iArea, float* fMaxDistance);
+
 	// Gets the map global state
 	inline static int GetMapGlobal() { return m_iMapGlobal; }
 
