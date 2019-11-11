@@ -84,9 +84,15 @@ void CBotCoop::spawnInit()
 	m_pAmmoKit = NULL;
 	m_pCurrentWeapon = NULL;
 	m_pCharger = NULL;
+	m_pNPCAlyx = NULL;
+	m_pNPCBarney = NULL;
 	m_fUseButtonTime = 0.0f;
 	m_fUseCrateTime = 0.0f;
 	m_iHealthPack = CClassInterface::getSynPlrHealthPack(m_pEdict);
+
+	CClient* pClient = CClients::get(m_pEdict);
+	const char* szname = pClient->getName();
+	CClients::clientDebugMsg(this, BOT_DEBUG_HUD, "spawnInit called for %s", szname);
 }
 
 /*
