@@ -58,6 +58,9 @@ int CSynergyMod::m_iMapGlobal = SYN_MAPGLOBAL_NONE;
 void CSynergyMod::initMod()
 {
 	CBotGlobals::botMessage(NULL, 0, "Synergy Init.");
+
+	CBots::controlBotSetup(true);
+
 	// load weapons
 	CWeapons::loadWeapons((m_szWeaponListName == NULL) ? "SYNERGY" : m_szWeaponListName, SYNERGYWeaps);
 }
