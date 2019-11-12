@@ -138,7 +138,6 @@ void CBotCoop :: modThink ()
 	// find enemies and health stations / objectives etc
 	m_fIdealMoveSpeed = CClassInterface::getMaxSpeed(m_pEdict);
 	m_iHealthPack = CClassInterface::getSynPlrHealthPack(m_pEdict);
-	CClients::clientDebugMsg(this, BOT_DEBUG_THINK, "iHealthPack: %d, Speed: %f", m_iHealthPack, m_fIdealMoveSpeed);
 
 	CBotWeapon* pWeapon = getCurrentWeapon();
 	int iCurrentWpt = m_pNavigator->getCurrentWaypointID();
@@ -152,12 +151,12 @@ void CBotCoop :: modThink ()
 		setMoveLookPriority(MOVELOOK_MODTHINK);
 	}
 
-	if (getHealthPercent() < 0.35f && !hasSomeConditions(CONDITION_NEED_HEALTH))
+	if (getHealthPercent() < 0.50f && !hasSomeConditions(CONDITION_NEED_HEALTH))
 	{
 		updateCondition(CONDITION_NEED_HEALTH);
 		updateCondition(CONDITION_CHANGED);
 	}
-	else if(getHealthPercent() > 0.36f)
+	else if(getHealthPercent() > 0.51f)
 	{
 		removeCondition(CONDITION_NEED_HEALTH);
 	}
@@ -190,8 +189,13 @@ void CBotCoop::getTasks(unsigned int iIgnore)
 	bCheckCurrent = true; // important for checking current schedule
 
 	// low on health? Pick some up if there's any near by
-	ADD_UTILITY(BOT_UTIL_HL2DM_USE_HEALTH_CHARGER, (m_pHealthCharger.get() != NULL) && (CClassInterface::getAnimCycle(m_pHealthCharger) < 1.0f) && (getHealthPercent() < 1.0f), (1.0f - getHealthPercent()));
-	ADD_UTILITY(BOT_UTIL_FIND_NEAREST_HEALTH, (m_pHealthKit.get() != NULL) && (getHealthPercent() < 1.0f), 1.0f - getHealthPercent());
+	if (hasSomeConditions(CONDITION_NEED_HEALTH))
+	{
+		ADD_UTILITY(BOT_UTIL_HL2DM_USE_HEALTH_CHARGER, (m_pHealthCharger.get() != NULL) && (CClassInterface::getAnimCycle(m_pHealthCharger) < 1.0f) && (getHealthPercent() < 1.0f), (1.0f - getHealthPercent()));
+		ADD_UTILITY(BOT_UTIL_FIND_NEAREST_HEALTH, (m_pHealthKit.get() != NULL) && (getHealthPercent() < 1.0f), 1.0f - getHealthPercent());
+		ADD_UTILITY(BOT_UTIL_GETHEALTHKIT, (m_pHealthKit.get() == NULL && m_pHealthCharger.get() == NULL), 1.0f - getHealthPercent());
+	}
+
 
 	// low on armor?
 	ADD_UTILITY(BOT_UTIL_HL2DM_FIND_ARMOR, (m_pBattery.get() != NULL) && (getArmorPercent() < 1.0f), (1.0f - getArmorPercent()) * 0.75f);
@@ -376,6 +380,16 @@ bool CBotCoop::executeAction(eBotAction iAction)
 		m_fUtilTimes[BOT_UTIL_HL2DM_USE_CHARGER] = engine->Time() + randomFloat(5.0f, 10.0f);
 		return true;
 	}
+	case BOT_UTIL_GETHEALTHKIT:
+	{
+		CWaypoint* pWaypoint = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_HEALTH);
+
+		if (pWaypoint)
+		{
+			m_pSchedules->add(new CBotGotoOriginSched(pWaypoint->getOrigin()));
+			return true;
+		}
+	}
 	case BOT_UTIL_FIND_LAST_ENEMY: // todo: update this code to support NPCs
 	{
 		Vector vVelocity = Vector(0, 0, 0);
@@ -451,6 +465,7 @@ bool CBotCoop::executeAction(eBotAction iAction)
 	{
 		// roam
 		CWaypoint* pWaypoint = NULL;
+		CWaypoint* pRoute = NULL;
 
 		int iRandom = RandomInt(1, 3);
 
@@ -479,7 +494,21 @@ bool CBotCoop::executeAction(eBotAction iAction)
 
 		if (pWaypoint)
 		{
-			m_pSchedules->add(new CBotGotoOriginSched(pWaypoint->getOrigin()));
+			if ((m_fUseRouteTime < engine->Time()))
+			{
+				pRoute = CWaypoints::randomRouteWaypoint(this, getOrigin(), pWaypoint->getOrigin(), 0, 0);
+				if (pRoute)
+				{
+					m_pSchedules->add(new CBotGotoOriginSched(pRoute->getOrigin()));
+					m_fUseRouteTime = engine->Time() + 30.0f;
+				}
+			}
+
+			if (pRoute == NULL)
+			{
+				m_pSchedules->add(new CBotGotoOriginSched(pWaypoint->getOrigin()));
+			}
+
 			return true;
 		}
 
@@ -553,6 +582,12 @@ bool CBotCoop::isEnemy(edict_t* pEdict, bool bCheckWeapons)
 	{
 		if ((strcmp(szclassname, "npc_antlion") == 0) && iGlobalState == SYN_MAPGLOBAL_ANTLIONSALLY)
 			return false;
+
+		if (((strcmp(szclassname, "npc_combinegunship") == 0) || (strcmp(szclassname, "npc_helicopter") == 0) || (strcmp(szclassname, "npc_strider") == 0))
+			&& m_pWeapons->hasWeapon(SYN_WEAPON_RPG))
+		{
+			return true; // ignore gunships, helicopters and striders if I don't have an RPG.
+		}
 
 		if (strcmp(szclassname, "npc_metropolice") == 0 || strcmp(szclassname, "npc_combine_s") == 0 || strcmp(szclassname, "npc_manhack") == 0 ||
 			strcmp(szclassname, "npc_zombie") == 0 || strcmp(szclassname, "npc_fastzombie") == 0 || strcmp(szclassname, "npc_poisonzombie") == 0 || strcmp(szclassname, "npc_zombine") == 0 ||
@@ -745,6 +780,66 @@ bool CBotCoop::walkingTowardsWaypoint(CWaypoint* pWaypoint, bool* bOffsetApplied
 bool CBotCoop::canGotoWaypoint(Vector vPrevWaypoint, CWaypoint* pWaypoint, CWaypoint* pPrev)
 {
 	return CBot::canGotoWaypoint(vPrevWaypoint, pWaypoint, pPrev);
+}
+
+bool CBotCoop::handleAttack(CBotWeapon* pWeapon, edict_t* pEnemy)
+{
+	if (pWeapon)
+	{
+		clearFailedWeaponSelect();
+
+		if (pWeapon->isMelee())
+			setMoveTo(CBotGlobals::entityOrigin(pEnemy));
+
+		if (pWeapon->mustHoldAttack())
+			primaryAttack(true);
+		else
+			primaryAttack();
+	}
+	else
+		primaryAttack();
+
+	return true;
+}
+
+void CBotCoop::handleWeapons()
+{
+	//
+	// Handle attacking at this point
+	//
+	if (m_pEnemy && !hasSomeConditions(CONDITION_ENEMY_DEAD) &&
+		hasSomeConditions(CONDITION_SEE_CUR_ENEMY) && wantToShoot() &&
+		isVisible(m_pEnemy) && isEnemy(m_pEnemy))
+	{
+		CBotWeapon* pWeapon;
+		CBotWeapon* pRPG = m_pWeapons->getWeapon(CWeapons::getWeapon(SYN_WEAPON_RPG));
+
+		edict_t* pEnemy = m_pEnemy.get();
+		const char* enemyclassname = pEnemy->GetClassName();
+		
+		if ((strcmp(enemyclassname, "npc_combinegunship") == 0) || (strcmp(enemyclassname, "npc_helicopter") == 0) || (strcmp(enemyclassname, "npc_strider") == 0))
+		{
+			if (pRPG && pRPG->hasWeapon() && !pRPG->outOfAmmo(this))
+				pWeapon = pRPG;
+		}
+		else
+			pWeapon = getBestWeapon(m_pEnemy);
+
+		if (m_bWantToChangeWeapon && (pWeapon != NULL) && (pWeapon != getCurrentWeapon()) && pWeapon->getWeaponIndex())
+		{
+			//selectWeaponSlot(pWeapon->getWeaponInfo()->getSlot());
+			selectWeapon(pWeapon->getWeaponIndex());
+		}
+
+		setLookAtTask(LOOK_ENEMY);
+
+		if (!handleAttack(pWeapon, m_pEnemy))
+		{
+			m_pEnemy = NULL;
+			m_pOldEnemy = NULL;
+			wantToShoot(false);
+		}
+	}
 }
 
 bool CBotCoop::checkStuck()

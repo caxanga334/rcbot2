@@ -78,6 +78,10 @@ public:
 
 	bool canGotoWaypoint(Vector vPrevWaypoint, CWaypoint* pWaypoint, CWaypoint* pPrev);
 
+	virtual bool handleAttack(CBotWeapon* pWeapon, edict_t* pEnemy);
+
+	virtual void handleWeapons();
+
 	virtual unsigned int maxEntityIndex() { return gpGlobals->maxEntities; }
 
 	float getArmorPercent() { return (0.01f * m_pPlayerInfo->GetArmorValue()); }
