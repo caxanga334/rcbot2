@@ -756,8 +756,6 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 
 void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWaypoint)
 {
-	int iTouchedWpt = CWaypoints::getWaypointIndex(pWaypoint);
-
 	if (CWaypoints::validWaypointIndex(iPrevWaypoint) && CWaypoints::validWaypointIndex(iNextWaypoint))
 	{
 		CWaypoint* pPrev = CWaypoints::getWaypoint(iPrevWaypoint);
@@ -776,7 +774,54 @@ void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWayp
 			jump();
 			CClients::clientDebugMsg(this, BOT_DEBUG_NAV, "Bot touched last ladder waypoint");
 		}
-	} 
+	}
+
+	if (pWaypoint->getFlags() & CWaypointTypes::W_FL_USE_BUTTON)
+	{
+		edict_t* pDoor = CClassInterface::FindNearbyEntityByClassname(getOrigin(), "prop_door_rotating", 256.0f);
+
+		if (pDoor)
+		{
+			CSynergyMod synmod;
+			CDataInterface data;
+			CBaseEntity* pEntity = pDoor->GetUnknown()->GetBaseEntity();
+			eSynDoorState doorstate = synmod.GetPropDoorState(pEntity);
+			bool bLocked = data.IsEntityLocked(pEntity);
+
+			if (!bLocked) // door is not locked
+			{
+				if (doorstate == DOOR_CLOSED) // found closed door near use waypoint
+				{
+					CBotSchedule* pSched = new CBotSchedule();
+
+					pSched->addTask(new CMoveToTask(pDoor));
+					pSched->addTask(new CBotHL2DMUseButton(pDoor));
+
+					m_pSchedules->addFront(pSched);
+					debugMsg(BOT_DEBUG_THINK, "USE Waypoint: Found prop_door_rotating");
+				}
+			}
+		}
+
+		edict_t* pButton = CClassInterface::FindNearbyEntityByClassname(getOrigin(), "func_button", 256.0f);
+
+		if (pButton && pDoor == NULL)
+		{
+			CDataInterface data;
+			CBaseEntity* pEntity = pButton->GetUnknown()->GetBaseEntity();
+			bool bLocked = data.IsEntityLocked(pEntity);
+			if (!bLocked)
+			{
+				CBotSchedule* pSched = new CBotSchedule();
+
+				pSched->addTask(new CMoveToTask(pButton));
+				pSched->addTask(new CBotHL2DMUseButton(pButton));
+
+				m_pSchedules->addFront(pSched);
+				debugMsg(BOT_DEBUG_THINK, "USE Waypoint: Found func_button");
+			}
+		}
+	}
 
 	CBot::touchedWpt(pWaypoint, iNextWaypoint, iPrevWaypoint);
 }
@@ -784,6 +829,14 @@ void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWayp
 // returns true if offset has been applied when not before
 bool CBotCoop::walkingTowardsWaypoint(CWaypoint* pWaypoint, bool* bOffsetApplied, Vector& vOffset)
 {
+	if (pWaypoint->getFlags() & CWaypointTypes::W_FL_NO_VEHICLES)
+	{
+		CSynergyMod synmod;
+		if (synmod.IsPlayerInVehicle(m_pEdict))
+		{
+			use();
+		}
+	}
 	return CBot::walkingTowardsWaypoint(pWaypoint, bOffsetApplied, vOffset);
 }
 
@@ -855,5 +908,24 @@ void CBotCoop::handleWeapons()
 
 bool CBotCoop::checkStuck()
 {
-	return CBot::checkStuck();
+	bool bStuck = CBot::checkStuck();
+	/**edict_t* pDoor = CClassInterface::FindNearbyEntityByClassname(getOrigin(), "prop_door_rotating", 256.0f);
+	
+	if (pDoor)
+	{
+		CSynergyMod synmod;
+		CBaseEntity* pEntity = pDoor->GetUnknown()->GetBaseEntity();
+		eSynDoorState doorstate = synmod.GetPropDoorState(pEntity);
+		bool bLocked = synmod.IsPropDoorLocked(pEntity);
+
+		if (!bLocked) // door is not locked
+		{
+			if (doorstate == DOOR_CLOSED)
+			{
+				use();
+			}
+		}
+	} **/
+
+	return bStuck;
 }

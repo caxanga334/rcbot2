@@ -367,6 +367,7 @@ public:
 	static edict_t *FindEntityByNetClass(int start, const char *classname);
 	static edict_t *FindEntityByNetClassNearest(Vector vstart, const char *classname);
 	static edict_t *FindEntityByClassnameNearest(Vector vstart, const char *classname, float fMinDist = 8192.0f, edict_t *pOwner = NULL );
+	static edict_t* FindNearbyEntityByClassname(Vector vstart, const char* classname, float fMaxDist = 1024.0f, edict_t* pOwner = NULL);
 
 	// TF2
 	static int getTF2Score ( edict_t *edict );
@@ -756,8 +757,20 @@ public:
 		int offset = UTIL_FindInDataMap(pDataMap, "m_iHealth");
 		int offset2 = UTIL_FindInDataMap(pDataMap, "m_iMaxHealth");
 		int iHealth = *(int*)((char*)pEntity + offset);
-		int iMaxHealth = *(int*)((char*)pEntity + offset);
-		return (static_cast<float>(iHealth / iMaxHealth));
+		int iMaxHealth = *(int*)((char*)pEntity + offset2);
+		return (static_cast<float>(iHealth) / iMaxHealth);
+	}
+
+	// returns true if m_bLocked is 1, generally exists in doors, buttons and vehicles
+	inline bool IsEntityLocked(CBaseEntity* pEntity)
+	{
+		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
+		int offset = UTIL_FindInDataMap(pDataMap, "m_bLocked");
+		int iLocked = *(int*)((char*)pEntity + offset);
+		if (iLocked == 1)
+			return true;
+		else
+			return false;
 	}
 };
 

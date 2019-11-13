@@ -140,6 +140,7 @@ public:
 	static const int W_FL_COOP_MAPEND = 32; // SYNERGY
 	static const int W_FL_NOBLU = 64;
 	static const int W_FL_NOAXIS = 64;
+	static const int W_FL_NO_VEHICLES = 64; // Synergy
 	static const int W_FL_NORED = 128;
 	static const int W_FL_NOALLIES = 128;
 	static const int W_FL_HEALTH = 256;
@@ -151,7 +152,8 @@ public:
 	static const int W_FL_AMMO = 4096;
 	static const int W_FL_RESUPPLY = 8192;
 	static const int W_FL_BOMBS_HERE = 8192;
-	static const int W_FL_TRIGGER_HURT = 8192; // Synergy
+	static const int W_FL_AMMO_CRATE = 8192; // Synergy
+	static const int W_FL_PAIN = 16384; // Synergy
 	static const int W_FL_SENTRY = 16384;
 	static const int W_FL_MACHINEGUN = 16384;
 	static const int W_FL_DOUBLEJUMP = 32768;

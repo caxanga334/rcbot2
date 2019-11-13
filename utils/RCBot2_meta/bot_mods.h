@@ -88,6 +88,14 @@ typedef enum
 	BOTTYPE_MAX
 }eBotType;
 
+typedef enum
+{
+	DOOR_CLOSED = 0,
+	DOOR_OPENING = 1,
+	DOOR_OPEN = 2,
+	DOOR_CLOSING = 3,
+}eSynDoorState;
+
 
 // tf2
 class CAttributeID
@@ -786,6 +794,10 @@ public:
 	edict_t *GetRandomPlayer(edict_t* pIgnore);
 
 	void addWaypointFlags(edict_t* pPlayer, edict_t* pEdict, int* iFlags, int* iArea, float* fMaxDistance);
+
+	eSynDoorState GetPropDoorState(CBaseEntity* pDoor);
+
+	bool IsPlayerInVehicle(edict_t* pPlayer);
 
 	// Gets the map global state
 	inline static int GetMapGlobal() { return m_iMapGlobal; }

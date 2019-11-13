@@ -121,6 +121,29 @@ edict_t *CSynergyMod::GetRandomPlayer(edict_t *pIgnore)
 
 void CSynergyMod::addWaypointFlags(edict_t* pPlayer, edict_t* pEdict, int* iFlags, int* iArea, float* fMaxDistance)
 {
-	if (strncmp(pEdict->GetClassName(), "trigger_hurt", 12) == 0)
-		*iFlags |= CWaypointTypes::W_FL_TRIGGER_HURT;
+	const char* szclassname = pEdict->GetClassName();
+	if (strcmp(szclassname, "item_healthkit") == 0)
+		*iFlags |= CWaypointTypes::W_FL_HEALTH;
+	else if (strcmp(szclassname, "func_healthcharger") == 0)
+		*iFlags |= CWaypointTypes::W_FL_HEALTH;
+	else if (strcmp(szclassname, "item_ammo_crate") == 0)
+		*iFlags |= CWaypointTypes::W_FL_AMMO_CRATE;
+
+}
+
+eSynDoorState CSynergyMod::GetPropDoorState(CBaseEntity* pDoor)
+{
+	datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pDoor);
+	int offset = UTIL_FindInDataMap(pDataMap, "m_eDoorState");
+	int iState = *(int*)((char*)pDoor + offset);
+	return static_cast<eSynDoorState>(iState);
+}
+
+bool CSynergyMod::IsPlayerInVehicle(edict_t* pPlayer)
+{
+	edict_t* pVehicle = CClassInterface::getSynPlrVehicle(pPlayer);
+	if (pVehicle)
+		return true;
+	else
+		return false;
 }

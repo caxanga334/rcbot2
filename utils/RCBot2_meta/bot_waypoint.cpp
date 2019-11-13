@@ -3208,7 +3208,7 @@ void CWaypointTypes :: setup ()
 	addType(new CWaypointType(W_FL_HEALTH,"health","bot can sometimes get health here",WptColor(255,255,255),(1<<MOD_TF2)|(1<<MOD_HLDM2) | (1 << MOD_SYNERGY)));
 	addType(new CWaypointType(W_FL_ROCKET_JUMP,"rocketjump","TF2 a bot can rocket jump here",WptColor(10,100,0),(1<<MOD_TF2)));
 	addType(new CWaypointType(W_FL_AMMO,"ammo","bot can sometimes get ammo here",WptColor(50,100,10),(1<<MOD_TF2)|(1<<MOD_HLDM2)|(1 << MOD_SYNERGY)));
-	addType(new CWaypointType(W_FL_RESUPPLY,"resupply","TF2 resupply locker. Synergy ammo crate",WptColor(255,100,255),(1<<MOD_TF2) | (1 << MOD_SYNERGY)));
+	addType(new CWaypointType(W_FL_RESUPPLY,"resupply","TF2 bot can always get ammo and health here",WptColor(255,100,255),(1<<MOD_TF2)));
 	addType(new CWaypointType(W_FL_SENTRY,"sentry","TF2 engineer bot can build here",WptColor(255,0,0),(1<<MOD_TF2)));
 	addType(new CWaypointType(W_FL_DOUBLEJUMP,"doublejump","TF2 scout can double jump here",WptColor(10,10,100),(1<<MOD_TF2)));
 	addType(new CWaypointType(W_FL_TELE_ENTRANCE,"teleentrance","TF2 engineer bot can build tele entrance here",WptColor(50,50,150),(1<<MOD_TF2)));
@@ -3246,7 +3246,9 @@ void CWaypointTypes :: setup ()
 	addType(new CWaypointType(W_FL_COOP_MAPEND, "mapend", "Map end/changelevel here.", WptColor(255, 153, 255), (1 << MOD_SYNERGY)));
 	addType(new CWaypointType(W_FL_COOP_GOAL, "goal", "Bots will go to this waypoint to complete map goals.", WptColor(255, 153, 255), (1 << MOD_SYNERGY)));
 	addType(new CWaypointType(W_FL_USE_BUTTON, "use", "Bots will press a button/use doors at this waypoint.", WptColor(0, 255, 204), (1 << MOD_SYNERGY)));
-	addType(new CWaypointType(W_FL_TRIGGER_HURT, "hurt", "Bots will take damage/die if they go here.", WptColor(255, 20, 50), (1 << MOD_SYNERGY)));
+	addType(new CWaypointType(W_FL_PAIN, "pain", "Bots will take damage/die if they go here.", WptColor(255, 20, 50), (1 << MOD_SYNERGY)));
+	addType(new CWaypointType(W_FL_AMMO_CRATE, "ammocrate", "Synergy bots can always get ammo from here", WptColor(255, 100, 255), (1 << MOD_SYNERGY)));
+	addType(new CWaypointType(W_FL_NO_VEHICLES, "novehicles", "Synergy bots will stop using vehicles if they go to this waypoint", WptColor(0, 150, 255), (1 << MOD_SYNERGY)));
 
 	//addType(new CWaypointType(W_FL_ATTACKPOINT,"squad_attackpoint","Tactical waypoint -- each squad will go to different attack points and signal others to go",WptColor(90,90,90)));
 }

@@ -705,6 +705,53 @@ edict_t *CClassInterface::FindEntityByClassnameNearest(Vector vstart, const char
 	return pfound;
 }
 
+// returns the closests entities to the given vector.
+edict_t* CClassInterface::FindNearbyEntityByClassname(Vector vstart, const char* classname, float fMaxDist, edict_t* pOwner)
+{
+	edict_t* current;
+	edict_t* pfound = NULL;
+	float fDist;
+	float fShortest = fMaxDist;
+	const char* pszClassname;
+	// speed up loop by by using smaller ints in register
+	register short int max = static_cast<short int>(gpGlobals->maxEntities);
+
+	for (register short int i = 0; i < max; i++)
+	{
+		current = engine->PEntityOfEntIndex(i);
+
+		if (current == NULL)
+			continue;
+
+		if (current->IsFree())
+			continue;
+
+		if (pOwner != NULL)
+		{
+			if (getOwner(current) != pOwner)
+				continue;
+		}
+
+		pszClassname = current->GetClassName(); // For Debugging purposes
+
+		if (strcmp(classname, pszClassname) == 0)
+		{
+			fDist = (vstart - CBotGlobals::entityOrigin(current)).Length();
+
+			if (!pfound || (fDist < fMaxDist))
+			{
+				if (fShortest > fDist)
+				{
+					fShortest = fDist;
+					pfound = current;
+				}
+			}
+		}
+	}
+
+	return pfound;
+}
+
 edict_t *CClassInterface::FindEntityByNetClassNearest(Vector vstart, const char *classname)
 {
 	edict_t *current;
