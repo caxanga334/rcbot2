@@ -4,6 +4,7 @@
 #include "bot.h"
 #include "bot_globals.h"
 #include "bot_getprop.h"
+#include "datamap.h"
 
 CClassInterfaceValue CClassInterface :: g_GetProps[GET_PROPDATA_MAX];
 bool CClassInterfaceValue :: m_berror = false;
@@ -291,6 +292,42 @@ void UTIL_FindPropPrint(const char *prop_name)
 	{
 		bInterfaceErr = true;
 	}
+}
+
+/**
+ * Finds a named offset in a datamap.
+ *
+ * @param pMap		Datamap to search.
+ * @param name		Name of the property to find.
+ * @return		Offset of a data map property, or 0 if not found.
+ */
+unsigned int UTIL_FindInDataMap(datamap_t* pMap, const char* name)
+{
+	while (pMap)
+	{
+		for (int i = 0; i < pMap->dataNumFields; i++)
+		{
+			if (pMap->dataDesc[i].fieldName == NULL)
+			{
+				continue;
+			}
+			if (strcmp(name, pMap->dataDesc[i].fieldName) == 0)
+			{
+				return pMap->dataDesc[i].fieldOffset[TD_OFFSET_NORMAL];
+			}
+			if (pMap->dataDesc[i].td)
+			{
+				unsigned int offset;
+				if ((offset = UTIL_FindInDataMap(pMap->dataDesc[i].td, name)) != 0)
+				{
+					return offset;
+				}
+			}
+		}
+		pMap = pMap->baseMap;
+	}
+
+	return 0;
 }
 
 void CClassInterfaceValue :: findOffset ( )
