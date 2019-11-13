@@ -5,6 +5,7 @@
 #include "bot_globals.h"
 #include "bot_getprop.h"
 #include "datamap.h"
+#include "bot_cvars.h"
 
 CClassInterfaceValue CClassInterface :: g_GetProps[GET_PROPDATA_MAX];
 bool CClassInterfaceValue :: m_berror = false;
@@ -328,6 +329,46 @@ unsigned int UTIL_FindInDataMap(datamap_t* pMap, const char* name)
 	}
 
 	return 0;
+}
+
+class VEmptyClass {};
+datamap_t* VGetDataDescMap(CBaseEntity* pThisPtr, int offset)
+{
+	void** this_ptr = *reinterpret_cast<void***>(&pThisPtr);
+	void** vtable = *reinterpret_cast<void***>(pThisPtr);
+	void* vfunc = vtable[offset];
+
+	union
+	{
+		datamap_t* (VEmptyClass::* mfpnew)();
+#ifndef PLATFORM_POSIX
+		void* addr;
+	} u;
+	u.addr = vfunc;
+#else
+		struct
+		{
+			void* addr;
+			intptr_t adjustor;
+		} s;
+} u;
+	u.s.addr = vfunc;
+	u.s.adjustor = 0;
+#endif
+
+	return (datamap_t*)(reinterpret_cast<VEmptyClass*>(this_ptr)->*u.mfpnew)();
+}
+
+datamap_t* CBaseEntity_GetDataDescMap(CBaseEntity* pEntity)
+{
+	int offset = rcbot_datamap_offset.GetInt();
+
+	if (offset == -1)
+	{
+		return NULL;
+	}
+
+	return VGetDataDescMap(pEntity, offset);
 }
 
 void CClassInterfaceValue :: findOffset ( )

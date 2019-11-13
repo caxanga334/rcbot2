@@ -868,6 +868,8 @@ bool RCBotPluginMeta::Load(const PluginId id, ISmmAPI* ismm, char* error, const 
 		rcbot_runplayercmd_dods.SetValue(val);
 	if (pKVL->getInt("runplayermove_syn_win", &val))
 		rcbot_runplayercmd_syn.SetValue(val);
+	if (pKVL->getInt("getdatadescmap_win", &val))
+		rcbot_datamap_offset.SetValue(val);
 	if (pKVL->getInt("getweaponslot_win", &val))
 		rcbot_getweaponslot_offset.SetValue(val);
 	if (pKVL->getInt("removewearable_win", &val))
@@ -894,6 +896,8 @@ bool RCBotPluginMeta::Load(const PluginId id, ISmmAPI* ismm, char* error, const 
 		rcbot_runplayercmd_dods.SetValue(val);
 	if (pKVL->getInt("runplayermove_syn_linux", &val))
 		rcbot_runplayercmd_syn.SetValue(val);
+	if (pKVL->getInt("getdatadescmap_linux", &val))
+		rcbot_datamap_offset.SetValue(val);
 	if (pKVL->getInt("getweaponslot_linux", &val))
 		rcbot_getweaponslot_offset.SetValue(val);
 	if (pKVL->getInt("removewearable_linux", &val))

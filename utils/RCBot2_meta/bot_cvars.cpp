@@ -80,6 +80,7 @@ ConVar rcbot_runplayercmd_tf2("rcbot_runplayer_cmd_tf2","418",0,"offset of the T
 ConVar rcbot_runplayercmd_syn("rcbot_runplayer_cmd_syn","424", 0, "offset of the SYNERGY PlayerRunCommand function");
 ConVar rcbot_runplayercmd_hookonce("rcbot_runplayer_hookonce","1",0,"function will hook only once, if 0 it will unhook and rehook after every map");
 ConVar rcbot_ladder_offs("rcbot_ladder_offs","42",0,"difference in height for bot to think it has touched the ladder waypoint");
+ConVar rcbot_datamap_offset("rcbot_datamap_offset", "-1", 0, "Offset for GetDataDescMap");
 ConVar rcbot_ffa("rcbot_ffa","0",0,"Free for all mode -- bots shoot everyone");
 ConVar rcbot_prone_enemy_only("rcbot_prone_enemy_only","1",0,"if 1 bots only prone in DOD:S when they have an enemy");
 ConVar rcbot_menu_update_time1("rcbot_menu_update_time1","0.04",0,"time to update menus [displaying message]");

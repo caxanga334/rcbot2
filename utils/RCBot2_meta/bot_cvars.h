@@ -75,6 +75,7 @@ extern ConVar rcbot_runplayercmd_tf2;
 extern ConVar rcbot_runplayercmd_syn;
 extern ConVar rcbot_runplayercmd_hookonce;
 extern ConVar rcbot_ladder_offs;
+extern ConVar rcbot_datamap_offset;
 extern ConVar rcbot_ffa;
 extern ConVar rcbot_prone_enemy_only;
 extern ConVar rcbot_menu_update_time1;

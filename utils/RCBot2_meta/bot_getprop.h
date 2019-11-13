@@ -167,6 +167,9 @@ ServerClass *UTIL_FindServerClass(const char *name);
 void UTIL_FindServerClassPrint(const char*name_cmd);
 void UTIL_FindServerClassnamePrint(const char *name_cmd);
 void UTIL_FindPropPrint(const char *prop_name);
+unsigned int UTIL_FindInDataMap(datamap_t* pMap, const char* name);
+datamap_t* CBaseEntity_GetDataDescMap(CBaseEntity* pEntity);
+datamap_t* VGetDataDescMap(CBaseEntity* pThisPtr, int offset);
 
 class CClassInterfaceValue
 {
@@ -728,6 +731,34 @@ public:
 private:
 	static CClassInterfaceValue g_GetProps[GET_PROPDATA_MAX];
 
+};
+
+class CDataInterface
+{
+public:
+	inline int GetEntityHealth(CBaseEntity* pEntity)
+	{
+		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
+		int offset = UTIL_FindInDataMap(pDataMap, "m_iHealth");
+		int iHealth = *(int*)((char*)pEntity + offset);
+		return iHealth;
+	}
+	inline int GetEntityMaxHealth(CBaseEntity* pEntity)
+	{
+		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
+		int offset = UTIL_FindInDataMap(pDataMap, "m_iMaxHealth");
+		int iMaxHealth = *(int*)((char*)pEntity + offset);
+		return iMaxHealth;
+	}
+	inline float GetEntityHealthPercent(CBaseEntity* pEntity)
+	{
+		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
+		int offset = UTIL_FindInDataMap(pDataMap, "m_iHealth");
+		int offset2 = UTIL_FindInDataMap(pDataMap, "m_iMaxHealth");
+		int iHealth = *(int*)((char*)pEntity + offset);
+		int iMaxHealth = *(int*)((char*)pEntity + offset);
+		return (static_cast<float>(iHealth / iMaxHealth));
+	}
 };
 
 #endif

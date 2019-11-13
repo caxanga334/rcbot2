@@ -236,7 +236,18 @@ void CBotCoop::getTasks(unsigned int iIgnore)
 
 	if ((m_pNPCAlyx.get() != NULL || m_pNPCBarney.get() != NULL) && m_pEnemy == NULL)
 	{
-		ADD_UTILITY(BOT_UTIL_SYN_GOTO_NPC, true, RandomFloat(0.0f, 0.3f));
+		CDataInterface datainterface;
+		CBaseEntity* pNPCEntity;
+		edict_t* pNPCEdict = NULL;
+
+		if (m_pNPCAlyx.get() != NULL)
+			pNPCEdict = m_pNPCAlyx;
+		else
+			pNPCEdict = m_pNPCBarney;
+
+		pNPCEntity = pNPCEdict->GetUnknown()->GetBaseEntity();
+
+		ADD_UTILITY(BOT_UTIL_SYN_GOTO_NPC, true, 1.0f - datainterface.GetEntityHealthPercent(pNPCEntity));
 	}
 
 
