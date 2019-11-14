@@ -610,6 +610,45 @@ bool CBotCoop::executeAction(eBotAction iAction)
 return false;
 }
 
+bool CBotCoop::canAvoid(edict_t* pEntity)
+{
+	float distance;
+	Vector vAvoidOrigin;
+	const char* classname;
+
+	extern ConVar bot_avoid_radius;
+
+	if (!CBotGlobals::entityIsValid(pEntity))
+		return false;
+	if (m_pEdict == pEntity) // can't avoid self!!!
+		return false;
+	if (m_pLookEdict == pEntity)
+		return false;
+	if (m_pLastEnemy == pEntity)
+		return false;
+
+	classname = pEntity->GetClassName();
+
+	if (strcmp(classname, "item_ammo_crate") == 0) // don't avoid crates.
+		return false;
+
+	vAvoidOrigin = CBotGlobals::entityOrigin(pEntity);
+
+	distance = distanceFrom(vAvoidOrigin);
+
+	if ((distance > 1) && (distance < bot_avoid_radius.GetFloat()) && (fabs(getOrigin().z - vAvoidOrigin.z) < 32))
+	{
+		SolidType_t solid = pEntity->GetCollideable()->GetSolid();
+
+		if ((solid == SOLID_BBOX) || (solid == SOLID_VPHYSICS))
+		{
+			return isEnemy(pEntity, false);
+		}
+	}
+
+	return false;
+}
+
 bool CBotCoop::isEnemy(edict_t* pEdict, bool bCheckWeapons)
 {
 	extern ConVar rcbot_notarget;

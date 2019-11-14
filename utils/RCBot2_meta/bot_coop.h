@@ -59,6 +59,7 @@ public:
 
 	bool executeAction(eBotAction iAction);
 
+	virtual bool canAvoid(edict_t* pEntity);
 	virtual bool isEnemy ( edict_t *pEdict, bool bCheckWeapons = true  );
 
 	void voiceCommand(int cmd) override;
