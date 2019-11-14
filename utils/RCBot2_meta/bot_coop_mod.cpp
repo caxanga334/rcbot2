@@ -50,6 +50,7 @@
 #include "bot_perceptron.h"
 #include "bot_waypoint_visibility.h"
 #include "bot_mods.h"
+#include "bot_cvars.h"
 
 #include "vstdlib/random.h" // for random functions
 
@@ -126,8 +127,14 @@ void CSynergyMod::addWaypointFlags(edict_t* pPlayer, edict_t* pEdict, int* iFlag
 		*iFlags |= CWaypointTypes::W_FL_HEALTH;
 	else if (strcmp(szclassname, "func_healthcharger") == 0)
 		*iFlags |= CWaypointTypes::W_FL_HEALTH;
-	else if (strcmp(szclassname, "item_ammo_crate") == 0)
-		*iFlags |= CWaypointTypes::W_FL_AMMO_CRATE;
+
+	if (strncmp(szclassname, "item_ammo", 9) == 0)
+	{
+		if (strcmp(szclassname, "item_ammo_crate") == 0)
+			*iFlags |= CWaypointTypes::W_FL_AMMO_CRATE;
+		else
+			*iFlags |= CWaypointTypes::W_FL_AMMO;
+	}
 
 }
 

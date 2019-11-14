@@ -88,6 +88,7 @@ void CBotCoop::spawnInit()
 	m_pNPCBarney = NULL;
 	m_fUseButtonTime = 0.0f;
 	m_fUseCrateTime = 0.0f;
+	m_fScavengeTime = (engine->Time() + RandomFloat(5.0f + 60.0f));
 	m_iHealthPack = CClassInterface::getSynPlrHealthPack(m_pEdict);
 }
 
@@ -200,6 +201,7 @@ void CBotCoop::getTasks(unsigned int iIgnore)
 	ADD_UTILITY(BOT_UTIL_HL2DM_USE_CRATE, (m_pAmmoCrate.get() != NULL) && (m_fUseCrateTime < engine->Time()), 1.0f);
 	// low on ammo? ammo nearby?
 	ADD_UTILITY(BOT_UTIL_FIND_NEAREST_AMMO, (m_pAmmoKit.get() != NULL) && (getAmmo(0) < 5), 0.01f * (100 - getAmmo(0)));
+	ADD_UTILITY(BOT_UTIL_GETAMMOKIT, ShouldScavengeItems(), 0.01f * (100 - getAmmo(0)));
 
 	// always able to roam around
 	ADD_UTILITY(BOT_UTIL_ROAM, true, 0.01f);
@@ -417,6 +419,26 @@ bool CBotCoop::executeAction(eBotAction iAction)
 			return true;
 		}
 	}
+	case BOT_UTIL_GETAMMOKIT:
+	{
+		CWaypoint* pWaypoint;
+
+		if (RandomInt(1, 2) == 2)
+		{
+			pWaypoint = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_AMMO_CRATE);
+			if(pWaypoint == NULL)
+				pWaypoint = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_AMMO);
+		}
+		else
+			pWaypoint = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_AMMO);
+
+		if (pWaypoint)
+		{
+			m_pSchedules->add(new CBotGotoOriginSched(pWaypoint->getOrigin()));
+			return true;
+		}
+
+	}
 	case BOT_UTIL_FIND_LAST_ENEMY: // todo: update this code to support NPCs
 	{
 		Vector vVelocity = Vector(0, 0, 0);
@@ -493,6 +515,9 @@ bool CBotCoop::executeAction(eBotAction iAction)
 		// roam
 		CWaypoint* pWaypoint = NULL;
 		CWaypoint* pRoute = NULL;
+		CBotSchedule* pSched = new CBotSchedule();
+
+		pSched->setID(SCHED_GOTO_ORIGIN);
 
 		int iRandom = RandomInt(1, 3);
 
@@ -519,21 +544,30 @@ bool CBotCoop::executeAction(eBotAction iAction)
 		}
 		}
 
+		
+
 		if (pWaypoint)
 		{
+			pRoute = CWaypoints::randomRouteWaypoint(this, getOrigin(), pWaypoint->getOrigin(), 0, 0);
 			if ((m_fUseRouteTime < engine->Time()))
 			{
-				pRoute = CWaypoints::randomRouteWaypoint(this, getOrigin(), pWaypoint->getOrigin(), 0, 0);
+				
 				if (pRoute)
 				{
-					m_pSchedules->add(new CBotGotoOriginSched(pRoute->getOrigin()));
+					int iRoute = CWaypoints::getWaypointIndex(pRoute);
+					pSched->addTask(new CFindPathTask(iRoute, LOOK_WAYPOINT));
+					pSched->addTask(new CMoveToTask(pRoute->getOrigin()));
+					m_pSchedules->add(pSched);
 					m_fUseRouteTime = engine->Time() + 30.0f;
 				}
 			}
 
 			if (pRoute == NULL)
 			{
-				m_pSchedules->add(new CBotGotoOriginSched(pWaypoint->getOrigin()));
+				int iWaypoint = CWaypoints::getWaypointIndex(pWaypoint);
+				pSched->addTask(new CFindPathTask(iWaypoint, LOOK_WAYPOINT));
+				pSched->addTask(new CMoveToTask(pRoute->getOrigin()));
+				m_pSchedules->add(pSched);
 			}
 
 			return true;
@@ -573,7 +607,7 @@ bool CBotCoop::executeAction(eBotAction iAction)
 	}
 }
 
-	return false;
+return false;
 }
 
 bool CBotCoop::isEnemy(edict_t* pEdict, bool bCheckWeapons)
@@ -604,7 +638,6 @@ bool CBotCoop::isEnemy(edict_t* pEdict, bool bCheckWeapons)
 
 	szclassname = pEdict->GetClassName();
 
-	// todo: filter NPCs
 	if (strncmp(szclassname, "npc_", 4) == 0)
 	{
 		if ((strcmp(szclassname, "npc_antlion") == 0) && iGlobalState == SYN_MAPGLOBAL_ANTLIONSALLY)
@@ -625,6 +658,10 @@ bool CBotCoop::isEnemy(edict_t* pEdict, bool bCheckWeapons)
 			return true;
 		}
 	}
+
+	if (strcmp(szclassname, "item_item_crate") == 0)
+		return true;
+
 	return false;
 }
 
@@ -909,10 +946,20 @@ void CBotCoop::handleWeapons()
 		if ((strcmp(enemyclassname, "npc_combinegunship") == 0) || (strcmp(enemyclassname, "npc_helicopter") == 0) || (strcmp(enemyclassname, "npc_strider") == 0))
 		{
 			if (pRPG && pRPG->hasWeapon() && !pRPG->outOfAmmo(this))
+			{
 				pWeapon = pRPG;
+				selectWeapon(pRPG->getWeaponIndex());
+			}	
 		}
 		else
 			pWeapon = getBestWeapon(m_pEnemy);
+
+		if (strcmp(enemyclassname, "item_item_crate") == 0)
+		{
+			pWeapon = getBestWeapon(m_pEnemy, true, true, true, false); // use melee to break crates
+			selectWeapon(pWeapon->getWeaponIndex());
+		}
+
 
 		if (m_bWantToChangeWeapon && (pWeapon != NULL) && (pWeapon != getCurrentWeapon()) && pWeapon->getWeaponIndex())
 		{
@@ -953,4 +1000,21 @@ bool CBotCoop::checkStuck()
 	} **/
 
 	return bStuck;
+}
+
+bool CBotCoop::ShouldScavengeItems(float fNextDelay)
+{
+	if (engine->Time() > m_fScavengeTime)
+	{
+		if (fNextDelay > 0.0f)
+		{
+			m_fScavengeTime = (engine->Time() + fNextDelay);
+		}
+		else
+			m_fScavengeTime = (engine->Time() + RandomFloat(45.0f, 160.0f));
+
+		return true;
+	}
+	else
+		return false;
 }

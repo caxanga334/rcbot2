@@ -123,7 +123,6 @@ extern ConVar *mp_friendlyfire;
 
 extern ConCommandBase *puppet_bot_cmd;
 
-
 void RCBOT2_Cvar_setup (ICvar *cvar);
 
 #endif

@@ -85,6 +85,8 @@ public:
 	virtual unsigned int maxEntityIndex() { return gpGlobals->maxEntities; }
 
 	float getArmorPercent() { return (0.01f * m_pPlayerInfo->GetArmorValue()); }
+
+	bool ShouldScavengeItems(float fNextDelay = -1.0f);
 private:
 	MyEHandle m_NearestBreakable;
 	MyEHandle m_pHealthCharger;
@@ -103,6 +105,7 @@ private:
 
 	float m_fUseButtonTime;
 	float m_fUseCrateTime;
+	float m_fScavengeTime; // scavenge for items (ammo, weapons, armor);
 
 	int m_iHealthPack;
 };
