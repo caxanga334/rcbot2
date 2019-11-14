@@ -566,7 +566,7 @@ bool CBotCoop::executeAction(eBotAction iAction)
 			{
 				int iWaypoint = CWaypoints::getWaypointIndex(pWaypoint);
 				pSched->addTask(new CFindPathTask(iWaypoint, LOOK_WAYPOINT));
-				pSched->addTask(new CMoveToTask(pRoute->getOrigin()));
+				pSched->addTask(new CMoveToTask(pWaypoint->getOrigin()));
 				m_pSchedules->add(pSched);
 			}
 
@@ -948,7 +948,8 @@ void CBotCoop::handleWeapons()
 			if (pRPG && pRPG->hasWeapon() && !pRPG->outOfAmmo(this))
 			{
 				pWeapon = pRPG;
-				selectWeapon(pRPG->getWeaponIndex());
+				if ((pWeapon != NULL) && (pWeapon != getCurrentWeapon()))
+					selectWeapon(pWeapon->getWeaponIndex());
 			}	
 		}
 		else
@@ -957,7 +958,8 @@ void CBotCoop::handleWeapons()
 		if (strcmp(enemyclassname, "item_item_crate") == 0)
 		{
 			pWeapon = getBestWeapon(m_pEnemy, true, true, true, false); // use melee to break crates
-			selectWeapon(pWeapon->getWeaponIndex());
+			if ((pWeapon != NULL) && (pWeapon != getCurrentWeapon()))
+				selectWeapon(pWeapon->getWeaponIndex());
 		}
 
 
