@@ -89,10 +89,6 @@ void CBotCoop::spawnInit()
 	m_fUseButtonTime = 0.0f;
 	m_fUseCrateTime = 0.0f;
 	m_iHealthPack = CClassInterface::getSynPlrHealthPack(m_pEdict);
-
-	CClient* pClient = CClients::get(m_pEdict);
-	const char* szname = pClient->getName();
-	CClients::clientDebugMsg(this, BOT_DEBUG_HUD, "spawnInit called for %s", szname);
 }
 
 /*
@@ -331,13 +327,33 @@ bool CBotCoop::executeAction(eBotAction iAction)
 				pWeapon = m_pWeapons->getWeapon(CWeapons::getWeapon(SYN_WEAPON_MP5K));
 			}
 		}
+		else if (type == '3')
+		{
+			pWeapon = m_pWeapons->getWeapon(CWeapons::getWeapon(SYN_WEAPON_357));
+			if (pWeapon == NULL)
+			{
+				pWeapon = m_pWeapons->getWeapon(CWeapons::getWeapon(SYN_WEAPON_DEAGLE));
+			}
+		}
+		else if (type == 'b')
+		{
+			pWeapon = m_pWeapons->getWeapon(CWeapons::getWeapon(SYN_WEAPON_SHOTGUN));
+		}
+		else if (type == 'c')
+		{
+			pWeapon = m_pWeapons->getWeapon(CWeapons::getWeapon(SYN_WEAPON_CROSSBOW));
+		}
+		else if (type == 'p')
+		{
+			pWeapon = m_pWeapons->getWeapon(CWeapons::getWeapon(SYN_WEAPON_PISTOL));
+		}
 
 		if (pWeapon && (pWeapon->getAmmo(this) < 1))
 		{
 			CBotSchedule* pSched = new CBotSchedule();
 
-			pSched->addTask(new CFindPathTask(m_pAmmoCrate));
-			pSched->addTask(new CBotHL2DMUseButton(m_pAmmoCrate));
+			pSched->addTask(new CFindPathTask(m_pAmmoCrate.get()));
+			pSched->addTask(new CBotHL2DMUseButton(m_pAmmoCrate.get()));
 
 			m_pSchedules->add(pSched);
 
@@ -371,8 +387,8 @@ bool CBotCoop::executeAction(eBotAction iAction)
 	{
 		CBotSchedule* pSched = new CBotSchedule();
 
-		pSched->addTask(new CFindPathTask(m_pHealthCharger));
-		pSched->addTask(new CBotHL2DMUseCharger(m_pHealthCharger, CHARGER_HEALTH));
+		pSched->addTask(new CFindPathTask(m_pHealthCharger.get()));
+		pSched->addTask(new CBotHL2DMUseCharger(m_pHealthCharger.get(), CHARGER_HEALTH));
 
 		m_pSchedules->add(pSched);
 
@@ -383,8 +399,8 @@ bool CBotCoop::executeAction(eBotAction iAction)
 	{
 		CBotSchedule* pSched = new CBotSchedule();
 
-		pSched->addTask(new CFindPathTask(m_pCharger));
-		pSched->addTask(new CBotHL2DMUseCharger(m_pCharger, CHARGER_ARMOR));
+		pSched->addTask(new CFindPathTask(m_pCharger.get()));
+		pSched->addTask(new CBotHL2DMUseCharger(m_pCharger.get(), CHARGER_ARMOR));
 
 		m_pSchedules->add(pSched);
 
@@ -756,23 +772,32 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 
 void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWaypoint)
 {
-	if (CWaypoints::validWaypointIndex(iPrevWaypoint) && CWaypoints::validWaypointIndex(iNextWaypoint))
+	//if (CWaypoints::validWaypointIndex(iPrevWaypoint) && CWaypoints::validWaypointIndex(iNextWaypoint))
+	//{
+	//	CWaypoint* pPrev = CWaypoints::getWaypoint(iPrevWaypoint);
+	//	CWaypoint* pNext = CWaypoints::getWaypoint(iNextWaypoint);
+	//	// bot touched the first ladder waypoint, 
+	//	if ( (pPrev->getFlags() & CWaypointTypes::W_FL_LADDER) == 0 && (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER))
+	//	{
+	//		//m_pButtons->tap(IN_USE);
+	//		CClients::clientDebugMsg(this, BOT_DEBUG_NAV, "Bot touched first ladder waypoint");
+	//	}
+	//	// bot touched the last ladder waypoint
+	//	if ((pNext->getFlags() & CWaypointTypes::W_FL_LADDER) == 0 && (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER))
+	//	{
+	//		//m_pButtons->tap(IN_USE);
+	//		use();
+	//		jump();
+	//		CClients::clientDebugMsg(this, BOT_DEBUG_NAV, "Bot touched last ladder waypoint");
+	//	}
+	//}
+
+	// if the waypoint contains both ladder & use flag and the bot is not on a ladder, press use.
+	if (pWaypoint->getFlags() & (CWaypointTypes::W_FL_LADDER | CWaypointTypes::W_FL_USE_BUTTON))
 	{
-		CWaypoint* pPrev = CWaypoints::getWaypoint(iPrevWaypoint);
-		CWaypoint* pNext = CWaypoints::getWaypoint(iNextWaypoint);
-		// bot touched the first ladder waypoint, 
-		if ( (pPrev->getFlags() & CWaypointTypes::W_FL_LADDER) == 0 && (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER))
+		if (CClassInterface::onLadder(m_pEdict) == NULL)
 		{
-			//m_pButtons->tap(IN_USE);
-			CClients::clientDebugMsg(this, BOT_DEBUG_NAV, "Bot touched first ladder waypoint");
-		}
-		// bot touched the last ladder waypoint
-		if ((pNext->getFlags() & CWaypointTypes::W_FL_LADDER) == 0 && (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER))
-		{
-			//m_pButtons->tap(IN_USE);
 			use();
-			jump();
-			CClients::clientDebugMsg(this, BOT_DEBUG_NAV, "Bot touched last ladder waypoint");
 		}
 	}
 
