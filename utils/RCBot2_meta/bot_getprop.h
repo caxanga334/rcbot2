@@ -737,6 +737,7 @@ private:
 class CDataInterface
 {
 public:
+	// Returns the value of m_iHealth
 	inline int GetEntityHealth(CBaseEntity* pEntity)
 	{
 		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
@@ -745,6 +746,7 @@ public:
 		//return iHealth;
 		return *(int*)((char*)pEntity + offset);
 	}
+	// Returns the value of m_iMaxHealth
 	inline int GetEntityMaxHealth(CBaseEntity* pEntity)
 	{
 		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
@@ -752,6 +754,8 @@ public:
 		int iMaxHealth = *(int*)((char*)pEntity + offset);
 		return iMaxHealth;
 	}
+	// Divides m_iHealth and m_iMaxHealth to form a percentage
+	// Range 1.0-0.0 where 1.0 = FULL HEALTH
 	inline float GetEntityHealthPercent(CBaseEntity* pEntity)
 	{
 		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
@@ -761,7 +765,6 @@ public:
 		int iMaxHealth = *(int*)((char*)pEntity + offset2);
 		return (static_cast<float>(iHealth) / iMaxHealth);
 	}
-
 	// returns true if m_bLocked is 1, generally exists in doors, buttons and vehicles
 	inline bool IsEntityLocked(CBaseEntity* pEntity)
 	{
@@ -772,6 +775,33 @@ public:
 			return true;
 		else
 			return false;
+	}
+	// returns true if m_bDisabled is 1
+	inline bool IsEntityDisabled(CBaseEntity* pEntity)
+	{
+		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
+		int offset = UTIL_FindInDataMap(pDataMap, "m_bDisabled");
+		int iDisabled = *(int*)((char*)pEntity + offset);
+		if (iDisabled == 1)
+			return true;
+		else
+			return false;
+	}
+	// returns the value of m_toggle_state
+	inline int GetEntityToggleState(CBaseEntity* pEntity)
+	{
+		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
+		int offset = UTIL_FindInDataMap(pDataMap, "m_toggle_state");
+		int iState = *(int*)((char*)pEntity + offset);
+		return iState;
+	}
+	// returns the value of m_spawnflags
+	inline int GetEntitySpawnFlags(CBaseEntity* pEntity)
+	{
+		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
+		int offset = UTIL_FindInDataMap(pDataMap, "m_spawnflags");
+		int iSpawnFlags = *(int*)((char*)pEntity + offset);
+		return iSpawnFlags;
 	}
 };
 

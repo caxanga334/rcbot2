@@ -925,10 +925,34 @@ void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWayp
 
 				pSched->addTask(new CMoveToTask(pButton));
 				pSched->addTask(new CBotHL2DMUseButton(pButton));
-				pSched->addTask(new CBotDefendTask(getOrigin(), 1.5f)); // hack, make bot wait
 
 				m_pSchedules->addFront(pSched);
 				debugMsg(BOT_DEBUG_THINK, "USE Waypoint: Found func_button");
+			}
+		}
+
+		if (pButton == NULL && pDoor == NULL)
+		{
+			pButton = CClassInterface::FindNearbyEntityByClassname(getOrigin(), "func_rot_button", 256.0f);
+			if (pButton)
+			{
+				CDataInterface data;
+				CBaseEntity* pEntity = pButton->GetUnknown()->GetBaseEntity();
+				debugMsg(BOT_DEBUG_THINK, "Use Waypoint: Found func_rot_button");
+				int iRotButtonState = data.GetEntityToggleState(pEntity);
+				bool bLocked = data.IsEntityLocked(pEntity);
+				if (!bLocked && iRotButtonState == 1)
+				{
+					CBotSchedule* pSched = new CBotSchedule();
+
+					pSched->addTask(new CMoveToTask(pButton));
+					pSched->addTask(new CBotHL2DMUseButton(pButton));
+
+					m_pSchedules->addFront(pSched);
+					debugMsg(BOT_DEBUG_THINK, "Use Waypoint: Interacting with func_rot_button");
+				}
+				else
+					debugMsg(BOT_DEBUG_THINK, "Use Waypoint: func_rot_button is either locked or pressed, ignoring");
 			}
 		}
 	}
@@ -991,7 +1015,24 @@ bool CBotCoop::walkingTowardsWaypoint(CWaypoint* pWaypoint, bool* bOffsetApplied
 // Called when working out route
 bool CBotCoop::canGotoWaypoint(Vector vPrevWaypoint, CWaypoint* pWaypoint, CWaypoint* pPrev)
 {
-	return CBot::canGotoWaypoint(vPrevWaypoint, pWaypoint, pPrev);
+	bool bBase = CBot::canGotoWaypoint(vPrevWaypoint, pWaypoint, pPrev);
+	bool bCanGoTo = true;
+
+	if (!bBase) // base bot returned false
+		bCanGoTo = false;
+
+	if (bBase && (pWaypoint->getFlags() & CWaypointTypes::W_FL_PAIN))
+	{
+		edict_t* pHurt = CClassInterface::FindNearbyEntityByClassname(getOrigin(), "trigger_hurt", 256.0f);
+		if (pHurt)
+		{
+			CDataInterface data;
+			CBaseEntity* pEntity = pHurt->GetUnknown()->GetBaseEntity();
+			bCanGoTo = data.IsEntityDisabled(pEntity);
+		}
+	}
+
+	return bCanGoTo;
 }
 
 bool CBotCoop::handleAttack(CBotWeapon* pWeapon, edict_t* pEnemy)
