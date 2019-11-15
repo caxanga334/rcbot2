@@ -193,12 +193,12 @@ void CBotCoop::getTasks(unsigned int iIgnore)
 		ADD_UTILITY(BOT_UTIL_GETHEALTHKIT, (m_pHealthKit.get() == NULL && m_pHealthCharger.get() == NULL), 1.0f - getHealthPercent());
 	}
 
-	if (m_pNearbyTeamMate.get() != NULL)
-	{
-		int iTeamMateHP = CClassInterface::getPlayerHealth(m_pNearbyTeamMate.get());
-		float flTMHP = static_cast<float>(iTeamMateHP) / 100; // max health fixed at 100 for now.
-		ADD_UTILITY(BOT_UTIL_MEDIC_HEAL, ((flTMHP < 0.7f) && (m_iHealthPack >= 10)), 1.0f - flTMHP);
-	}
+	//if (m_pNearbyTeamMate.get() != NULL) // broken, disabling for now.
+	//{
+	//	int iTeamMateHP = CClassInterface::getPlayerHealth(m_pNearbyTeamMate.get());
+	//	float flTMHP = static_cast<float>(iTeamMateHP) / 100; // max health fixed at 100 for now.
+	//	ADD_UTILITY(BOT_UTIL_MEDIC_HEAL, ((flTMHP < 0.7f) && (m_iHealthPack >= 10)), 1.0f - flTMHP);
+	//}
 
 	// low on armor?
 	ADD_UTILITY(BOT_UTIL_HL2DM_FIND_ARMOR, (m_pBattery.get() != NULL) && (getArmorPercent() < 1.0f), (1.0f - getArmorPercent()) * 0.75f);
@@ -1095,5 +1095,7 @@ bool CBotCoop::ShouldScavengeItems(float fNextDelay)
 
 void CBotCoop::HealPlayer()
 {
+	helpers->ClientCommand(m_pEdict, "drophealth");
+	helpers->ClientCommand(m_pEdict, "drophealth");
 	helpers->ClientCommand(m_pEdict, "drophealth");
 }
