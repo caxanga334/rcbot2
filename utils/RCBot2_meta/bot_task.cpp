@@ -5414,6 +5414,51 @@ bool CBotTF2EngineerInterrupt :: isInterrupted ( CBot *pBot, bool *bFailed, bool
 	return false;
 }
 
+// Synergy Tasks
+void CSYNHealTeamMate::debugString(char* string)
+{
+	sprintf(string, "CSYNHealTeamMate");
+}
+
+void CSYNHealTeamMate::execute(CBot* pBot, CBotSchedule* pSchedule)
+{
+	Vector vOrigin = CBotGlobals::entityOrigin(m_pPlayer.get());
+
+	if (m_pPlayer.get() == NULL)
+	{
+		fail();
+		return;
+	}
+
+	if (!CBotGlobals::entityIsAlive(m_pPlayer))
+	{
+		fail();
+		return;
+	}
+
+	pBot->setLookAtTask(LOOK_VECTOR);
+	pBot->setLookVector(vOrigin);
+	pBot->setMoveTo(vOrigin);
+
+	if (pBot->isFacing(vOrigin))
+	{
+		if (!pBot->isVisible(m_pPlayer))
+		{
+			fail();
+			return;
+		}
+	}
+
+	if ((pBot->distanceFrom(m_pPlayer) < 230.0f) && pBot->isFacing(vOrigin))
+	{
+		CBotCoop* pBotCoop = static_cast<CBotCoop*>(pBot);
+		pBotCoop->HealPlayer();
+		complete();
+		return;
+	}
+
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Base Task
 CBotTask :: CBotTask ()

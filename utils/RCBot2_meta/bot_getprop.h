@@ -743,7 +743,7 @@ public:
 		int offset = UTIL_FindInDataMap(pDataMap, "m_iHealth");
 		int iHealth = *(int*)((char*)pEntity + offset);
 		//return iHealth;
-		return (int*)((char*)pEntity + offset);
+		return *(int*)((char*)pEntity + offset);
 	}
 	inline int GetEntityMaxHealth(CBaseEntity* pEntity)
 	{

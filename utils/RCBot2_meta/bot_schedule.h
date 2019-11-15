@@ -665,5 +665,13 @@ public:
 	}
 };
 
+class CSynBotHealTeamMate : public CBotSchedule
+{
+public:
+	CSynBotHealTeamMate(CBot *pBot, edict_t *pTeamMate);
+
+	void init() { setID(SCHED_HEAL); }
+};
+
 
 #endif

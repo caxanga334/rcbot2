@@ -86,7 +86,7 @@ public:
 	virtual unsigned int maxEntityIndex() { return gpGlobals->maxEntities; }
 
 	float getArmorPercent() { return (0.01f * m_pPlayerInfo->GetArmorValue()); }
-
+	void HealPlayer();
 	bool ShouldScavengeItems(float fNextDelay = -1.0f);
 private:
 	MyEHandle m_NearestBreakable;
@@ -100,6 +100,7 @@ private:
 	MyEHandle m_pAmmoCrate;
 	MyEHandle m_pNPCAlyx; // allow bots to track alyx
 	MyEHandle m_pNPCBarney; // allow bots to track barney
+	MyEHandle m_pNearbyTeamMate;
 	edict_t* m_pCurrentWeapon;
 
 	CBaseHandle* m_Weapons;

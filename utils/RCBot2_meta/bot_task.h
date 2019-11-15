@@ -1430,4 +1430,20 @@ public:
 
 	virtual void execute ( CBot *pBot );
 };*/
+
+class CSYNHealTeamMate : public CBotTask
+{
+public:
+	CSYNHealTeamMate(edict_t* pPlayer)
+	{
+		m_pPlayer = pPlayer;
+	}
+
+	virtual void debugString(char* string);
+	void execute(CBot* pBot, CBotSchedule* pSchedule);
+
+private:
+	MyEHandle m_pPlayer;
+};
+
 #endif

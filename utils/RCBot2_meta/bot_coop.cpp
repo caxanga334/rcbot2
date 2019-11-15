@@ -193,6 +193,12 @@ void CBotCoop::getTasks(unsigned int iIgnore)
 		ADD_UTILITY(BOT_UTIL_GETHEALTHKIT, (m_pHealthKit.get() == NULL && m_pHealthCharger.get() == NULL), 1.0f - getHealthPercent());
 	}
 
+	if (m_pNearbyTeamMate.get() != NULL)
+	{
+		int iTeamMateHP = CClassInterface::getPlayerHealth(m_pNearbyTeamMate.get());
+		float flTMHP = static_cast<float>(iTeamMateHP) / 100; // max health fixed at 100 for now.
+		ADD_UTILITY(BOT_UTIL_MEDIC_HEAL, ((flTMHP < 0.7f) && (m_iHealthPack >= 10)), 1.0f - flTMHP);
+	}
 
 	// low on armor?
 	ADD_UTILITY(BOT_UTIL_HL2DM_FIND_ARMOR, (m_pBattery.get() != NULL) && (getArmorPercent() < 1.0f), (1.0f - getArmorPercent()) * 0.75f);
@@ -438,6 +444,13 @@ bool CBotCoop::executeAction(eBotAction iAction)
 			return true;
 		}
 
+	}
+	case BOT_UTIL_MEDIC_HEAL:
+	{
+		if (m_pNearbyTeamMate.get() != NULL)
+		{
+			m_pSchedules->add(new CSynBotHealTeamMate(this, m_pNearbyTeamMate.get()));
+		}
 	}
 	case BOT_UTIL_FIND_LAST_ENEMY: // todo: update this code to support NPCs
 	{
@@ -818,6 +831,11 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 
 			m_pNearbyWeapon = pEntity;
 		}
+		else if ((strcmp(szClassname, "player") == 0) && pEntity != m_pEdict &&
+			(!m_pNearbyTeamMate.get() || (fDist < distanceFrom(m_pNearbyTeamMate.get()))))
+		{
+			m_pNearbyTeamMate = pEntity;
+		}
 	}
 	else
 	{
@@ -938,7 +956,36 @@ bool CBotCoop::walkingTowardsWaypoint(CWaypoint* pWaypoint, bool* bOffsetApplied
 			use();
 		}
 	}
-	return CBot::walkingTowardsWaypoint(pWaypoint, bOffsetApplied, vOffset);
+
+	if (pWaypoint->hasFlag(CWaypointTypes::W_FL_CROUCH))
+	{
+		duck(true);
+	}
+
+	if (pWaypoint->hasFlag(CWaypointTypes::W_FL_LIFT))
+	{
+		updateCondition(CONDITION_LIFT);
+	}
+	else
+	{
+		removeCondition(CONDITION_LIFT);
+	}
+
+	if (!*bOffsetApplied)
+	{
+		float fRadius = pWaypoint->getRadius();
+
+		if (fRadius > 0)
+			vOffset = Vector(randomFloat(-fRadius, fRadius), randomFloat(-fRadius, fRadius), 0);
+		else
+			vOffset = Vector(0, 0, 0);
+
+		*bOffsetApplied = true;
+
+		return true;
+	}
+
+	return false;
 }
 
 // Called when working out route
@@ -949,6 +996,7 @@ bool CBotCoop::canGotoWaypoint(Vector vPrevWaypoint, CWaypoint* pWaypoint, CWayp
 
 bool CBotCoop::handleAttack(CBotWeapon* pWeapon, edict_t* pEnemy)
 {
+	const char* enemyclassname = pEnemy->GetClassName();
 	if (pWeapon)
 	{
 		clearFailedWeaponSelect();
@@ -963,6 +1011,9 @@ bool CBotCoop::handleAttack(CBotWeapon* pWeapon, edict_t* pEnemy)
 	}
 	else
 		primaryAttack();
+
+	if (strcmp(enemyclassname, "item_item_crate") == 0)
+		setMoveTo(CBotGlobals::entityOrigin(pEnemy));
 
 	return true;
 }
@@ -1022,24 +1073,6 @@ void CBotCoop::handleWeapons()
 bool CBotCoop::checkStuck()
 {
 	bool bStuck = CBot::checkStuck();
-	/**edict_t* pDoor = CClassInterface::FindNearbyEntityByClassname(getOrigin(), "prop_door_rotating", 256.0f);
-	
-	if (pDoor)
-	{
-		CSynergyMod synmod;
-		CBaseEntity* pEntity = pDoor->GetUnknown()->GetBaseEntity();
-		eSynDoorState doorstate = synmod.GetPropDoorState(pEntity);
-		bool bLocked = synmod.IsPropDoorLocked(pEntity);
-
-		if (!bLocked) // door is not locked
-		{
-			if (doorstate == DOOR_CLOSED)
-			{
-				use();
-			}
-		}
-	} **/
-
 	return bStuck;
 }
 
@@ -1058,4 +1091,9 @@ bool CBotCoop::ShouldScavengeItems(float fNextDelay)
 	}
 	else
 		return false;
+}
+
+void CBotCoop::HealPlayer()
+{
+	helpers->ClientCommand(m_pEdict, "drophealth");
 }
