@@ -739,6 +739,8 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 			(!m_pAmmoKit.get() || (fDist < distanceFrom(m_pAmmoKit.get()))))
 		{
 			m_pAmmoKit = pEntity;
+			if (strcmp(szClassname, "item_ammo_crate") == 0)
+				m_pAmmoKit = NULL;
 		}
 		else if ((strncmp(szClassname, "item_health", 11) == 0) &&
 			(!m_pHealthKit.get() || (fDist < distanceFrom(m_pHealthKit.get()))))
@@ -848,37 +850,21 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 
 void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWaypoint)
 {
-	//if (CWaypoints::validWaypointIndex(iPrevWaypoint) && CWaypoints::validWaypointIndex(iNextWaypoint))
-	//{
-	//	CWaypoint* pPrev = CWaypoints::getWaypoint(iPrevWaypoint);
-	//	CWaypoint* pNext = CWaypoints::getWaypoint(iNextWaypoint);
-	//	// bot touched the first ladder waypoint, 
-	//	if ( (pPrev->getFlags() & CWaypointTypes::W_FL_LADDER) == 0 && (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER))
-	//	{
-	//		//m_pButtons->tap(IN_USE);
-	//		CClients::clientDebugMsg(this, BOT_DEBUG_NAV, "Bot touched first ladder waypoint");
-	//	}
-	//	// bot touched the last ladder waypoint
-	//	if ((pNext->getFlags() & CWaypointTypes::W_FL_LADDER) == 0 && (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER))
-	//	{
-	//		//m_pButtons->tap(IN_USE);
-	//		use();
-	//		jump();
-	//		CClients::clientDebugMsg(this, BOT_DEBUG_NAV, "Bot touched last ladder waypoint");
-	//	}
-	//}
+	resetTouchDistance(48.0f);
 
 	// if the waypoint contains both ladder & use flag and the bot is not on a ladder, press use.
-	if (pWaypoint->getFlags() & (CWaypointTypes::W_FL_LADDER | CWaypointTypes::W_FL_USE_BUTTON))
+	if (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER)
 	{
-		if (CClassInterface::onLadder(m_pEdict) == NULL)
+		if (CClassInterface::onLadder(m_pEdict) == NULL && (pWaypoint->getFlags() & CWaypointTypes::W_FL_USE_BUTTON))
 		{
 			use();
+			debugMsg(BOT_DEBUG_THINK, "Ladder Waypoint: Pressing use");
 		}
 	}
 
 	if (pWaypoint->getFlags() & CWaypointTypes::W_FL_USE_BUTTON)
 	{
+		CClients::clientDebugMsg(this, BOT_DEBUG_THINK, "(%s) Use Waypoint!", m_szBotName);
 		edict_t* pDoor = CClassInterface::FindNearbyEntityByClassname(getOrigin(), "prop_door_rotating", 256.0f);
 
 		if (pDoor)
@@ -886,12 +872,14 @@ void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWayp
 			CSynergyMod synmod;
 			CDataInterface data;
 			CBaseEntity* pEntity = pDoor->GetUnknown()->GetBaseEntity();
-			eSynDoorState doorstate = synmod.GetPropDoorState(pEntity);
+			int doorstate = synmod.GetPropDoorState(pEntity);
+			CClients::clientDebugMsg(this, BOT_DEBUG_THINK, "Use Waypoint: Received door state: %i", doorstate);
+
 			bool bLocked = data.IsEntityLocked(pEntity);
 
 			if (!bLocked) // door is not locked
 			{
-				if (doorstate == DOOR_CLOSED) // found closed door near use waypoint
+				if (doorstate == 0) // found closed door near use waypoint
 				{
 					CBotSchedule* pSched = new CBotSchedule();
 
@@ -901,6 +889,8 @@ void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWayp
 					m_pSchedules->addFront(pSched);
 					debugMsg(BOT_DEBUG_THINK, "USE Waypoint: Found prop_door_rotating");
 				}
+				else
+					debugMsg(BOT_DEBUG_THINK, "Use Waypoint: Door is already open");
 			}
 		}
 
@@ -917,6 +907,7 @@ void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWayp
 
 				pSched->addTask(new CMoveToTask(pButton));
 				pSched->addTask(new CBotHL2DMUseButton(pButton));
+				pSched->addTask(new CBotDefendTask(getOrigin(), 1.5f)); // hack, make bot wait
 
 				m_pSchedules->addFront(pSched);
 				debugMsg(BOT_DEBUG_THINK, "USE Waypoint: Found func_button");
@@ -924,7 +915,16 @@ void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWayp
 		}
 	}
 
-	CBot::touchedWpt(pWaypoint, iNextWaypoint, iPrevWaypoint);
+	m_fWaypointStuckTime = engine->Time() + randomFloat(7.5f, 12.5f);
+
+	if (pWaypoint->getFlags() & CWaypointTypes::W_FL_JUMP)
+		jump();
+	if (pWaypoint->getFlags() & CWaypointTypes::W_FL_CROUCH)
+		duck();
+	if (pWaypoint->getFlags() & CWaypointTypes::W_FL_SPRINT)
+		updateCondition(CONDITION_RUN);
+
+	updateDanger(m_pNavigator->getBelief(CWaypoints::getWaypointIndex(pWaypoint)));
 }
 
 // returns true if offset has been applied when not before

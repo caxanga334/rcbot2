@@ -135,15 +135,26 @@ void CSynergyMod::addWaypointFlags(edict_t* pPlayer, edict_t* pEdict, int* iFlag
 		else
 			*iFlags |= CWaypointTypes::W_FL_AMMO;
 	}
-
 }
 
-eSynDoorState CSynergyMod::GetPropDoorState(CBaseEntity* pDoor)
+int CSynergyMod::GetPropDoorState(CBaseEntity* pDoor)
 {
 	datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pDoor);
 	int offset = UTIL_FindInDataMap(pDataMap, "m_eDoorState");
 	int iState = *(int*)((char*)pDoor + offset);
-	return static_cast<eSynDoorState>(iState);
+	edict_t* pClient = CClients::getListenServerClient();
+	if (pClient)
+	{
+		CClient* client = CClients::get(pClient);
+		edict_t* pBot = client->getDebugBot();
+		CBot* bot = CBots::get(pBot);
+		if (pBot && bot)
+		{
+			CClients::clientDebugMsg(bot, BOT_DEBUG_THINK, "CSynergyMod::GetPropDoorState iState: %i", iState);
+		}
+	}
+
+	return iState;
 }
 
 bool CSynergyMod::IsPlayerInVehicle(edict_t* pPlayer)

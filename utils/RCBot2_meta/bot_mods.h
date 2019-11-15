@@ -88,13 +88,13 @@ typedef enum
 	BOTTYPE_MAX
 }eBotType;
 
-typedef enum
+enum
 {
-	DOOR_CLOSED = 0,
-	DOOR_OPENING = 1,
-	DOOR_OPEN = 2,
-	DOOR_CLOSING = 3,
-}eSynDoorState;
+	SYN_DOOR_CLOSED = 0,
+	SYN_DOOR_OPENING = 1,
+	SYN_DOOR_OPEN = 2,
+	SYN_DOOR_CLOSING = 3,
+};
 
 
 // tf2
@@ -795,7 +795,7 @@ public:
 
 	void addWaypointFlags(edict_t* pPlayer, edict_t* pEdict, int* iFlags, int* iArea, float* fMaxDistance);
 
-	eSynDoorState GetPropDoorState(CBaseEntity* pDoor);
+	int GetPropDoorState(CBaseEntity* pDoor);
 
 	bool IsPlayerInVehicle(edict_t* pPlayer);
 
