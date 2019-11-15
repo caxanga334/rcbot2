@@ -5449,11 +5449,13 @@ void CSYNHealTeamMate::execute(CBot* pBot, CBotSchedule* pSchedule)
 		}
 	}
 
-	if ((pBot->distanceFrom(m_pPlayer) < 230.0f) && pBot->isFacing(vOrigin))
+	if ((pBot->distanceFrom(m_pPlayer) < 90.0f) && pBot->isFacing(vOrigin))
 	{
+		pBot->stopMoving();
 		CBotCoop* pBotCoop = static_cast<CBotCoop*>(pBot);
 		pBotCoop->HealPlayer();
 		complete();
+		pBot->debugMsg(BOT_DEBUG_TASK, "Task CSYNHealTeamMate complete.");
 		return;
 	}
 

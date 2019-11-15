@@ -754,7 +754,7 @@ void CBotDefendPointSched ::init ()
 CSynBotHealTeamMate::CSynBotHealTeamMate(CBot* pBot, edict_t* pTeamMate)
 {
 	addTask(new CFindPathTask(pTeamMate));
-	addTask(new CMoveToTask(pTeamMate));
+	//addTask(new CMoveToTask(pTeamMate));
 	addTask(new CSYNHealTeamMate(pTeamMate));
 }
 
