@@ -870,12 +870,28 @@ void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWayp
 {
 	resetTouchDistance(48.0f);
 
+	CWaypoint* pPrev;
+	CWaypoint* pNext;
+
+	if (CWaypoints::validWaypointIndex(iNextWaypoint))
+		pNext = CWaypoints::getWaypoint(iNextWaypoint);
+
+	if (CWaypoints::validWaypointIndex(iPrevWaypoint))
+		pPrev = CWaypoints::getWaypoint(iPrevWaypoint);
+
+	// Handle ladders
+	if (pNext)
+	{
+		if ((pNext->getFlags() & CWaypointTypes::W_FL_LADDER) == 0 && (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER))
+			use(); // next is NOT a ladder and current is a LADDER: dismount
+	}
+
 	// if the waypoint contains both ladder & use flag and the bot is not on a ladder, press use.
 	if (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER)
 	{
 		if (CClassInterface::onLadder(m_pEdict) == NULL && (pWaypoint->getFlags() & CWaypointTypes::W_FL_USE_BUTTON))
 		{
-			use();
+			use(); // some ladders need use to mount, in this case the use flag must be added to the first ladder waypoint
 			debugMsg(BOT_DEBUG_THINK, "Ladder Waypoint: Pressing use");
 		}
 	}
@@ -905,11 +921,13 @@ void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWayp
 					pSched->addTask(new CBotHL2DMUseButton(pDoor));
 
 					m_pSchedules->addFront(pSched);
-					debugMsg(BOT_DEBUG_THINK, "USE Waypoint: Found prop_door_rotating");
+					debugMsg(BOT_DEBUG_THINK, "Use Waypoint: Interacting with prop_door_rotating");
 				}
 				else
-					debugMsg(BOT_DEBUG_THINK, "Use Waypoint: Door is already open");
+					debugMsg(BOT_DEBUG_THINK, "Use Waypoint: prop_door_rotating is already open");
 			}
+			else
+				debugMsg(BOT_DEBUG_THINK, "Use Waypoint: prop_door_rotating is locked");
 		}
 
 		edict_t* pButton = CClassInterface::FindNearbyEntityByClassname(getOrigin(), "func_button", 256.0f);
@@ -927,8 +945,10 @@ void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWayp
 				pSched->addTask(new CBotHL2DMUseButton(pButton));
 
 				m_pSchedules->addFront(pSched);
-				debugMsg(BOT_DEBUG_THINK, "USE Waypoint: Found func_button");
+				debugMsg(BOT_DEBUG_THINK, "USE Waypoint: Interacting func_button");
 			}
+			else
+				debugMsg(BOT_DEBUG_THINK, "USE: func_button is locked");
 		}
 
 		if (pButton == NULL && pDoor == NULL)
@@ -953,6 +973,32 @@ void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWayp
 				}
 				else
 					debugMsg(BOT_DEBUG_THINK, "Use Waypoint: func_rot_button is either locked or pressed, ignoring");
+			}
+		}
+
+		if (pButton == NULL && pDoor == NULL) // func_door
+		{
+			pDoor = CClassInterface::FindNearbyEntityByClassname(getOrigin(), "func_door", 256.0f);
+			if(pDoor)
+			{
+				CDataInterface data;
+				CBaseEntity* pEntity = pDoor->GetUnknown()->GetBaseEntity();
+				debugMsg(BOT_DEBUG_THINK, "Use Waypoint: Found func_door");
+				int iState = data.GetEntityToggleState(pEntity);
+				int iSpawnFlags = 0; iSpawnFlags = data.GetEntitySpawnFlags(pEntity);
+				bool bLocked = data.IsEntityLocked(pEntity);
+				if ((!bLocked && iState == 1) && (iSpawnFlags & 256)) // from doors.h #define SF_DOOR_PUSE 256 // door can be opened by player's use button.
+				{
+					CBotSchedule* pSched = new CBotSchedule();
+
+					pSched->addTask(new CMoveToTask(pDoor));
+					pSched->addTask(new CBotHL2DMUseButton(pDoor));
+
+					m_pSchedules->addFront(pSched);
+					debugMsg(BOT_DEBUG_THINK, "Use Waypoint: Interacting with func_door");
+				}
+				else
+					debugMsg(BOT_DEBUG_THINK, "Use Waypoint: func_door is locked or already open or cannot be used, ignoring");
 			}
 		}
 	}
