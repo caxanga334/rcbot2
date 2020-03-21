@@ -723,14 +723,6 @@ public:
 		return 0;
 	}
 
-	int getClip2(CBot* pBot)
-	{
-		if (m_iClip2)
-			return *m_iClip2;
-
-		return 0;
-	}
-
 	CWeapon* getWeaponInfo() { return m_pWeaponInfo; }
 
 	inline int getWeaponIndex() { return m_iWeaponIndex; }
