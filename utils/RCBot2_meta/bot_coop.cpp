@@ -1065,7 +1065,7 @@ bool CBotCoop::canGotoWaypoint(Vector vPrevWaypoint, CWaypoint* pWaypoint, CWayp
 	bool bCanGoTo = true;
 
 	if (!bBase) // base bot returned false
-		bCanGoTo = false;
+		return bBase;
 
 	if (bBase && (pWaypoint->getFlags() & CWaypointTypes::W_FL_PAIN))
 	{

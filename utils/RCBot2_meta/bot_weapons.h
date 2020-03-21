@@ -307,7 +307,7 @@ public:
 
 		start = strlen(m_szWeaponName) - strlen(szWeaponName);
 
-		if (start < 0)
+		if ( start < 0 )
 			return false;
 
 		return !strcmp(&m_szWeaponName[start], szWeaponName);
@@ -348,7 +348,7 @@ public:
 		return (fDistance < m_fPrimMaxWeaponShootDist);
 	}
 
-	inline float primaryMaxRange()
+	inline float primaryMaxRange ( )
 	{
 		return (m_fPrimMaxWeaponShootDist);
 	}
@@ -601,7 +601,7 @@ public:
 		return m_pWeaponInfo->isExplosive();
 	}
 
-	inline bool isZoomable()
+	inline bool isZoomable ()
 	{
 		return m_pWeaponInfo->isZoomable();
 	}
@@ -671,7 +671,7 @@ public:
 		return m_pWeaponInfo->isMelee();
 	}
 
-	inline bool isMeleeSecondary()
+	inline bool isMeleeSecondary ()
 	{
 		return m_pWeaponInfo->isMeleeSecondary();
 	}
@@ -707,10 +707,18 @@ public:
 
 	int getAmmo(CBot* pBot, int type = AMMO_PRIM);
 
-	int getClip1(CBot* pBot)
+	int getClip1 ( CBot *pBot )
 	{
-		if (m_iClip1)
+		if ( m_iClip1 )
 			return *m_iClip1;
+
+		return 0;
+	}
+
+	int getClip2 ( CBot *pBot )
+	{
+		if ( m_iClip2 )
+			return *m_iClip2;
 
 		return 0;
 	}

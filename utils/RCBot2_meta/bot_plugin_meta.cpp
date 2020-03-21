@@ -599,9 +599,9 @@ void RCBotPluginMeta::Hook_PlayerRunCmd(CUserCmd* ucmd, IMoveHelper* moveHelper)
 		g_pLastBot = static_cast<CBotTF2*>(pBot);
 	}
 
-	//g_pSM->LogMessage(NULL, "H %i %i %f %f %f %f %i", ucmd->command_number, ucmd->tick_count, ucmd->viewangles.x, ucmd->viewangles.y, ucmd->viewangles.z, ucmd->forwardmove, ucmd->buttons);
+//g_pSM->LogMessage(NULL, "H %i %i %f %f %f %f %i", ucmd->command_number, ucmd->tick_count, ucmd->viewangles.x, ucmd->viewangles.y, ucmd->viewangles.z, ucmd->forwardmove, ucmd->buttons);
 
-	RETURN_META(MRES_IGNORED);
+RETURN_META(MRES_IGNORED);
 }
 
 void RCBotPluginMeta::Hook_EquipWeapon(CBaseEntity* pWeapon)
