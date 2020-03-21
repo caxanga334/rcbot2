@@ -212,7 +212,7 @@ void CBotCoop::getTasks(unsigned int iIgnore)
 	// always able to roam around
 	ADD_UTILITY(BOT_UTIL_ROAM, true, 0.01f);
 
-	// I have an enemy 
+	// I have an enemy
 	ADD_UTILITY(BOT_UTIL_FIND_LAST_ENEMY, wantToFollowEnemy() && !m_bLookedForEnemyLast && m_pLastEnemy && CBotGlobals::entityIsValid(m_pLastEnemy) && CBotGlobals::entityIsAlive(m_pLastEnemy), getHealthPercent() * (getArmorPercent() + 0.1));
 
 	if (!hasSomeConditions(CONDITION_SEE_CUR_ENEMY) && hasSomeConditions(CONDITION_SEE_LAST_ENEMY_POS) && m_pLastEnemy && m_fLastSeeEnemy && ((m_fLastSeeEnemy + 10.0) > engine->Time()) && m_pWeapons->hasWeapon(SYN_WEAPON_FRAG))
@@ -557,14 +557,14 @@ bool CBotCoop::executeAction(eBotAction iAction)
 		}
 		}
 
-		
+
 
 		if (pWaypoint)
 		{
 			pRoute = CWaypoints::randomRouteWaypoint(this, getOrigin(), pWaypoint->getOrigin(), 0, 0);
 			if ((m_fUseRouteTime < engine->Time()))
 			{
-				
+
 				if (pRoute)
 				{
 					int iRoute = CWaypoints::getWaypointIndex(pRoute);
@@ -1119,7 +1119,7 @@ void CBotCoop::handleWeapons()
 
 		edict_t* pEnemy = m_pEnemy.get();
 		const char* enemyclassname = pEnemy->GetClassName();
-		
+
 		if ((strcmp(enemyclassname, "npc_combinegunship") == 0) || (strcmp(enemyclassname, "npc_helicopter") == 0) || (strcmp(enemyclassname, "npc_strider") == 0))
 		{
 			if (pRPG && pRPG->hasWeapon() && !pRPG->outOfAmmo(this))
@@ -1127,7 +1127,7 @@ void CBotCoop::handleWeapons()
 				pWeapon = pRPG;
 				if ((pWeapon != NULL) && (pWeapon != getCurrentWeapon()))
 					selectWeapon(pWeapon->getWeaponIndex());
-			}	
+			}
 		}
 		else
 			pWeapon = getBestWeapon(m_pEnemy);

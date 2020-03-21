@@ -7,14 +7,14 @@
 #include "datamap.h"
 #include "bot_cvars.h"
 
-CClassInterfaceValue CClassInterface :: g_GetProps[GET_PROPDATA_MAX];
-bool CClassInterfaceValue :: m_berror = false;
+CClassInterfaceValue CClassInterface::g_GetProps[GET_PROPDATA_MAX];
+bool CClassInterfaceValue::m_berror = false;
 
-extern IServerGameDLL *servergamedll;
+extern IServerGameDLL* servergamedll;
 
-void UTIL_FindServerClassnamePrint(const char *name_cmd)
+void UTIL_FindServerClassnamePrint(const char* name_cmd)
 {
-	edict_t *current;
+	edict_t* current;
 
 	for (int i = 0; i < gpGlobals->maxEntities; i++)
 	{
@@ -24,50 +24,47 @@ void UTIL_FindServerClassnamePrint(const char *name_cmd)
 			continue;
 		}
 
-		IServerNetworkable *network = current->GetNetworkable();
+		IServerNetworkable* network = current->GetNetworkable();
 
 		if (network == NULL)
 		{
 			continue;
 		}
 
-		ServerClass *sClass = network->GetServerClass();
-		const char *name = sClass->GetName();
-		
+		ServerClass* sClass = network->GetServerClass();
+		const char* name = sClass->GetName();
 
 		if (strcmp(name, name_cmd) == 0)
 		{
-			CBotGlobals::botMessage(NULL,0,"%s",current->GetClassName());
+			CBotGlobals::botMessage(NULL, 0, "%s", current->GetClassName());
 			return;
 		}
 	}
 
-	CBotGlobals::botMessage(NULL,0,"Not found");
+	CBotGlobals::botMessage(NULL, 0, "Not found");
 }
 
-
-
-void UTIL_FindServerClassPrint(const char *name_cmd)
+void UTIL_FindServerClassPrint(const char* name_cmd)
 {
 	char temp[128];
 	char name[128];
 
-	strncpy(name,name_cmd,127);
+	strncpy(name, name_cmd, 127);
 	name[127] = 0;
 	__strlow(name);
 
-	ServerClass *pClass = servergamedll->GetAllServerClasses();
+	ServerClass* pClass = servergamedll->GetAllServerClasses();
 
 	while (pClass)
 	{
-		strncpy(temp,pClass->m_pNetworkName,127);
+		strncpy(temp, pClass->m_pNetworkName, 127);
 		temp[127] = 0;
 
 		__strlow(temp);
 
-		if (strstr(temp,name) != NULL )
+		if (strstr(temp, name) != NULL)
 		{
-			CBotGlobals::botMessage(NULL,0,"%s",pClass->m_pNetworkName);
+			CBotGlobals::botMessage(NULL, 0, "%s", pClass->m_pNetworkName);
 			//break;
 		}
 		pClass = pClass->m_pNext;
@@ -79,9 +76,9 @@ void UTIL_FindServerClassPrint(const char *name_cmd)
  * @param name		Name of the top-level server class.
  * @return 		Server class matching the name, or NULL if none found.
  */
-ServerClass *UTIL_FindServerClass(const char *name)
+ServerClass* UTIL_FindServerClass(const char* name)
 {
-	ServerClass *pClass = servergamedll->GetAllServerClasses();
+	ServerClass* pClass = servergamedll->GetAllServerClasses();
 
 	while (pClass)
 	{
@@ -93,7 +90,6 @@ ServerClass *UTIL_FindServerClass(const char *name)
 	}
 
 	return NULL;
-	
 }
 
 /**
@@ -105,17 +101,17 @@ ServerClass *UTIL_FindServerClass(const char *name)
  */
 bool g_PrintProps = false;
 
-SendProp *UTIL_FindSendProp(SendTable *pTable, const char *name)
+SendProp* UTIL_FindSendProp(SendTable* pTable, const char* name)
 {
 	int count = pTable->GetNumProps();
 	//SendTable *pTable;
-	SendProp *pProp;
-	for (int i=0; i<count; i++)
+	SendProp* pProp;
+	for (int i = 0; i < count; i++)
 	{
 		pProp = pTable->GetProp(i);
 
-		if ( g_PrintProps )
-			Msg("%s\n",pProp->GetName());
+		if (g_PrintProps)
+			Msg("%s\n", pProp->GetName());
 
 		if (strcmp(pProp->GetName(), name) == 0)
 		{
@@ -123,13 +119,13 @@ SendProp *UTIL_FindSendProp(SendTable *pTable, const char *name)
 		}
 		if (pProp->GetDataTable())
 		{
-			if ((pProp=UTIL_FindSendProp(pProp->GetDataTable(), name)) != NULL)
+			if ((pProp = UTIL_FindSendProp(pProp->GetDataTable(), name)) != NULL)
 			{
 				return pProp;
 			}
 		}
 	}
- 
+
 	return NULL;
 }
 /**
@@ -142,7 +138,7 @@ SendProp *UTIL_FindSendProp(SendTable *pTable, const char *name)
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -165,26 +161,26 @@ SendProp *UTIL_FindSendProp(SendTable *pTable, const char *name)
 
 struct sm_sendprop_info_t
 {
-	SendProp *prop;					/**< Property instance. */
+	SendProp* prop;					/**< Property instance. */
 	unsigned int actual_offset;		/**< Actual computed offset. */
 };
 
-bool UTIL_FindInSendTable(SendTable *pTable, 
-						  const char *name,
-						  sm_sendprop_info_t *info,
-						  unsigned int offset)
+bool UTIL_FindInSendTable(SendTable* pTable,
+	const char* name,
+	sm_sendprop_info_t* info,
+	unsigned int offset)
 {
-	const char *pname;
+	const char* pname;
 	int props = pTable->GetNumProps();
-	SendProp *prop;
+	SendProp* prop;
 
-	for (int i=0; i<props; i++)
+	for (int i = 0; i < props; i++)
 	{
 		prop = pTable->GetProp(i);
 		pname = prop->GetName();
 
-		if ( g_PrintProps )
-			Msg("%d : %s\n",offset + prop->GetOffset(),pname);
+		if (g_PrintProps)
+			Msg("%d : %s\n", offset + prop->GetOffset(), pname);
 
 		if (pname && strcmp(name, pname) == 0)
 		{
@@ -196,7 +192,7 @@ bool UTIL_FindInSendTable(SendTable *pTable,
 		}
 		if (prop->GetDataTable())
 		{
-			if (UTIL_FindInSendTable(prop->GetDataTable(), 
+			if (UTIL_FindInSendTable(prop->GetDataTable(),
 				name,
 				info,
 				offset + prop->GetOffset())
@@ -210,9 +206,9 @@ bool UTIL_FindInSendTable(SendTable *pTable,
 	return false;
 }
 
-bool UTIL_FindSendPropInfo(ServerClass *pInfo, const char *szType, unsigned int *offset)
+bool UTIL_FindSendPropInfo(ServerClass* pInfo, const char* szType, unsigned int* offset)
 {
-	if ( !pInfo )
+	if (!pInfo)
 	{
 		return false;
 	}
@@ -229,34 +225,33 @@ bool UTIL_FindSendPropInfo(ServerClass *pInfo, const char *szType, unsigned int 
 	return true;
 }
 
-CBaseHandle *CClassInterfaceValue :: getEntityHandle ( edict_t *edict ) 
-{ 
-	getData(edict); 
+CBaseHandle* CClassInterfaceValue::getEntityHandle(edict_t* edict)
+{
+	getData(edict);
 
-	return static_cast<CBaseHandle *>(m_data);
+	return static_cast<CBaseHandle*>(m_data);
 }
 
-edict_t *CClassInterfaceValue :: getEntity ( edict_t *edict ) 
-{ 
-	static CBaseHandle *hndl;
+edict_t* CClassInterfaceValue::getEntity(edict_t* edict)
+{
+	static CBaseHandle* hndl;
 
 	m_berror = false;
 
-	getData(edict); 
-
+	getData(edict);
 
 	if (m_berror)
 		return NULL;
 
-	hndl = static_cast<CBaseHandle *>(m_data); 
+	hndl = static_cast<CBaseHandle*>(m_data);
 
-	if ( hndl )
+	if (hndl)
 		return INDEXENT(hndl->GetEntryIndex());
 
 	return NULL;
 }
 
-void CClassInterfaceValue :: init ( char *key, char *value, unsigned int preoffset )
+void CClassInterfaceValue::init(char* key, char* value, unsigned int preoffset)
 {
 	m_class = CStrings::getString(key);
 	m_value = CStrings::getString(value);
@@ -265,7 +260,7 @@ void CClassInterfaceValue :: init ( char *key, char *value, unsigned int preoffs
 	m_offset = 0;
 }
 
-void UTIL_FindPropPrint(const char *prop_name)
+void UTIL_FindPropPrint(const char* prop_name)
 {
 	bool bInterfaceErr = false;
 
@@ -273,17 +268,17 @@ void UTIL_FindPropPrint(const char *prop_name)
 
 	try
 	{
-		ServerClass *pClass = servergamedll->GetAllServerClasses();
+		ServerClass* pClass = servergamedll->GetAllServerClasses();
 
 		while (pClass)
 		{
 			offset = 0;
 
-			UTIL_FindSendPropInfo(pClass,prop_name,&offset);
+			UTIL_FindSendPropInfo(pClass, prop_name, &offset);
 
-			if ( offset != 0 )
+			if (offset != 0)
 			{
-				CBotGlobals::botMessage(NULL,0,"found in %s : offset %d",pClass->m_pNetworkName, offset);
+				CBotGlobals::botMessage(NULL, 0, "found in %s : offset %d", pClass->m_pNetworkName, offset);
 				//break;
 			}
 			pClass = pClass->m_pNext;
@@ -375,31 +370,31 @@ void CClassInterfaceValue :: findOffset ( )
 {
 	//if (!m_offset)
 	//{
-	ServerClass *sc = UTIL_FindServerClass(m_class);
+	ServerClass* sc = UTIL_FindServerClass(m_class);
 
-	if ( sc )
+	if (sc)
 	{
-		UTIL_FindSendPropInfo(sc,m_value,&m_offset);
+		UTIL_FindSendPropInfo(sc, m_value, &m_offset);
 	}
-#ifdef _DEBUG	
+#ifdef _DEBUG
 	else
 	{
-		CBotGlobals::botMessage(NULL,1,"Warning: Couldn't find CLASS %s",m_class);
+		CBotGlobals::botMessage(NULL, 1, "Warning: Couldn't find CLASS %s", m_class);
 		return;
 	}
 #endif
 
-	if ( m_offset > 0 )
+	if (m_offset > 0)
 		m_offset += m_preoffset;
-#ifdef _DEBUG	
+#ifdef _DEBUG
 	else
 	{
-		CBotGlobals::botMessage(NULL,1,"Warning: Couldn't find getprop %s for class %s",m_value,m_class);
+		CBotGlobals::botMessage(NULL, 1, "Warning: Couldn't find getprop %s for class %s", m_value, m_class);
 	}
 #endif
 }
 /* Find and save all offsets at load to save CPU */
-void CClassInterface:: init ()
+void CClassInterface::init()
 {
 	//	DEFINE_GETPROP			ID						Class			Variable	Offset
 		DEFINE_GETPROP(GETPROP_TF2MINIBUILDING,"CObjectSentryGun","m_bMiniBuilding",0);
@@ -444,7 +439,7 @@ void CClassInterface:: init ()
 		DEFINE_GETPROP(GETPROP_HL2DM_PHYSCANNON_OPEN,"CWeaponPhysCannon","m_bOpen",0);
 		DEFINE_GETPROP(GETPROP_HL2DM_PLAYER_AUXPOWER,"CHL2MP_Player","m_flSuitPower",0);
 		DEFINE_GETPROP(GETPROP_HL2DM_LADDER_ENT,"CHL2MP_Player","m_hLadder",0);
-		
+
 		DEFINE_GETPROP(GETPROP_WEAPONLIST,"CBaseCombatCharacter","m_hMyWeapons",0);
 		DEFINE_GETPROP(GETPROP_WEAPONSTATE,"CBaseCombatWeapon","m_iState",0);
 
@@ -557,7 +552,7 @@ void CClassInterface:: init ()
 		DEFINE_GETPROP(GETPROP_SIMULATIONTIME,"CBaseEntity","m_flSimulationTime",0);
 		DEFINE_GETPROP(GETPROP_TF2_INUPGRADEZONE,"CTFPlayer","m_bInUpgradeZone",0);
 		DEFINE_GETPROP(GETPROP_TF2_EXTRAWEARABLE, "CTFWeaponBase", "m_hExtraWearable", 0);
-		DEFINE_GETPROP(GETPROP_TF2_EXTRAWEARABLEVIEWMODEL, "CTFWeaponBase", "m_hExtraWearableViewModel", 0); 
+		DEFINE_GETPROP(GETPROP_TF2_EXTRAWEARABLEVIEWMODEL, "CTFWeaponBase", "m_hExtraWearableViewModel", 0);
 		DEFINE_GETPROP(GETPROP_TF2_ENERGYDRINKMETER, "CTFPlayer", "m_flEnergyDrinkMeter", 0);
 		DEFINE_GETPROP(GETPROP_TF2_MEDIEVALMODE, "CTFGameRulesProxy", "m_bPlayingMedieval", 0);
 		DEFINE_GETPROP(GETPROP_TF2_ACTIVEWEAPON, "CTFPlayer", "m_hActiveWeapon", 0);
@@ -579,7 +574,7 @@ void CClassInterface:: init ()
 		}
 }
 
-void CClassInterface :: setupCTeamRoundTimer ( CTeamRoundTimer *pTimer )
+void CClassInterface::setupCTeamRoundTimer(CTeamRoundTimer* pTimer)
 {
 	/*
 		GETPROP_TF2_RNDTM_m_flTimerEndTime,
@@ -593,9 +588,9 @@ void CClassInterface :: setupCTeamRoundTimer ( CTeamRoundTimer *pTimer )
 
 //#define GETTF2OBJ_INT(x) pResource->x = g_GetProps[GETPROP_TF2_OBJTR_#x].getIntPointer(edict);
 
-bool CClassInterface :: getTF2ObjectiveResource ( CTFObjectiveResource *pResource )
+bool CClassInterface::getTF2ObjectiveResource(CTFObjectiveResource* pResource)
 {
-	edict_t *edict = pResource->m_ObjectiveResource.get();
+	edict_t* edict = pResource->m_ObjectiveResource.get();
 
 	pResource->m_iNumControlPoints = g_GetProps[GETPROP_TF2_OBJTR_m_iNumControlPoints].getIntPointer(edict);
 	pResource->m_bBlocked = g_GetProps[GETPROP_TF2_OBJTR_m_bBlocked].getBoolPointer(edict);
@@ -625,13 +620,12 @@ bool CClassInterface :: getTF2ObjectiveResource ( CTFObjectiveResource *pResourc
 	return true;
 }
 
-
-void CClassInterfaceValue :: getData ( void *edict, bool bIsEdict )
+void CClassInterfaceValue::getData(void* edict, bool bIsEdict)
 {
-	static IServerUnknown *pUnknown;
-	static CBaseEntity *pEntity;
+	static IServerUnknown* pUnknown;
+	static CBaseEntity* pEntity;
 
-	if (!m_offset || (edict==NULL))
+	if (!m_offset || (edict == NULL))
 	{
 		m_data = NULL;
 		m_berror = true;
@@ -640,9 +634,9 @@ void CClassInterfaceValue :: getData ( void *edict, bool bIsEdict )
 
 	if (bIsEdict)
 	{
-		edict_t *pEdict = reinterpret_cast<edict_t*>(edict);
+		edict_t* pEdict = reinterpret_cast<edict_t*>(edict);
 
-		pUnknown = static_cast<IServerUnknown *>(pEdict->GetUnknown());
+		pUnknown = static_cast<IServerUnknown*>(pEdict->GetUnknown());
 
 		if (!pUnknown)
 		{
@@ -653,22 +647,21 @@ void CClassInterfaceValue :: getData ( void *edict, bool bIsEdict )
 
 		pEntity = pUnknown->GetBaseEntity();
 
-		m_data = static_cast<void *>(reinterpret_cast<char *>(pEntity) + m_offset);
+		m_data = static_cast<void*>(reinterpret_cast<char*>(pEntity) + m_offset);
 	}
 	else
 	{
 		// raw
-		m_data = static_cast<void *>(static_cast<char *>(edict) + m_offset);
+		m_data = static_cast<void*>(static_cast<char*>(edict) + m_offset);
 	}
-
 }
 
-edict_t *CClassInterface::FindEntityByClassnameNearest(Vector vstart, const char *classname, float fMindist, edict_t *pOwner)
+edict_t* CClassInterface::FindEntityByClassnameNearest(Vector vstart, const char* classname, float fMindist, edict_t* pOwner)
 {
-	edict_t *current;
-	edict_t *pfound = NULL;
+	edict_t* current;
+	edict_t* pfound = NULL;
 	float fDist;
-	const char *pszClassname;
+	const char* pszClassname;
 	// speed up loop by by using smaller ints in register
 	register short int max = static_cast<short int>(gpGlobals->maxEntities);
 
@@ -679,12 +672,12 @@ edict_t *CClassInterface::FindEntityByClassnameNearest(Vector vstart, const char
 		if (current == NULL)
 			continue;
 
-		if ( current->IsFree() )
+		if (current->IsFree())
 			continue;
 
-		if ( pOwner != NULL )
+		if (pOwner != NULL)
 		{
-			if ( getOwner(current) != pOwner )
+			if (getOwner(current) != pOwner)
 				continue;
 		}
 
@@ -694,7 +687,7 @@ edict_t *CClassInterface::FindEntityByClassnameNearest(Vector vstart, const char
 		{
 			fDist = (vstart - CBotGlobals::entityOrigin(current)).Length();
 
-			if ( !pfound  || (fDist < fMindist))
+			if (!pfound || (fDist < fMindist))
 			{
 				fMindist = fDist;
 				pfound = current;
@@ -754,8 +747,8 @@ edict_t* CClassInterface::FindNearbyEntityByClassname(Vector vstart, const char*
 
 edict_t *CClassInterface::FindEntityByNetClassNearest(Vector vstart, const char *classname)
 {
-	edict_t *current;
-	edict_t *pfound = NULL;
+	edict_t* current;
+	edict_t* pfound = NULL;
 	float fMindist = 8192.0f;
 	float fDist;
 
@@ -766,26 +759,26 @@ edict_t *CClassInterface::FindEntityByNetClassNearest(Vector vstart, const char 
 		{
 			continue;
 		}
-		if ( current->IsFree() )
+		if (current->IsFree())
 			continue;
-		if ( current->GetUnknown() == NULL )
+		if (current->GetUnknown() == NULL)
 			continue;
-		
-		IServerNetworkable *network = current->GetNetworkable();
+
+		IServerNetworkable* network = current->GetNetworkable();
 
 		if (network == NULL)
 		{
 			continue;
 		}
 
-		ServerClass *sClass = network->GetServerClass();
-		const char *name = sClass->GetName();
-		
+		ServerClass* sClass = network->GetServerClass();
+		const char* name = sClass->GetName();
+
 		if (strcmp(name, classname) == 0)
 		{
 			fDist = (vstart - CBotGlobals::entityOrigin(current)).Length();
 
-			if ( !pfound  || (fDist < fMindist))
+			if (!pfound || (fDist < fMindist))
 			{
 				fMindist = fDist;
 				pfound = current;
@@ -796,9 +789,9 @@ edict_t *CClassInterface::FindEntityByNetClassNearest(Vector vstart, const char 
 	return pfound;
 }
 
-const char *CClassInterface::FindEntityNetClass(int start, const char *classname)
+const char* CClassInterface::FindEntityNetClass(int start, const char* classname)
 {
-	edict_t *current;
+	edict_t* current;
 
 	for (int i = ((start != -1) ? start : 0); i < gpGlobals->maxEntities; i++)
 	{
@@ -808,7 +801,7 @@ const char *CClassInterface::FindEntityNetClass(int start, const char *classname
 			continue;
 		}
 
-		IServerNetworkable *network = current->GetNetworkable();
+		IServerNetworkable* network = current->GetNetworkable();
 
 		if (network == NULL)
 		{
@@ -817,19 +810,18 @@ const char *CClassInterface::FindEntityNetClass(int start, const char *classname
 
 		if (strcmp(current->GetClassName(), classname) == 0)
 		{
-			ServerClass *sClass = network->GetServerClass();
-			
+			ServerClass* sClass = network->GetServerClass();
+
 			return sClass->GetName();
-		
 		}
 	}
 
 	return NULL;
 }
 // http://svn.alliedmods.net/viewvc.cgi/trunk/extensions/tf2/extension.cpp?revision=2183&root=sourcemod&pathrev=2183
-edict_t *CClassInterface::FindEntityByNetClass(int start, const char *classname)
+edict_t* CClassInterface::FindEntityByNetClass(int start, const char* classname)
 {
-	edict_t *current;
+	edict_t* current;
 
 	for (int i = ((start != -1) ? start : 0); i < gpGlobals->maxEntities; i++)
 	{
@@ -839,16 +831,15 @@ edict_t *CClassInterface::FindEntityByNetClass(int start, const char *classname)
 			continue;
 		}
 
-		IServerNetworkable *network = current->GetNetworkable();
+		IServerNetworkable* network = current->GetNetworkable();
 
 		if (network == NULL)
 		{
 			continue;
 		}
 
-		ServerClass *sClass = network->GetServerClass();
-		const char *name = sClass->GetName();
-		
+		ServerClass* sClass = network->GetServerClass();
+		const char* name = sClass->GetName();
 
 		if (strcmp(name, classname) == 0)
 		{
@@ -859,19 +850,18 @@ edict_t *CClassInterface::FindEntityByNetClass(int start, const char *classname)
 	return NULL;
 }
 
+int CClassInterface::getTF2Score(edict_t* edict)
+{
+	edict_t* res = CTeamFortress2Mod::findResourceEntity();
+	int* score_array = NULL;
 
- int CClassInterface::getTF2Score ( edict_t *edict ) 
-	{ 
-		edict_t *res = CTeamFortress2Mod::findResourceEntity();
-		int *score_array = NULL;
+	if (res)
+	{
+		score_array = g_GetProps[GETPROP_TF2SCORE].getIntPointer(res);
 
-		if ( res )
-		{
-			score_array = g_GetProps[GETPROP_TF2SCORE].getIntPointer(res);
-
-			if ( score_array )
-				return score_array[ENTINDEX(edict)-1];
-		}
-
-		return 0;
+		if (score_array)
+			return score_array[ENTINDEX(edict) - 1];
 	}
+
+	return 0;
+}
