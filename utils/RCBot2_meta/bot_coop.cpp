@@ -65,8 +65,6 @@ void CBotCoop::setup()
 	CBot::setup();
 }
 
-
-
 bool CBotCoop::startGame()
 {
 	return true;
@@ -106,7 +104,6 @@ void CBotCoop::died(edict_t* pKiller, const char* pszWeapon)
 	}
 
 	m_vLastDiedOrigin = getOrigin();
-
 }
 
 /*
@@ -117,7 +114,7 @@ void CBotCoop::killed(edict_t* pVictim, char* weapon)
 	if (pVictim == m_pLastEnemy)
 		m_pLastEnemy = NULL;
 
-	if( m_pButtons->holdingButton(IN_ATTACK) )
+	if (m_pButtons->holdingButton(IN_ATTACK))
 	{
 		m_pButtons->letGo(IN_ATTACK);
 	}
@@ -130,7 +127,7 @@ void CBotCoop::killed(edict_t* pVictim, char* weapon)
 	m_pButtons->tap(IN_RELOAD);
 }
 
-void CBotCoop :: modThink ()
+void CBotCoop::modThink()
 {
 	// find enemies and health stations / objectives etc
 	m_fIdealMoveSpeed = CClassInterface::getMaxSpeed(m_pEdict);
@@ -153,7 +150,7 @@ void CBotCoop :: modThink ()
 		updateCondition(CONDITION_NEED_HEALTH);
 		updateCondition(CONDITION_CHANGED);
 	}
-	else if(getHealthPercent() > 0.51f)
+	else if (getHealthPercent() > 0.51f)
 	{
 		removeCondition(CONDITION_NEED_HEALTH);
 	}
@@ -253,7 +250,6 @@ void CBotCoop::getTasks(unsigned int iIgnore)
 
 		ADD_UTILITY(BOT_UTIL_SYN_GOTO_NPC, true, 1.0f - datainterface.GetEntityHealthPercent(pNPCEntity));
 	}
-
 
 	utils.execute();
 
@@ -432,7 +428,7 @@ bool CBotCoop::executeAction(eBotAction iAction)
 		if (RandomInt(1, 2) == 2)
 		{
 			pWaypoint = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_AMMO_CRATE);
-			if(pWaypoint == NULL)
+			if (pWaypoint == NULL)
 				pWaypoint = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_AMMO);
 		}
 		else
@@ -443,7 +439,6 @@ bool CBotCoop::executeAction(eBotAction iAction)
 			m_pSchedules->add(new CBotGotoOriginSched(pWaypoint->getOrigin()));
 			return true;
 		}
-
 	}
 	case BOT_UTIL_MEDIC_HEAL:
 	{
@@ -493,7 +488,6 @@ bool CBotCoop::executeAction(eBotAction iAction)
 			m_pSchedules->add(pSched);
 			return true;
 		}
-
 	}
 	case BOT_UTIL_SNIPE:
 	{
@@ -557,14 +551,11 @@ bool CBotCoop::executeAction(eBotAction iAction)
 		}
 		}
 
-
-
 		if (pWaypoint)
 		{
 			pRoute = CWaypoints::randomRouteWaypoint(this, getOrigin(), pWaypoint->getOrigin(), 0, 0);
 			if ((m_fUseRouteTime < engine->Time()))
 			{
-
 				if (pRoute)
 				{
 					int iRoute = CWaypoints::getWaypointIndex(pRoute);
@@ -618,9 +609,9 @@ bool CBotCoop::executeAction(eBotAction iAction)
 		}
 		break;
 	}
-}
+	}
 
-return false;
+	return false;
 }
 
 bool CBotCoop::canAvoid(edict_t* pEntity)
@@ -827,8 +818,6 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 		else if ((strncmp(szClassname, "weapon_", 7) == 0) &&
 			(!m_pNearbyWeapon.get() || (fDist < distanceFrom(m_pNearbyWeapon.get()))))
 		{
-
-
 			m_pNearbyWeapon = pEntity;
 		}
 		else if ((strcmp(szClassname, "player") == 0) && pEntity != m_pEdict &&
@@ -839,28 +828,28 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 	}
 	else
 	{
-	if (m_pAmmoKit == pEntity)
-		m_pAmmoKit = NULL;
-	else if (m_pAmmoCrate == pEntity)
-		m_pAmmoCrate = NULL;
-	else if (m_pHealthKit == pEntity)
-		m_pHealthKit = NULL;
-	else if (m_pBattery == pEntity)
-		m_pBattery = NULL;
-	else if (m_pCharger == pEntity)
-		m_pCharger = NULL;
-	else if (m_pHealthCharger == pEntity)
-		m_pHealthCharger = NULL;
-	else if (m_NearestBreakable == pEntity)
-		m_NearestBreakable = NULL;
-	else if (m_pNearbyWeapon == pEntity)
-		m_pNearbyWeapon = NULL;
-	else if (m_pNearestButton == pEntity)
-		m_pNearestButton = NULL;
-	else if (m_pNPCAlyx == pEntity)
-		m_pNPCAlyx = NULL;
-	else if (m_pNPCBarney == pEntity)
-		m_pNPCBarney = NULL;
+		if (m_pAmmoKit == pEntity)
+			m_pAmmoKit = NULL;
+		else if (m_pAmmoCrate == pEntity)
+			m_pAmmoCrate = NULL;
+		else if (m_pHealthKit == pEntity)
+			m_pHealthKit = NULL;
+		else if (m_pBattery == pEntity)
+			m_pBattery = NULL;
+		else if (m_pCharger == pEntity)
+			m_pCharger = NULL;
+		else if (m_pHealthCharger == pEntity)
+			m_pHealthCharger = NULL;
+		else if (m_NearestBreakable == pEntity)
+			m_NearestBreakable = NULL;
+		else if (m_pNearbyWeapon == pEntity)
+			m_pNearbyWeapon = NULL;
+		else if (m_pNearestButton == pEntity)
+			m_pNearestButton = NULL;
+		else if (m_pNPCAlyx == pEntity)
+			m_pNPCAlyx = NULL;
+		else if (m_pNPCBarney == pEntity)
+			m_pNPCBarney = NULL;
 	}
 
 	return bValid;
@@ -869,7 +858,7 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWaypoint)
 {
 	resetTouchDistance(48.0f);
-
+/*
 	CWaypoint* pPrev;
 	CWaypoint* pNext;
 
@@ -880,13 +869,11 @@ void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWayp
 		pPrev = CWaypoints::getWaypoint(iPrevWaypoint);
 
 	// Handle ladders
-	if (pNext)
-	{
-		if ((pNext->getFlags() & CWaypointTypes::W_FL_LADDER) == 0 && (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER))
-			use(); // next is NOT a ladder and current is a LADDER: dismount
-	}
+	if (pNext && (pNext->getFlags() & CWaypointTypes::W_FL_LADDER) == 0 && (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER))
+		use(); // next is NOT a ladder and current is a LADDER: dismount
+*/
 
-	// if the waypoint contains both ladder & use flag and the bot is not on a ladder, press use.
+// if the waypoint contains both ladder & use flag and the bot is not on a ladder, press use.
 	if (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER)
 	{
 		if (CClassInterface::onLadder(m_pEdict) == NULL && (pWaypoint->getFlags() & CWaypointTypes::W_FL_USE_BUTTON))
@@ -979,7 +966,7 @@ void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWayp
 		if (pButton == NULL && pDoor == NULL) // func_door
 		{
 			pDoor = CClassInterface::FindNearbyEntityByClassname(getOrigin(), "func_door", 256.0f);
-			if(pDoor)
+			if (pDoor)
 			{
 				CDataInterface data;
 				CBaseEntity* pEntity = pDoor->GetUnknown()->GetBaseEntity();
@@ -1138,7 +1125,6 @@ void CBotCoop::handleWeapons()
 			if ((pWeapon != NULL) && (pWeapon != getCurrentWeapon()))
 				selectWeapon(pWeapon->getWeaponIndex());
 		}
-
 
 		if (m_bWantToChangeWeapon && (pWeapon != NULL) && (pWeapon != getCurrentWeapon()) && pWeapon->getWeaponIndex())
 		{
