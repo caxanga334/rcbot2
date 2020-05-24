@@ -245,9 +245,9 @@ WeaponsData_t SYNERGYWeaps[] =
 		{ 0, 0, "\0", 0, 0, 0, 0, 0, 0 }//signal last weapon
 };
 
-bool CBotWeapon :: needToReload (CBot *pBot)
+bool CBotWeapon::needToReload(CBot* pBot)
 {
-	if ( m_iClip1 )
+	if (m_iClip1)
 	{
 		return (*m_iClip1 == 0) && (getAmmo(pBot) > 0);
 	}
@@ -303,7 +303,6 @@ bool CBotWeapons::hasWeapon(int id)
 	}
 	return false;
 }
-
 // Bot Weapons
 CBotWeapons::CBotWeapons(CBot* pBot)
 {
@@ -358,9 +357,7 @@ bool CBotWeapons::update(bool bOverrideAllFromEngine)
 	{
 		// create a 'hash' of current weapons
 		pWeapon = (m_Weapon_iter == NULL) ? NULL : INDEXENT(m_Weapon_iter->GetEntryIndex());
-		iWeaponsSignature += reinterpret_cast<unsigned int>(pWeapon) + ((pWeapon == NULL)
-			? 0
-			: static_cast<unsigned int>(CClassInterface::getWeaponState(pWeapon)));
+		iWeaponsSignature += ((unsigned int)pWeapon) + ((pWeapon == NULL) ? 0 : (unsigned int)CClassInterface::getWeaponState(pWeapon));
 		m_Weapon_iter++;
 	}
 
@@ -728,7 +725,7 @@ void CWeapons::loadWeapons(const char* szWeaponListName, WeaponsData_t* pDefault
 {
 	if ((szWeaponListName != NULL) && (szWeaponListName[0] != 0))
 	{
-		KeyValues* kv = new KeyValues("Weapons");//A possible memory leak? [APG]RoboCop[CL]
+		KeyValues* kv = new KeyValues("Weapons");
 		char szFilename[1024];
 
 		CBotGlobals::buildFileName(szFilename, "weapons", BOT_CONFIG_FOLDER, "ini", false);
@@ -743,7 +740,7 @@ void CWeapons::loadWeapons(const char* szWeaponListName, WeaponsData_t* pDefault
 				{
 					kv = kv->GetFirstSubKey();
 
-					if (false)
+					if (0)
 						kv = kv->GetFirstTrueSubKey();
 
 					while (kv != NULL)

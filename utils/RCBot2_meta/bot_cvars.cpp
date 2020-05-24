@@ -1,23 +1,24 @@
+
 #include "icvar.h"
 //#include "iconvar.h"
 #include "convar.h"
 
 #include "bot_cvars.h"
 
-static ICvar* s_pCVar;
+static ICvar *s_pCVar;
 
-ConVar rcbot_tf2_debug_spies_cloakdisguise("rcbot_tf2_debug_spies_cloakdisguise", "1", 0, "Debug command : allow spy bots to cloak and disguise");
-ConVar rcbot_tf2_medic_letgotime("rcbot_tf2_medic_letgotime", "0.4", 0, "Time for medic to let go of medigun to switch players");
+ConVar rcbot_tf2_debug_spies_cloakdisguise("rcbot_tf2_debug_spies_cloakdisguise","1",0,"Debug command : allow spy bots to cloak and disguise");
+ConVar rcbot_tf2_medic_letgotime("rcbot_tf2_medic_letgotime","0.4",0,"Time for medic to let go of medigun to switch players");
 //ConVar rcbot_const_round_offset("rcbot_const_round_offset","844",0,"TF2 OFFSET for Round Class");
 ConVar rcbot_const_point_master_offset("rcbot_const_mstr_offset","856",0,"TF2 OFFSET for Point Master Class");
 //ConVar rcbot_const_point_offset("rcbot_const_pnt_offset","1140",0,"TF2 OFFSET for Point Class");
 //ConVar rcbot_const_point_data_offset("rcbot_const_pnt_data_offset","1642",0,"TF2 OFFSET for Point Class data");
-ConVar rcbot_tf2_pyro_airblast("rcbot_tf2_pyro_airblast_ammo", "50", 0, "Ammo must be above this to airblast -- if 200 airblast will be disabled");
-ConVar rcbot_projectile_tweak("rcbot_projtweak", "0.05", 0, "Tweaks the bots knowledge of projectiles and gravity");
+ConVar rcbot_tf2_pyro_airblast("rcbot_tf2_pyro_airblast_ammo","50",0,"Ammo must be above this to airblast -- if 200 airblast will be disabled");
+ConVar rcbot_projectile_tweak("rcbot_projtweak","0.05",0,"Tweaks the bots knowledge of projectiles and gravity");
 //ConVar bot_sv_cheat_warning("rcbot_sv_cheats_warning","0",0,"If disabled, bots will try to spawn even if sv_cheats is 0 - use only with admin cvar plugin");
-ConVar bot_cmd_enable_wpt_sounds("rcbot_enable_wpt_sounds", "1", 0, "Enable/disable sound effects when editing waypoints");
+ConVar bot_cmd_enable_wpt_sounds("rcbot_enable_wpt_sounds","1",0,"Enable/disable sound effects when editing waypoints");
 //ConVar bot_cmd_nocheats("rcbot_botcmd_nocheats","1",0,"If 1 bots don't need cheats to play");
-ConVar bot_general_difficulty("rcbot_skill", "0.6", 0, "General difficulty of the bots. 0.5 = stock, < 0.5 easier, > 0.5 = harder");
+ConVar bot_general_difficulty("rcbot_skill","0.6",0,"General difficulty of the bots. 0.5 = stock, < 0.5 easier, > 0.5 = harder");
 //ConVar bot_sv_cheats_auto("rcbot_sv_cheats_auto","0",0,"automatically put sv_cheats on and off for when adding bots only");
 ConVar bot_visrevs_clients("rcbot_visrevs_clients","4",0,"how many revs the bot searches for visible players and enemies, lower to reduce cpu usage");
 ConVar bot_spyknifefov("rcbot_spyknifefov","80",0,"the FOV from the enemy that spies must backstab from");
@@ -77,10 +78,10 @@ ConVar rcbot_debug_iglev("rcbot_debug_iglev","0",0,"bot think ignores functions 
 ConVar rcbot_dont_move("rcbot_dontmove","0",0,"if 1 , bots will all move forward");
 ConVar rcbot_runplayercmd_dods("rcbot_runplayer_cmd_dods","417",0,"offset of the DOD:S PlayerRunCommand function");
 ConVar rcbot_runplayercmd_tf2("rcbot_runplayer_cmd_tf2","418",0,"offset of the TF2 PlayerRunCommand function");
-ConVar rcbot_runplayercmd_syn("rcbot_runplayer_cmd_syn","424", 0, "offset of the SYNERGY PlayerRunCommand function");
+ConVar rcbot_runplayercmd_syn("rcbot_runplayer_cmd_syn", "424", 0, "offset of the SYNERGY PlayerRunCommand function");
 ConVar rcbot_runplayercmd_hookonce("rcbot_runplayer_hookonce","1",0,"function will hook only once, if 0 it will unhook and rehook after every map");
-ConVar rcbot_ladder_offs("rcbot_ladder_offs","42",0,"difference in height for bot to think it has touched the ladder waypoint");
 ConVar rcbot_datamap_offset("rcbot_datamap_offset", "-1", 0, "Offset for GetDataDescMap");
+ConVar rcbot_ladder_offs("rcbot_ladder_offs","42",0,"difference in height for bot to think it has touched the ladder waypoint");
 ConVar rcbot_ffa("rcbot_ffa","0",0,"Free for all mode -- bots shoot everyone");
 ConVar rcbot_prone_enemy_only("rcbot_prone_enemy_only","1",0,"if 1 bots only prone in DOD:S when they have an enemy");
 ConVar rcbot_menu_update_time1("rcbot_menu_update_time1","0.04",0,"time to update menus [displaying message]");
@@ -119,16 +120,16 @@ ConVar rcbot_bot_quota_interval("rcbot_bot_quota_interval", "10", 0, "Interval b
 ConVar rcbot_show_welcome_msg("rcbot_show_welcome_msg", "1", 0, "Show welcome message on player connect");
 ConVar rcbot_force_class("rcbot_force_class", "0", 0, "Force bots to choose specified class, kills alive bots on change (1 - 9, set to 0 for none)");
 
-ConVar* sv_gravity = NULL;
-ConVar* sv_cheats = NULL;//("sv_cheats");
-ConVar* mp_teamplay = NULL;
-ConVar* sv_tags = NULL;
-ConVar* mp_friendlyfire = NULL;
-ConCommandBase* puppet_bot_cmd = NULL;
-ConVar* mp_stalemate_enable = NULL;
-ConVar* mp_stalemate_meleeonly = NULL;
+ConVar *sv_gravity = NULL;
+ConVar *sv_cheats = NULL;//("sv_cheats");
+ConVar *mp_teamplay = NULL;
+ConVar *sv_tags = NULL;
+ConVar *mp_friendlyfire = NULL;
+ConCommandBase *puppet_bot_cmd = NULL;
+ConVar *mp_stalemate_enable = NULL;
+ConVar *mp_stalemate_meleeonly = NULL;
 
-void RCBOT2_Cvar_setup(ICvar* cvar)
+void RCBOT2_Cvar_setup (ICvar *cvar)
 {
 	mp_stalemate_enable = cvar->FindVar("mp_stalemate_enable");
 	mp_stalemate_meleeonly = cvar->FindVar("mp_stalemate_meleeonly");
@@ -139,21 +140,24 @@ void RCBOT2_Cvar_setup(ICvar* cvar)
 	puppet_bot_cmd = cvar->FindCommand("bot");
 	mp_teamplay = cvar->FindVar("mp_teamplay");
 
-	if (sv_tags != NULL)
+	if ( sv_tags != NULL )
 	{
 		char sv_tags_str[512];
-
-		strcpy(sv_tags_str, sv_tags->GetString());
+	
+		strcpy(sv_tags_str,sv_tags->GetString());
 
 		// fix
-		if (strstr(sv_tags_str, "rcbot2") == NULL)
+		if ( strstr(sv_tags_str,"rcbot2") == NULL )
 		{
-			if (sv_tags_str[0] == 0)
-				strcat(sv_tags_str, "rcbot2");
+
+			if ( sv_tags_str[0] == 0 )
+				strcat(sv_tags_str,"rcbot2");
 			else
-				strcat(sv_tags_str, ",rcbot2");
+				strcat(sv_tags_str,",rcbot2");
 
 			sv_tags->SetValue(sv_tags_str);
+
 		}
 	}
+
 }

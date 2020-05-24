@@ -2375,6 +2375,7 @@ inline CBaseEntity *CBaseEntity::GetBaseEntity()
 {
 	return this;
 }
+	
 
 //-----------------------------------------------------------------------------
 // Model related methods

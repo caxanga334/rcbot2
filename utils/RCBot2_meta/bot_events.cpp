@@ -31,6 +31,7 @@
 
 #include "bot_plugin_meta.h"
 
+
 #include "igameevents.h"
 #include "bot.h"
 #include "bot_event.h"
@@ -81,7 +82,7 @@ public:
 
 	void execute ( CBot *pBot )
 	{
-		static_cast<CBotTF2*>(pBot)->MannVsMachineWaveComplete();
+		((CBotTF2*)pBot)->MannVsMachineWaveComplete();
 	}
 
 };
@@ -89,7 +90,7 @@ public:
 class CBotSeeFriendlyHurtEnemy : public IBotFunction
 {
 public:
-	CBotSeeFriendlyHurtEnemy ( edict_t *pTeammate, edict_t *pEnemy, const int iWeaponID )
+	CBotSeeFriendlyHurtEnemy ( edict_t *pTeammate, edict_t *pEnemy, int iWeaponID )
 	{
 		m_pTeammate = pTeammate;
 		m_pEnemy = pEnemy;
@@ -116,7 +117,7 @@ private:
 class CBroadcastMVMAlarm : public IBotFunction
 {
 public:
-	CBroadcastMVMAlarm(const float fRadius)
+	CBroadcastMVMAlarm(float fRadius)
 	{
 		m_bValid = CTeamFortress2Mod::getMVMCapturePoint(&m_vLoc);
 		m_fRadius = fRadius;
@@ -125,7 +126,7 @@ public:
 	void execute ( CBot *pBot )
 	{
 		if ( m_bValid )
-			static_cast<CBotTF2*>(pBot)->MannVsMachineAlarmTriggered(m_vLoc + Vector(randomFloat(-m_fRadius,m_fRadius),randomFloat(-m_fRadius,m_fRadius),0));
+			((CBotTF2*)pBot)->MannVsMachineAlarmTriggered(m_vLoc + Vector(randomFloat(-m_fRadius,m_fRadius),randomFloat(-m_fRadius,m_fRadius),0));
 	}
 private:
 	Vector m_vLoc;
@@ -137,7 +138,7 @@ private:
 class CBotSeeEnemyHurtFriendly : public IBotFunction
 {
 public:
-	CBotSeeEnemyHurtFriendly ( edict_t *pEnemy, edict_t *pTeammate, const int iWeaponID )
+	CBotSeeEnemyHurtFriendly ( edict_t *pEnemy, edict_t *pTeammate, int iWeaponID )
 	{
 		m_pTeammate = pTeammate;
 		m_pEnemy = pEnemy;
@@ -191,7 +192,7 @@ private:
 class CBotHearPlayerAttack : public IBotFunction
 {
 public:
-	CBotHearPlayerAttack ( edict_t *pAttacker, const int iWeaponID )
+	CBotHearPlayerAttack ( edict_t *pAttacker, int iWeaponID )
 	{
 		m_pAttacker = pAttacker;
 		m_iWeaponID = iWeaponID;
@@ -218,7 +219,7 @@ private:
 class CTF2BroadcastRoundWin : public IBotFunction
 {
 public:
-	CTF2BroadcastRoundWin (const int iTeamWon, const bool bFullRound )
+	CTF2BroadcastRoundWin ( int iTeamWon, bool bFullRound )
 	{
 		m_iTeam = iTeamWon;
 		m_bFullRound = bFullRound;
@@ -226,7 +227,7 @@ public:
 
 	void execute ( CBot *pBot )
 	{
-		static_cast<CBotTF2*>(pBot)->roundWon(m_iTeam,m_bFullRound);
+		((CBotTF2*)pBot)->roundWon(m_iTeam,m_bFullRound);
 	}
 private:
 	int m_iTeam;
@@ -370,7 +371,7 @@ void CPlayerDeathEvent :: execute ( IBotEventInterface *pEvent )
 
 	if ( pBot )
 	{
-		pBot->killed(m_pActivator,const_cast<char*>(weapon));
+		pBot->killed(m_pActivator,(char*)weapon);
 
 		pBot->enemyDown(m_pActivator);
 	}
@@ -452,14 +453,14 @@ void CTF2ObjectSapped :: execute ( IBotEventInterface *pEvent )
 		edict_t *pSpy = m_pActivator;
 		edict_t *pOwner = CBotGlobals::playerByUserId(owner);
 		edict_t *pSapper = INDEXENT(sapperid);
-		CBotTF2 *pBot = static_cast<CBotTF2*>(CBots::getBotPointer(pOwner));
+		CBotTF2 *pBot = (CBotTF2*)CBots::getBotPointer(pOwner);
 		
 		if ( pBot )
 		{
-			pBot->buildingSapped(static_cast<eEngiBuild>(building),pSapper,pSpy);
+			pBot->buildingSapped((eEngiBuild)building,pSapper,pSpy);
 		}
 
-		CTeamFortress2Mod::sapperPlaced(pOwner,static_cast<eEngiBuild>(building),pSapper);
+		CTeamFortress2Mod::sapperPlaced(pOwner,(eEngiBuild)building,pSapper);
 
 		CBroadcastSpySap spysap = CBroadcastSpySap(pSpy);
 
@@ -505,7 +506,7 @@ void CPlayerTeleported ::execute(IBotEventInterface *pEvent)
 
 		if ( pBot )
 		{
-			static_cast<CBotTF2*>(pBot)->teleportedPlayer();
+			((CBotTF2*)pBot)->teleportedPlayer();
 		}
 
 		CTeamFortress2Mod::updateTeleportTime(pPlayer);
@@ -529,7 +530,7 @@ void CPlayerHealed ::execute(IBotEventInterface *pEvent)
 
 			if ( pBot )
 			{
-				CBotTF2 *pBotTF2 = static_cast<CBotTF2*>(pBot);
+				CBotTF2 *pBotTF2 = (CBotTF2*)pBot;
 
 				if ( pBotTF2 && randomInt(0,1) )
 					pBotTF2->addVoiceCommand(TF_VC_THANKS);
@@ -540,7 +541,7 @@ void CPlayerHealed ::execute(IBotEventInterface *pEvent)
 
 		if ( pBot && pBot->isTF2() )
 		{
-			static_cast<CBotTF2*>(pBot)->healedPlayer(m_pActivator,amount);
+			((CBotTF2*)pBot)->healedPlayer(m_pActivator,amount);
 		}
 	}
 }
@@ -572,20 +573,20 @@ void CTF2ObjectDestroyed :: execute ( IBotEventInterface *pEvent )
 		{
 			//if ( !was_building )
 			//{ // could be a sapper
-			if ( static_cast<eEngiBuild>(type) == ENGI_SAPPER )
+			if ( (eEngiBuild)type == ENGI_SAPPER )
 			{
 				edict_t *pOwner = pAttacker;
 				edict_t *pSapper = INDEXENT(index);
-				CBotTF2 *pBot = static_cast<CBotTF2*>(CBots::getBotPointer(pOwner));
+				CBotTF2 *pBot = (CBotTF2*)CBots::getBotPointer(pOwner);
 
 				if ( pBot )
 					pBot->sapperDestroyed(pSapper);
 
-				CTeamFortress2Mod::sapperDestroyed(pOwner,static_cast<eEngiBuild>(type),pSapper);
+				CTeamFortress2Mod::sapperDestroyed(pOwner,(eEngiBuild)type,pSapper);
 			}
 			else
 			{
-				CBotTF2 *pBot = static_cast<CBotTF2*>(CBots::getBotPointer(m_pActivator));
+				CBotTF2 *pBot = (CBotTF2*)CBots::getBotPointer(m_pActivator);
 
 				if ( pBot )
 				{
@@ -629,7 +630,7 @@ void CTF2UpgradeObjectEvent :: execute ( IBotEventInterface *pEvent )
 {
 	if ( bot_use_vc_commands.GetBool() && randomInt(0,1) )
 	{
-		eEngiBuild object = static_cast<eEngiBuild>(pEvent->getInt("object", 0));
+		eEngiBuild object = (eEngiBuild)pEvent->getInt("object",0);
 		bool isbuilder = (pEvent->getInt("isbuilder")>0);
 		short index = pEvent->getInt("index");
 	
@@ -639,7 +640,7 @@ void CTF2UpgradeObjectEvent :: execute ( IBotEventInterface *pEvent )
 			edict_t *pOwner = CTeamFortress2Mod::getBuildingOwner (object, index);
 			CBotTF2 *pBot;
 
-			if ( (pBot = static_cast<CBotTF2*>(CBots::getBotPointer(pOwner))) != NULL )
+			if ( (pBot = (CBotTF2*)CBots::getBotPointer(pOwner)) != NULL )
 			{
 				pBot->addVoiceCommand(TF_VC_THANKS);
 			}
@@ -667,7 +668,7 @@ void CTF2SetupFinished ::execute(IBotEventInterface *pEvent )
 
 void CTF2BuiltObjectEvent :: execute ( IBotEventInterface *pEvent )
 {
-	eEngiBuild type = static_cast<eEngiBuild>(pEvent->getInt("object"));
+	eEngiBuild type = (eEngiBuild)pEvent->getInt("object");
 	int index = pEvent->getInt("index");
 	edict_t *pBuilding = INDEXENT(index);
 	CBot *pBot = CBots::getBotPointer(m_pActivator);
@@ -704,7 +705,7 @@ void CTF2BuiltObjectEvent :: execute ( IBotEventInterface *pEvent )
 
 	if ( pBot && pBot->isTF() )
 	{
-		static_cast<CBotFortress*>(pBot)->engiBuildSuccess(static_cast<eEngiBuild>(pEvent->getInt("object")),pEvent->getInt("index"));
+		((CBotFortress*)pBot)->engiBuildSuccess((eEngiBuild)pEvent->getInt("object"),pEvent->getInt("index"));
 	}
 }
 
@@ -717,7 +718,7 @@ void CTF2ChangeClass :: execute ( IBotEventInterface *pEvent )
 
 		int _class = pEvent->getInt("class");
 
-		static_cast<CBotFortress*>(pBot)->setClass(static_cast<TF_Class>(_class));
+		((CBotFortress*)pBot)->setClass((TF_Class)_class);
 
 	}
 }
@@ -854,7 +855,7 @@ void CTF2PointStartCapture :: execute ( IBotEventInterface *pEvent )
 
 		while ( cappers[i] != 0 )
 		{
-			CTeamFortress2Mod::addCapper(capindex,static_cast<int>(cappers[i]));
+			CTeamFortress2Mod::addCapper(capindex,(int)cappers[i]);
 			i++;
 		}
 	}
@@ -925,7 +926,7 @@ void CFlagEvent :: execute ( IBotEventInterface *pEvent )
 	case FLAG_PICKUP: // pickup
 		if ( pBot && pBot->isTF() )
 		{
-			static_cast<CBotTF2*>(pBot)->pickedUpFlag();
+			((CBotTF2*)pBot)->pickedUpFlag();
 		}
 
 		if ( pPlayer )
@@ -965,8 +966,8 @@ void CFlagEvent :: execute ( IBotEventInterface *pEvent )
 
 			if ( pBot && pBot->isTF() )
 			{
-				static_cast<CBotTF2*>(pBot)->capturedFlag();	
-				static_cast<CBotTF2*>(pBot)->droppedFlag();	
+				((CBotTF2*)pBot)->capturedFlag();	
+				((CBotTF2*)pBot)->droppedFlag();	
 			}
 		
 			if ( pPlayer )
@@ -999,7 +1000,7 @@ void CFlagEvent :: execute ( IBotEventInterface *pEvent )
 			}
 
 			if ( pBot && pBot->isTF() )
-				static_cast<CBotTF2*>(pBot)->droppedFlag();
+				((CBotTF2*)pBot)->droppedFlag();
 
 			
 			if ( pPlayer )
@@ -1142,7 +1143,7 @@ void CDODChangeClass :: execute ( IBotEventInterface *pEvent )
 
 		if ( pBot )
 		{
-			CDODBot *pDODBot = static_cast<CDODBot*>(pBot);
+			CDODBot *pDODBot = (CDODBot*)pBot;
 
 			pDODBot->selectedClass(pEvent->getInt("class"));
 		}
@@ -1281,7 +1282,7 @@ void CBotEvents :: freeMemory ()
 	m_theEvents.clear();
 }
 
-void CBotEvents :: executeEvent( void *pEvent, const eBotEventType iType )
+void CBotEvents :: executeEvent( void *pEvent, eBotEventType iType )
 {
 	CBotEvent *pFound;
 	int iEventId = -1; 
@@ -1290,9 +1291,9 @@ void CBotEvents :: executeEvent( void *pEvent, const eBotEventType iType )
 	IBotEventInterface *pInterface = NULL;
 
 	if ( iType == TYPE_KEYVALUES )
-		pInterface = new CGameEventInterface1(static_cast<KeyValues*>(pEvent));
+		pInterface = new CGameEventInterface1((KeyValues*)pEvent);
 	else if ( iType == TYPE_IGAMEEVENT )
-		pInterface = new CGameEventInterface2(static_cast<IGameEvent*>(pEvent));
+		pInterface = new CGameEventInterface2((IGameEvent*)pEvent);
 
 	if ( pInterface == NULL )
 		return;

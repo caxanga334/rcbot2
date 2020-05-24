@@ -217,7 +217,6 @@ enum
 	SYN_WEAPON_MAX
 };
 
-
 #define WEAP_FL_NONE			0
 #define WEAP_FL_PRIM_ATTACK		1
 #define WEAP_FL_SEC_ATTACK		2
@@ -307,7 +306,7 @@ public:
 
 		start = strlen(m_szWeaponName) - strlen(szWeaponName);
 
-		if ( start < 0 )
+		if (start < 0)
 			return false;
 
 		return !strcmp(&m_szWeaponName[start], szWeaponName);
@@ -348,7 +347,7 @@ public:
 		return (fDistance < m_fPrimMaxWeaponShootDist);
 	}
 
-	inline float primaryMaxRange ( )
+	inline float primaryMaxRange()
 	{
 		return (m_fPrimMaxWeaponShootDist);
 	}
@@ -438,7 +437,7 @@ public:
 		return m_szWeaponName;
 	}
 
-	inline int getID() const
+	inline const int getID() const
 	{
 		return m_iWeaponId;
 	}
@@ -455,12 +454,12 @@ public:
 		m_fSecMaxWeaponShootDist = fMaxRange;
 	}
 
-	inline int getAmmoIndex1() const
+	inline int getAmmoIndex1()
 	{
 		return m_iAmmoIndex1;
 	}
 
-	inline int getAmmoIndex2() const
+	inline int getAmmoIndex2()
 	{
 		return m_iAmmoIndex2;
 	}
@@ -601,7 +600,7 @@ public:
 		return m_pWeaponInfo->isExplosive();
 	}
 
-	inline bool isZoomable ()
+	inline bool isZoomable()
 	{
 		return m_pWeaponInfo->isZoomable();
 	}
@@ -671,7 +670,7 @@ public:
 		return m_pWeaponInfo->isMelee();
 	}
 
-	inline bool isMeleeSecondary ()
+	inline bool isMeleeSecondary()
 	{
 		return m_pWeaponInfo->isMeleeSecondary();
 	}
@@ -707,17 +706,17 @@ public:
 
 	int getAmmo(CBot* pBot, int type = AMMO_PRIM);
 
-	int getClip1 ( CBot *pBot )
+	int getClip1(CBot* pBot)
 	{
-		if ( m_iClip1 )
+		if (m_iClip1)
 			return *m_iClip1;
 
 		return 0;
 	}
 
-	int getClip2 ( CBot *pBot )
+	int getClip2(CBot* pBot)
 	{
-		if ( m_iClip2 )
+		if (m_iClip2)
 			return *m_iClip2;
 
 		return 0;

@@ -1,0 +1,13 @@
+func_rot_button:
+	m_toggle_state:
+		0: PRESSED
+		1: NOT PRESSED
+		2: MOVING
+		3: RETURNING
+		
+func_door
+	m_toggle_state:
+		0: OPEN
+		1: CLOSED
+		2: OPENING
+		3: CLOSING

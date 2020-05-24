@@ -190,13 +190,6 @@ void CBotCoop::getTasks(unsigned int iIgnore)
 		ADD_UTILITY(BOT_UTIL_GETHEALTHKIT, (m_pHealthKit.get() == NULL && m_pHealthCharger.get() == NULL), 1.0f - getHealthPercent());
 	}
 
-	//if (m_pNearbyTeamMate.get() != NULL) // broken, disabling for now.
-	//{
-	//	int iTeamMateHP = CClassInterface::getPlayerHealth(m_pNearbyTeamMate.get());
-	//	float flTMHP = static_cast<float>(iTeamMateHP) / 100; // max health fixed at 100 for now.
-	//	ADD_UTILITY(BOT_UTIL_MEDIC_HEAL, ((flTMHP < 0.7f) && (m_iHealthPack >= 10)), 1.0f - flTMHP);
-	//}
-
 	// low on armor?
 	ADD_UTILITY(BOT_UTIL_HL2DM_FIND_ARMOR, (m_pBattery.get() != NULL) && (getArmorPercent() < 1.0f), (1.0f - getArmorPercent()) * 0.75f);
 	ADD_UTILITY(BOT_UTIL_HL2DM_USE_CHARGER, (m_pCharger.get() != NULL) && (CClassInterface::getAnimCycle(m_pCharger) < 1.0f) && (getArmorPercent() < 1.0f), (1.0f - getArmorPercent()) * 0.75f);
@@ -233,22 +226,6 @@ void CBotCoop::getTasks(unsigned int iIgnore)
 		{
 			ADD_UTILITY(BOT_UTIL_PICKUP_WEAPON, true, 0.6f + pWeapon->getPreference() * 0.1f);
 		}
-	}
-
-	if ((m_pNPCAlyx.get() != NULL || m_pNPCBarney.get() != NULL) && m_pEnemy == NULL)
-	{
-		CDataInterface datainterface;
-		CBaseEntity* pNPCEntity;
-		edict_t* pNPCEdict = NULL;
-
-		if (m_pNPCAlyx.get() != NULL)
-			pNPCEdict = m_pNPCAlyx;
-		else
-			pNPCEdict = m_pNPCBarney;
-
-		pNPCEntity = pNPCEdict->GetUnknown()->GetBaseEntity();
-
-		ADD_UTILITY(BOT_UTIL_SYN_GOTO_NPC, true, 1.0f - datainterface.GetEntityHealthPercent(pNPCEntity));
 	}
 
 	utils.execute();
@@ -579,36 +556,6 @@ bool CBotCoop::executeAction(eBotAction iAction)
 
 		break;
 	}
-	case BOT_UTIL_SYN_GOTO_NPC:
-	{
-		CWaypoint* pWaypoint = NULL;
-		Vector vNPC = NULL;
-
-		if (m_pNPCAlyx != NULL)
-		{
-			vNPC = CBotGlobals::entityOrigin(m_pNPCAlyx);
-			pWaypoint = CWaypoints::getWaypoint(CWaypoints::nearestWaypointGoal(-1, vNPC, 512.0f));
-
-			if (pWaypoint)
-			{
-				m_pSchedules->add(new CBotGotoOriginSched(pWaypoint->getOrigin()));
-				return true;
-			}
-		}
-
-		if (m_pNPCBarney != NULL)
-		{
-			vNPC = CBotGlobals::entityOrigin(m_pNPCBarney);
-			pWaypoint = CWaypoints::getWaypoint(CWaypoints::nearestWaypointGoal(-1, vNPC, 512.0f));
-
-			if (pWaypoint)
-			{
-				m_pSchedules->add(new CBotGotoOriginSched(pWaypoint->getOrigin()));
-				return true;
-			}
-		}
-		break;
-	}
 	}
 
 	return false;
@@ -858,22 +805,22 @@ bool CBotCoop::setVisible(edict_t* pEntity, bool bVisible)
 void CBotCoop::touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWaypoint)
 {
 	resetTouchDistance(48.0f);
-/*
-	CWaypoint* pPrev;
-	CWaypoint* pNext;
+	/*
+		CWaypoint* pPrev;
+		CWaypoint* pNext;
 
-	if (CWaypoints::validWaypointIndex(iNextWaypoint))
-		pNext = CWaypoints::getWaypoint(iNextWaypoint);
+		if (CWaypoints::validWaypointIndex(iNextWaypoint))
+			pNext = CWaypoints::getWaypoint(iNextWaypoint);
 
-	if (CWaypoints::validWaypointIndex(iPrevWaypoint))
-		pPrev = CWaypoints::getWaypoint(iPrevWaypoint);
+		if (CWaypoints::validWaypointIndex(iPrevWaypoint))
+			pPrev = CWaypoints::getWaypoint(iPrevWaypoint);
 
-	// Handle ladders
-	if (pNext && (pNext->getFlags() & CWaypointTypes::W_FL_LADDER) == 0 && (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER))
-		use(); // next is NOT a ladder and current is a LADDER: dismount
-*/
+		// Handle ladders
+		if (pNext && (pNext->getFlags() & CWaypointTypes::W_FL_LADDER) == 0 && (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER))
+			use(); // next is NOT a ladder and current is a LADDER: dismount
+	*/
 
-// if the waypoint contains both ladder & use flag and the bot is not on a ladder, press use.
+	// if the waypoint contains both ladder & use flag and the bot is not on a ladder, press use.
 	if (pWaypoint->getFlags() & CWaypointTypes::W_FL_LADDER)
 	{
 		if (CClassInterface::onLadder(m_pEdict) == NULL && (pWaypoint->getFlags() & CWaypointTypes::W_FL_USE_BUTTON))

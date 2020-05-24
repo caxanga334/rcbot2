@@ -4,6 +4,7 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 # User-specific files
+*.rsuser
 *.suo
 *.user
 *.userosscache
@@ -12,6 +13,9 @@
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
+# Mono auto generated files
+mono_crash.*
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -19,10 +23,13 @@
 [Rr]eleases/
 x64/
 x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
 bld/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
+[Ll]ogs/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -36,9 +43,10 @@ Generated\ Files/
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
-# NUNIT
+# NUnit
 *.VisualState.xml
 TestResult.xml
+nunit-*.xml
 
 # Build Results of an ATL Project
 [Dd]ebugPS/
@@ -76,6 +84,7 @@ StyleCopReport.xml
 *.tlh
 *.tmp
 *.tmp_proj
+*_wpftmp.csproj
 *.log
 *.vspscc
 *.vssscc
@@ -117,9 +126,6 @@ $tf/
 _ReSharper*/
 *.[Rr]e[Ss]harper
 *.DotSettings.user
-
-# JustCode is a .NET coding add-in
-.JustCode
 
 # TeamCity is a build add-in
 _TeamCity*
@@ -178,6 +184,8 @@ PublishScripts/
 
 # NuGet Packages
 *.nupkg
+# NuGet Symbol Packages
+*.snupkg
 # The packages folder can be ignored because of Package Restore
 **/[Pp]ackages/*
 # except build/, which is used as an MSBuild target.
@@ -202,12 +210,14 @@ BundleArtifacts/
 Package.StoreAssociation.xml
 _pkginfo.txt
 *.appx
+*.appxbundle
+*.appxupload
 
 # Visual Studio cache files
 # files ending in .cache can be ignored
 *.[Cc]ache
 # but keep track of directories ending in .cache
-!*.[Cc]ache/
+!?*.[Cc]ache/
 
 # Others
 ClientBin/
@@ -251,6 +261,9 @@ ServiceFabricBackup/
 *.bim.layout
 *.bim_*.settings
 *.rptproj.rsuser
+*- [Bb]ackup.rdl
+*- [Bb]ackup ([0-9]).rdl
+*- [Bb]ackup ([0-9][0-9]).rdl
 
 # Microsoft Fakes
 FakesAssemblies/
@@ -286,12 +299,8 @@ paket-files/
 # FAKE - F# Make
 .fake/
 
-# JetBrains Rider
-.idea/
-*.sln.iml
-
-# CodeRush
-.cr/
+# CodeRush personal settings
+.cr/personal
 
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
@@ -331,55 +340,11 @@ ASALocalRun/
 # Local History for Visual Studio
 .localhistory/
 
+# BeatPulse healthcheck temp database
+healthchecksdb
 
-## From the original .gitignore
+# Backup folder for Package Reference Convert tool in Visual Studio 2017
+MigrationBackup/
 
-
-#############
-## Eclipse ##
-#############
-
-.project
-.cproject
-.buildpath
-.o
-.obj
-
-###############
-## Generated ##
-###############
-
-utils/RCBot2_meta/Debug
-utils/RCBot2_meta/Release
-utils/RCBot2_meta/Release_NonHomeFolder
-
-utils/RCBot2_meta/HPB_Bot2.opensdf
-utils/RCBot2_meta/HPB_Bot2.sdf
-/linux_sdk/obj/HPB_bot2_meta_i486/utilCBot2_metmeta
-/linux_sdk/obj/vcpm
-/utils/RCBot2/Debug
-/linux_sdk/obj/RCBot2MetaDebug_i486/utils/RCBot2_meta
-linux_sdk/compile.log
-linux_sdk/RCBot2Meta_i486.so
-*.o
-*.suo
-linux_sdk/RCBot2MetaDebug_i486.so
-*.HPB_bot2_ReleaseWin32
-*.HPB_bot2_Release_NonHomeFolderWin32
-*.HPB_bot2_DebugWin32
-*.cmd
-*.cfg
-*.i
-linux_sdk/vcpm
-linux_sdk/Makefile.HPB_bot2_ReleaseWin32
-linux_sdk/Makefile.HPB_bot2_Release_NonHomeFolderWin32
-linux_sdk/Makefile.HPB_bot2_DebugWin32
-linux_sdk/vcpm
-linux_sdk/Makefile.HPB_bot2_DebugWin32
-linux_sdk/Makefile.HPB_bot2_Release_NonHomeFolderWin32
-linux_sdk/Makefile.HPB_bot2_ReleaseWin32
-*.bat
-*.bin
-*.exe
-*.check_cache
-*.txt
+# Ionide (cross platform F# VS Code tools) working folder
+.ionide/
