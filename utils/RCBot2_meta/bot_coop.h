@@ -33,83 +33,14 @@
 #ifndef __BOT_COOP_H__
 #define __BOT_COOP_H__
 
-#include "bot_utility.h"
-
-typedef enum
-{
-	SYN_VC_HELP = 0,
-	SYN_VC_INCOMING = 1,
-	SYN_VC_ENEMY = 2,
-	SYN_VC_FOLLOW = 3,
-	SYN_VC_LETSGO = 4,
-	SYN_VC_LEAD = 5,
-	SYN_VC_INVALID = 6,
-}eSYNVoiceCMD;
-
 class CBotCoop : public CBot
 {
 public:
-	virtual bool isSYN() { return true; }
-	void spawnInit();
-	void died(edict_t* pKiller, const char* pszWeapon);
-	void killed(edict_t* pVictim, char* weapon);
 	virtual void modThink ();
 
-	void getTasks(unsigned int iIgnore);
-
-	bool executeAction(eBotAction iAction);
-
-	virtual bool canAvoid(edict_t* pEntity);
 	virtual bool isEnemy ( edict_t *pEdict, bool bCheckWeapons = true  );
 
-	void voiceCommand(int cmd) override;
-	virtual void hearVoiceCommand(edict_t* pPlayer, byte cmd);
-
-	void init();
-
-	void setup();
-
 	virtual bool startGame ();
-	virtual bool checkStuck();
-	bool setVisible(edict_t* pEntity, bool bVisible);
-
-	void touchedWpt(CWaypoint* pWaypoint, int iNextWaypoint, int iPrevWaypoint);
-
-	bool walkingTowardsWaypoint(CWaypoint* pWaypoint, bool* bOffsetApplied, Vector& vOffset);
-
-	bool canGotoWaypoint(Vector vPrevWaypoint, CWaypoint* pWaypoint, CWaypoint* pPrev);
-
-	virtual bool handleAttack(CBotWeapon* pWeapon, edict_t* pEnemy);
-
-	virtual void handleWeapons();
-
-	virtual unsigned int maxEntityIndex() { return gpGlobals->maxEntities; }
-
-	float getArmorPercent() { return (0.01f * m_pPlayerInfo->GetArmorValue()); }
-	void HealPlayer();
-	bool ShouldScavengeItems(float fNextDelay = -1.0f);
-private:
-	MyEHandle m_NearestBreakable;
-	MyEHandle m_pHealthCharger;
-	MyEHandle m_pHealthKit;
-	MyEHandle m_pAmmoKit; // nearest healthkit
-	MyEHandle m_pBattery; // nearest battery
-	MyEHandle m_pCharger; // nearest charger
-	MyEHandle m_pNearbyWeapon;
-	MyEHandle m_pNearestButton;
-	MyEHandle m_pAmmoCrate;
-	MyEHandle m_pNPCAlyx; // allow bots to track alyx
-	MyEHandle m_pNPCBarney; // allow bots to track barney
-	MyEHandle m_pNearbyTeamMate;
-	edict_t* m_pCurrentWeapon;
-
-	CBaseHandle* m_Weapons;
-
-	float m_fUseButtonTime;
-	float m_fUseCrateTime;
-	float m_fScavengeTime; // scavenge for items (ammo, weapons, armor);
-
-	int m_iHealthPack;
 };
 
 #endif

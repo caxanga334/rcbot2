@@ -39,7 +39,7 @@
 #include "bot_commands.h" // for main rcbot command
 
 #ifdef _WIN32
-#include <ctype.h>
+#include <cctype>
 #endif
 
 #define MAX_MAP_STRING_LEN 64
@@ -59,8 +59,6 @@ public:
 	static QAngle entityEyeAngles ( edict_t *pEntity );
 
 	static QAngle playerAngles ( edict_t *pPlayer );
-
-	static void freeMemory ();
 
 	static inline bool isPlayer ( edict_t *pEdict )
 	{
@@ -87,7 +85,7 @@ public:
 	// add a directory delimiter to the string like '/' (linux) or '\\' (windows) or
 	static void addDirectoryDelimiter ( char *szString );
 	// print a message to client pEntity with bot formatting
-	static void botMessage ( edict_t *pEntity, int iErr, char *fmt, ... );	
+	static void botMessage ( edict_t *pEntity, int iErr, const char *fmt, ... );	
 	
 	static void fixFloatAngle ( float *fAngle );
 
@@ -189,8 +187,6 @@ public:
 
 	static inline bool isMod ( eModId iMod ) { 	return m_iCurrentMod == iMod; }
 
-	static inline char *gameFolder (){return m_szGameFolder;}
-
 	static inline char *modFolder (){return m_szModFolder;}
 
 	static inline int maxClients () {return m_iMaxClients;}
@@ -208,7 +204,7 @@ public:
 	static Vector getVelocity ( edict_t *pPlayer );
 
 	////////
-	static CBotCommandContainer *m_pCommands;
+	static CBotSubcommands *m_pCommands;
 
 	static void readRCBotFolder();
 	
@@ -228,7 +224,6 @@ private:
 	static eModId m_iCurrentMod;
 	static CBotMod *m_pCurrentMod;
 	static char *m_szModFolder;
-	static char *m_szGameFolder;
 	static char m_szMapName[MAX_MAP_STRING_LEN];
 	static int m_iDebugLevels;
 	static bool m_bMapRunning;

@@ -50,15 +50,9 @@
 #define BOT_ADD_METHOD_PUPPET 1
 #define BOT_ADD_PUPPET_COMMAND "bot"
 
-#define SYN_MAPGLOBAL_NONE 0
-#define SYN_MAPGLOBAL_PRECRIMINAL 1 // gordon is pre-criminal
-#define SYN_MAPGLOBAL_ANTLIONSALLY 2 // antlions are ally
-#define SYN_MAPGLOBAL_SUPER_PHYSGUN 3 // gravity gun super mode
-
 class CBotNeuralNet;
 
 #include <vector>
-using namespace std;
 
 
 /*
@@ -85,32 +79,6 @@ typedef enum
 	BOTTYPE_MAX
 }eBotType;
 
-
-// tf2
-class CAttributeID
-{
-public:
-	CAttributeID(int id, const char *attrib)
-	{
-		m_id = id;
-		m_attribute = attrib;
-	}
-
-	int m_id;
-	const char *m_attribute;
-};
-
-class CAttributeLookup
-{
-public:
-	static void addAttribute(const char *szAttrib, int id);
-	static int findAttributeID(const char *szAttrib);
-	static void freeMemory();
-private:
-	static vector<CAttributeID*> attributes;
-};
-
-
 class CBotMod
 {
 public:
@@ -123,7 +91,6 @@ public:
 		m_iBotType = BOTTYPE_GENERIC;
 		m_bPlayerHasSpawned = false;
 		m_bBotCommand_ResetCheatFlag = false;
-		m_bBotCommand_NeedCheatsHack = false;
 	}
 
 	virtual bool checkWaypointForTeam(CWaypoint *pWpt, int iTeam)
@@ -131,13 +98,9 @@ public:
 		return true; // okay -- no teams!!
 	}
 // linux fix
-	void setup ( const char *szModFolder, const char *szSteamFolder, eModId iModId, eBotType iBotType, const char *szWeaponListName );
-
-	bool isSteamFolder ( char *szSteamFolder );
+	void setup ( const char *szModFolder, eModId iModId, eBotType iBotType, const char *szWeaponListName );
 
 	bool isModFolder ( char *szModFolder );
-
-	char *getSteamFolder ();
 
 	char *getModFolder ();
 
@@ -175,11 +138,6 @@ public:
 		*iOff = 0;
 	}
 
-	inline bool needCheatsHack ()
-	{
-		return m_bBotCommand_NeedCheatsHack;
-	}
-
 	inline bool needResetCheatFlag ()
 	{
 		return m_bBotCommand_ResetCheatFlag;
@@ -193,7 +151,6 @@ protected:
 	char *m_szWeaponListName;
 	bool m_bPlayerHasSpawned;
 	bool m_bBotCommand_ResetCheatFlag;
-	bool m_bBotCommand_NeedCheatsHack;
 };
 
 ///////////////////
@@ -565,9 +522,7 @@ class CDODMod : public CBotMod
 public:
 	CDODMod()
 	{
-		setup("dod","day of defeat source",MOD_DOD,BOTTYPE_DOD,"DOD");		
-
-		m_bBotCommand_NeedCheatsHack = false;
+		setup("dod",MOD_DOD,BOTTYPE_DOD,"DOD");
 	}
 
 	static void roundStart ();
@@ -653,22 +608,11 @@ protected:
 	static int m_iBombAreaAllies;
 	static int m_iBombAreaAxis;
 
-	static vector<edict_wpt_pair_t> m_BombWaypoints;
-	static vector<edict_wpt_pair_t> m_BreakableWaypoints;
+	static std::vector<edict_wpt_pair_t> m_BombWaypoints;
+	static std::vector<edict_wpt_pair_t> m_BreakableWaypoints;
 
 									// enemy			// team
 	static float fAttackProbLookUp[MAX_DOD_FLAGS+1][MAX_DOD_FLAGS+1];
-};
-
-class CDODModDedicated : public CDODMod
-{
-public:
-	CDODModDedicated()
-	{
-		setup("dod", "source dedicated server", MOD_DOD, BOTTYPE_DOD, "DOD");
-	}
-protected:
-
 };
 
 class CCounterStrikeSourceMod : public CBotMod
@@ -676,7 +620,7 @@ class CCounterStrikeSourceMod : public CBotMod
 public:
 	CCounterStrikeSourceMod()
 	{
-		setup("cstrike", "counter-strike source", MOD_CSS, BOTTYPE_CSS, "CSS");
+		setup("cstrike", MOD_CSS, BOTTYPE_CSS, "CSS");
 	}
 
 	//void initMod ();
@@ -686,25 +630,9 @@ public:
 	//void entitySpawn ( edict_t *pEntity );
 protected:
 	// storing mod specific info
-	vector<edict_t*> m_pHostages;
-	vector<edict_t*> m_pBombPoints;
-	vector<edict_t*> m_pRescuePoints;
-};
-
-
-class CCounterStrikeSourceModDedicated : public CCounterStrikeSourceMod
-{
-public:
-	CCounterStrikeSourceModDedicated()
-	{
-		setup("cstrike","source dedicated server",MOD_CSS,BOTTYPE_CSS,"CSS");
-	}
-
-	//void initMod ();
-
-	//void mapInit ();
-
-	//void entitySpawn ( edict_t *pEntity );
+	std::vector<edict_t*> m_pHostages;
+	std::vector<edict_t*> m_pBombPoints;
+	std::vector<edict_t*> m_pRescuePoints;
 };
 
 class CTimCoopMod : public CBotMod
@@ -712,7 +640,7 @@ class CTimCoopMod : public CBotMod
 public:
 	CTimCoopMod()
 	{
-		setup("SourceMods","timcoop",MOD_TIMCOOP,BOTTYPE_COOP,"HL2DM");
+		setup("SourceMods",MOD_TIMCOOP,BOTTYPE_COOP,"HL2DM");
 	}
 
 	//void initMod ();
@@ -727,7 +655,7 @@ class CSvenCoop2Mod : public CBotMod
 public:
 	CSvenCoop2Mod()
 	{
-		setup("SourceMods","svencoop2",MOD_SVENCOOP2,BOTTYPE_COOP,"SVENCOOP2");
+		setup("SourceMods",MOD_SVENCOOP2,BOTTYPE_COOP,"SVENCOOP2");
 	}
 
 	//void initMod ();
@@ -742,18 +670,7 @@ class CFortressForeverMod : public CBotMod
 public:
 	CFortressForeverMod()
 	{
-		setup("FortressForever", "SourceMods", MOD_FF, BOTTYPE_FF, "FF");
-	}
-private:
-
-};
-
-class CFortressForeverModDedicated : public CBotMod
-{
-public:
-	CFortressForeverModDedicated()
-	{
-		setup("FortressForever","source dedicated server",MOD_FF,BOTTYPE_FF,"FF");
+		setup("FortressForever", MOD_FF, BOTTYPE_FF, "FF");
 	}
 private:
 
@@ -764,7 +681,7 @@ class CHLDMSourceMod : public CBotMod
 public:
 	CHLDMSourceMod()
 	{
-		setup("hl1mp","half-life deathmatch source",MOD_HL1DMSRC,BOTTYPE_HL1DM,"HLDMSRC");
+		setup("hl1mp",MOD_HL1DMSRC,BOTTYPE_HL1DM,"HLDMSRC");
 	}
 };
 
@@ -773,29 +690,14 @@ class CSynergyMod : public CBotMod
 public:
 	CSynergyMod()
 	{
-		setup("synergy", "synergy", MOD_SYNERGY, BOTTYPE_COOP, "SYNERGY");
+		setup("synergy",MOD_SYNERGY,BOTTYPE_COOP,"SYNERGY");
 	}
 
-	void initMod();
+	//void initMod ();
 
-	void mapInit();
-
-	edict_t* GetRandomPlayer(edict_t* pIgnore);
-
-	void addWaypointFlags(edict_t* pPlayer, edict_t* pEdict, int* iFlags, int* iArea, float* fMaxDistance);
-
-	int GetPropDoorState(CBaseEntity* pDoor);
-
-	bool IsPlayerInVehicle(edict_t* pPlayer);
-
-	// Gets the map global state
-	inline static int GetMapGlobal() { return m_iMapGlobal; }
+	//void mapInit ();
 
 	//void entitySpawn ( edict_t *pEntity );
-
-protected:
-
-	static int m_iMapGlobal;
 };
 
 #define NEWENUM typedef enum {
@@ -849,58 +751,14 @@ class CTeamControlPointMaster;
 class CTeamControlPoint;
 class CTeamRoundTimer;
 
-class CAttribute 
-{
-public:
-	CAttribute ( const char *name, float fval );
-
-	void applyAttribute ( edict_t *pEdict );
-
-	const char *m_name;
-	float m_fval;
-};
-
-class CTF2Loadout
-{
-public:
-	CTF2Loadout ( const char *pszClassname, int iIndex, int iQuality, int iMinLevel, int iMaxLevel );
-
-	//const char *getScript ( CEconItemView *script );
-	//CEconItemView *getScript ( CEconItemView *other );
-	void getScript ( CEconItemView *cscript );
-
-	void addAttribute ( int id, float fval );
-
-	unsigned int copyAttributesIntoArray ( CEconItemAttribute *pArray, void *pVTable = NULL );
-	//void addAttribute ( CAttribute *attrib );
-
-	//void applyAttributes ( edict_t *pEdict );
-	void applyAttributes ( CEconItemView *cscript );
-	void applyAttributes  ( CBaseEntity *pEnt );
-
-	void freeMemory ();
-
-	int m_iIndex;
-//	int m_iSlot;
-	int m_iQuality;
-	bool m_bCanBeUsedInMedieval;
-	int m_iMinLevel;
-	int m_iMaxLevel;
-	const char *m_pszClassname;
-	//vector<CAttribute*> m_Attributes;
-	vector<CEconItemAttribute*> m_Attributes;
-	//CEconItemView m_ItemView;
-};
-
 class CTeamFortress2Mod : public CBotMod
 {
 public:
 	CTeamFortress2Mod()
 	{
-		setup("tf","team fortress 2",MOD_TF2,BOTTYPE_TF2,"TF2");
+		setup("tf",MOD_TF2,BOTTYPE_TF2,"TF2");
 
 		m_pResourceEntity = NULL;
-		m_bBotCommand_NeedCheatsHack = true;
 	}
 
 	void mapInit ();
@@ -921,8 +779,6 @@ public:
 	void initMod ();
 
 	static void roundStart ();
-
-	void freeMemory ();
 
 	static int getTeam ( edict_t *pEntity );
 
@@ -1122,7 +978,7 @@ public:
 
 	static edict_t *getMySentryGun ( edict_t *pOwner )
 	{
-		int id = ENTINDEX(pOwner)-1;
+		const int id = ENTINDEX(pOwner)-1;
 
 		if ( id>=0 )
 		{
@@ -1146,7 +1002,7 @@ public:
 
 	static bool isMySentrySapped ( edict_t *pOwner ) 
 	{
-		int id = ENTINDEX(pOwner)-1;
+		const int id = ENTINDEX(pOwner)-1;
 
 		if ( id>=0 )
 		{
@@ -1168,7 +1024,7 @@ public:
 
 	static bool isMyTeleporterSapped ( edict_t *pOwner )
 	{
-		int id = ENTINDEX(pOwner)-1;
+		const int id = ENTINDEX(pOwner)-1;
 
 		if ( id>=0 )
 		{
@@ -1180,7 +1036,7 @@ public:
 
 	static bool isMyDispenserSapped ( edict_t *pOwner )
 	{
-		int id = ENTINDEX(pOwner)-1;
+		const int id = ENTINDEX(pOwner)-1;
 
 		if ( id>=0 )
 		{
@@ -1325,10 +1181,6 @@ public:
 
 	static bool isMedievalMode();
 
-	static CTF2Loadout *findRandomWeaponLoadOutInSlot(int iclass, int islot );
-	static CTF2Loadout *findRandomWeaponLoadOut ( int iclass, const char *classname );
-	static CTF2Loadout *getRandomHat ( int iClass );
-
 private:
 
 
@@ -1395,31 +1247,9 @@ private:
 	static int m_iCapturePointWptID;
 	static int m_iFlagPointWptID;
 
-	static void setupLoadOutWeapons ( void );
-
 	static MyEHandle m_pNearestTankBoss;
 	static float m_fNearestTankDistance;
 	static Vector m_vNearestTankLocation;
-	// slots X nine classes
-	static vector<CTF2Loadout*> m_pLoadoutWeapons[TF2_SLOT_MAX][9];
-	//static vector<CTF2Loadout*> m_pHats;
-	//static CTF2Loadout *m_StockWeapons[3][9]; //stock weapons
-
-};
-
-class CTeamFortress2ModDedicated : public CTeamFortress2Mod
-{
-public:
-	CTeamFortress2ModDedicated()
-	{
-#ifdef __linux__
-		setup("tf","orangebox",MOD_TF2,BOTTYPE_TF2,"TF2");    //bir3yk
-#else
-		setup("tf", "source dedicated server", MOD_TF2, BOTTYPE_TF2, "TF2");
-#endif
-	}
-
-private:
 
 };
 
@@ -1428,7 +1258,7 @@ class CHalfLifeDeathmatchMod : public CBotMod
 public:
 	CHalfLifeDeathmatchMod()
 	{
-		setup("hl2mp", "half-life 2 deathmatch", MOD_HLDM2, BOTTYPE_HL2DM, "HL2DM");
+		setup("hl2mp", MOD_HLDM2, BOTTYPE_HL2DM, "HL2DM");
 	}
 
 	void initMod ();
@@ -1450,32 +1280,16 @@ public:
 
 	//void entitySpawn ( edict_t *pEntity );
 private:
-	static vector<edict_wpt_pair_t> m_LiftWaypoints;
+	static std::vector<edict_wpt_pair_t> m_LiftWaypoints;
 };
 
-class CHalfLifeDeathmatchModDedicated : public CHalfLifeDeathmatchMod
-{
-public:
-	CHalfLifeDeathmatchModDedicated()
-	{
-		setup("hl2mp", "source dedicated server", MOD_HLDM2, BOTTYPE_HL2DM, "HL2DM");
-	}
-
-	//void initMod ();
-
-	//void mapInit ();
-
-	//void entitySpawn ( edict_t *pEntity );
-protected:
-
-};
 /*
 class CNaturalSelection2Mod : public CBotMod
 {
 public:
 	CNaturalSelection2Mod() 
 	{
-		setup("ns2","natural selection 2",MOD_NS2,BOTTYPE_NS2);
+		setup("ns2",MOD_NS2,BOTTYPE_NS2);
 	}
 // linux fix
 
@@ -1523,10 +1337,10 @@ public:
 
 	static void freeMemory ();
 
-	static CBotMod *getMod ( char *szModFolder, char *szSteamFolder );
+	static CBotMod *getMod ( char *szModFolder );
 
 private:
-	static vector<CBotMod*> m_Mods;
+	static std::vector<CBotMod*> m_Mods;
 };
 
 #endif

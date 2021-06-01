@@ -56,8 +56,8 @@ int CDODMod::m_iBombAreaAllies = 0;
 int CDODMod::m_iBombAreaAxis = 0;
 //CPerceptron *CDODMod::gNetAttackOrDefend = NULL;
 float CDODMod::fAttackProbLookUp[MAX_DOD_FLAGS+1][MAX_DOD_FLAGS+1];
-vector<edict_wpt_pair_t> CDODMod::m_BombWaypoints;
-vector<edict_wpt_pair_t> CDODMod::m_BreakableWaypoints;
+std::vector<edict_wpt_pair_t> CDODMod::m_BombWaypoints;
+std::vector<edict_wpt_pair_t> CDODMod::m_BreakableWaypoints;
 
 
 eDODVoiceCommand_t g_DODVoiceCommands[DOD_VC_INVALID] = 
@@ -169,9 +169,6 @@ void CDODMod :: initMod ()
 
 	CBotGlobals::botMessage(NULL,0,"... done!");
 ///-------------------------------------------------
-
-
-	CBots::controlBotSetup(true);
 
 	CWeapons::loadWeapons((m_szWeaponListName == NULL) ? "DOD" : m_szWeaponListName, DODWeaps);
 	//CWeapons::loadWeapons("DOD", DODWeaps);
@@ -409,7 +406,7 @@ bool CDODFlags::getRandomEnemyControlledFlag ( CBot *pBot, Vector *position, int
 
 bool CDODFlags::getRandomBombToDefuse  ( Vector *position, int iTeam, edict_t **pBombTarget, int *id )
 {
-	vector<int> iPossible;
+	std::vector<int> iPossible; // int is control point entry
 	short int j;
 	int selection;
 
@@ -449,7 +446,7 @@ bool CDODFlags::getRandomBombToDefuse  ( Vector *position, int iTeam, edict_t **
 //return random bomb with highest danger
 bool CDODFlags:: getRandomBombToDefend ( CBot *pBot, Vector *position, int iTeam, edict_t **pBombTarget, int *id )
 {
-	vector<int> iPossible;
+	std::vector<int> iPossible; // int is control point entry
 	short int j;
 	int selection;
 
@@ -789,7 +786,7 @@ int CDODMod ::getScore(edict_t *pPlayer)
 
 edict_t *CDODMod :: getBreakable ( CWaypoint *pWpt )
 {
-	register unsigned short int size = m_BreakableWaypoints.size();
+	const register unsigned short int size = m_BreakableWaypoints.size();
 
 	for ( register unsigned short int i = 0; i < size; i ++ )
 	{
@@ -802,7 +799,7 @@ edict_t *CDODMod :: getBreakable ( CWaypoint *pWpt )
 
 edict_t *CDODMod :: getBombTarget ( CWaypoint *pWpt )
 {
-	register unsigned short int size = m_BombWaypoints.size();
+	const register unsigned short int size = m_BombWaypoints.size();
 
 	for ( register unsigned short int i = 0; i < size; i ++ )
 	{
@@ -892,7 +889,7 @@ void CDODMod :: addWaypointFlags (edict_t *pPlayer, edict_t *pEdict, int *iFlags
 {
 	if ( isBombMap()  )
 	{
-		int id = m_Flags.getBombID(pEdict);
+		const int id = m_Flags.getBombID(pEdict);
 
 		if ( id != -1 )
 		{
@@ -903,7 +900,7 @@ void CDODMod :: addWaypointFlags (edict_t *pPlayer, edict_t *pEdict, int *iFlags
 	
 	if ( isFlagMap() )
 	{
-		int id = m_Flags.getFlagID(pEdict);
+		const int id = m_Flags.getFlagID(pEdict);
 
 		if ( id != -1 )
 		{

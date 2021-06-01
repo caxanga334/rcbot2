@@ -29,54 +29,11 @@
  *
  *///=================================================================================//
 
-/// NOT WORKING
-
-#include <stdio.h>
-#include <time.h>
-
-//#include "cbase.h"
-//#include "baseentity.h"
-#include "filesystem.h"
-#include "interface.h"
-#include "engine/iserverplugin.h"
-#include "iplayerinfo.h"
-#ifdef __linux__
-#include "shake.h"    //bir3yk
-#endif
-#include "IEngineTrace.h" // for traceline functions
-#include "tier2/tier2.h"
-#include "IEffects.h"
-#include "vplane.h"
-#include "eiface.h"
-#include "igameevents.h"
-#include "icvar.h"
-//#include "iconvar.h"
-#include "convar.h"
-#include "Color.h"
-#include "ndebugoverlay.h"
-#include "server_class.h"
-#include "time.h"
 #include "bot.h"
-#include "bot_commands.h"
-#include "bot_client.h"
 #include "bot_globals.h"
-#include "bot_accessclient.h"
-#include "bot_waypoint_visibility.h" // for initializing table
-#include "bot_event.h"
-#include "bot_profile.h"
-#include "bot_weapons.h"
-#include "bot_mods.h"
-#include "bot_profiling.h"
-#include "vstdlib/random.h" // for random  seed 
-
-#include "bot_wpt_dist.h"
-
 #include "bot_configfile.h"
-#include "bot_strings.h"
 
-#include "bot_fortress.h"
-
-vector <char *> CBotConfigFile::m_Commands;
+std::vector <char *> CBotConfigFile::m_Commands;
 unsigned int CBotConfigFile::m_iCmd = 0; // current command (time delayed)
 float CBotConfigFile::m_fNextCommandTime = 0.0f;
 

@@ -32,12 +32,11 @@
 #define __RCBOT_SQUADS_H__
 
 #include "vector.h"
-#include "bot_genclass.h"
 #include "bot_ehandle.h"
 
 #define SQUAD_DEFAULT_SPREAD 80.0// say 50 units between each member...?
 
-typedef enum eSquadForm
+enum eSquadForm
 {
 	SQUAD_FORM_NONE = 0,
 	SQUAD_FORM_WEDGE,
@@ -48,7 +47,7 @@ typedef enum eSquadForm
 	SQUAD_FORM_VEE
 };
 
-typedef enum eCombatType
+enum eCombatType
 {
 	COMBAT_NONE = 0,
 	COMBAT_STEALTH,
@@ -57,7 +56,7 @@ typedef enum eCombatType
 	COMBAT_PRONE
 };
 
-typedef enum eTacticType
+enum eTacticType
 {
 	TACTIC_FREE = 0,
 	TACTIC_IDLE,
@@ -79,7 +78,6 @@ public:
 
 	~CBotSquad()
 	{
-		m_theSquad.Destroy();
 	}
 
 	void Init ();
@@ -91,7 +89,7 @@ public:
 		m_pLeader = pLeader;
 	}
 
-	edict_t *getMember ( int iMember );
+	edict_t *getMember ( size_t iMember );
 
 	void ToggleFireMode ( void )
 	{
@@ -172,7 +170,7 @@ public:
 
 	void AddMember ( edict_t *pEdict );
 
-	int numMembers ();
+	size_t numMembers ();
 
 	bool IsMember ( edict_t *pEdict );
 
@@ -222,7 +220,7 @@ private:
 	// use 'EHandles' for squads
 	// as players might leave and stuff...
 	MyEHandle m_pLeader;
-	dataStack<MyEHandle> m_theSquad;
+	std::deque<MyEHandle> m_SquadMembers; // followers?
 
 	eSquadForm m_theDesiredFormation;
 	float m_fDesiredSpread;
@@ -265,7 +263,7 @@ public:
 	static void ChangeLeader ( CBotSquad *theSquad );
 
 private:
-	static dataStack<CBotSquad*> m_theSquads;
+	static std::deque<CBotSquad*> m_theSquads;
 };
 /*
 class CBotSquadE

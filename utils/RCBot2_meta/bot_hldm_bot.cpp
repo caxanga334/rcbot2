@@ -30,6 +30,7 @@
  */
 #include "in_buttons.h"
 #include "bot.h"
+#include "bot_cvars.h"
 #include "bot_hldm_bot.h"
 #include "bot_client.h"
 #include "bot_buttons.h"
@@ -45,11 +46,6 @@
 #include "bot_mtrand.h"
 #include "bot_waypoint_locations.h"
 #include "bot_getprop.h"
-
-
-extern ConVar rcbot_jump_obst_dist;
-extern ConVar rcbot_jump_obst_speed;
-extern ConVar rcbot_melee_only;
 
 // initialise , i.e. set everything to a default value
 void CHLDMBot :: init ()
@@ -73,8 +69,6 @@ bool CHLDMBot :: startGame ()
 // the bot killed pVictim
 void CHLDMBot :: killed ( edict_t *pVictim, char *weapon )
 {
-	extern ConVar bot_beliefmulti;
-
 	CBot::killed(pVictim,weapon);
 
 	// update belief around this waypoint
@@ -85,8 +79,6 @@ void CHLDMBot :: killed ( edict_t *pVictim, char *weapon )
 // the bot was killed by pKiller
 void CHLDMBot :: died ( edict_t *pKiller, const char *pszWeapon )
 {
-	extern ConVar bot_beliefmulti;
-
 	// re-initialize stuff per life
 	CBot::died(pKiller, pszWeapon);
 
@@ -151,7 +143,6 @@ void CHLDMBot :: spawnInit ()
 //							return false if not 
 bool CHLDMBot :: isEnemy ( edict_t *pEdict,bool bCheckWeapons )
 {
-	extern ConVar rcbot_notarget;
 	static int entity_index;
 
 	entity_index = ENTINDEX(pEdict);
@@ -388,7 +379,6 @@ bool CHLDMBot :: handleAttack ( CBotWeapon *pWeapon, edict_t *pEnemy )
 {
 	if ( pWeapon )
 	{
-		extern ConVar rcbot_enemyshoot_gravgun_fov;
 		static float fDistance;
 
 		fDistance = distanceFrom(pEnemy);
@@ -485,7 +475,7 @@ void CHLDMBot :: getTasks (unsigned int iIgnore)
 
 	if ( !hasSomeConditions(CONDITION_SEE_CUR_ENEMY) && hasSomeConditions(CONDITION_SEE_LAST_ENEMY_POS) && m_pLastEnemy && m_fLastSeeEnemy && ((m_fLastSeeEnemy + 10.0) > engine->Time()) && m_pWeapons->hasWeapon(HL2DM_WEAPON_FRAG) )
 	{
-		float fDistance = distanceFrom(m_vLastSeeEnemyBlastWaypoint);
+		const float fDistance = distanceFrom(m_vLastSeeEnemyBlastWaypoint);
 
 		if ( ( fDistance > BLAST_RADIUS ) && ( fDistance < 1500 ) )
 		{
@@ -699,7 +689,6 @@ void CHLDMBot :: handleWeapons ()
 
 		if ( m_bWantToChangeWeapon && (pWeapon != NULL) && (pWeapon != getCurrentWeapon()) && pWeapon->getWeaponIndex() )
 		{
-			//selectWeaponSlot(pWeapon->getWeaponInfo()->getSlot());
 			selectWeapon(pWeapon->getWeaponIndex());
 		}
 
@@ -721,7 +710,7 @@ bool CHLDMBot :: setVisible ( edict_t *pEntity, bool bVisible )
 	static float fDist;
 	const char *szClassname;
 
-	bool bValid = CBot::setVisible(pEntity,bVisible);
+	const bool bValid = CBot::setVisible(pEntity,bVisible);
 
 	fDist = distanceFrom(pEntity);
 

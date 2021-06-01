@@ -39,6 +39,7 @@ struct edict_t;
 #include "bot.h"
 #include "bot_const.h"
 #include "bot_fortress.h"
+#include "bot_waypoint.h"
 
 class CWaypointVisibilityTable;
 
@@ -388,8 +389,8 @@ private:
 
 	CWaypointVisibilityTable *m_pTable;
 	CWaypoint *m_pTarget;
-	vector<int> m_WaypointsI;
-	vector<int> m_WaypointsJ;
+	WaypointList m_WaypointsI;
+	WaypointList m_WaypointsJ;
 };
 
 
@@ -671,7 +672,7 @@ private:
 	int m_iCurPath;
 	bool m_bHasPOV;
 	Vector m_vPOV;
-	vector<Vector> m_InvPoints; // investigation points (waypoint paths)
+	std::vector<Vector> m_InvPoints; // investigation points (waypoint paths)
 };
 
 class CBotTF2EngiLookAfter : public CBotTask
@@ -979,7 +980,7 @@ public:
 private:
 	Vector m_vOrigin;
 	Vector m_vMoveTo;
-	vector<Vector> m_CheckPoints;
+	std::vector<Vector> m_CheckPoints;
 	unsigned int m_iCurrentCheckPoint;
 	float m_fInvestigateTime;
 	float m_fTime;
@@ -1423,20 +1424,4 @@ public:
 
 	virtual void execute ( CBot *pBot );
 };*/
-
-class CSYNHealTeamMate : public CBotTask
-{
-public:
-	CSYNHealTeamMate(edict_t* pPlayer)
-	{
-		m_pPlayer = pPlayer;
-	}
-
-	virtual void debugString(char* string);
-	void execute(CBot* pBot, CBotSchedule* pSchedule);
-
-private:
-	MyEHandle m_pPlayer;
-};
-
 #endif

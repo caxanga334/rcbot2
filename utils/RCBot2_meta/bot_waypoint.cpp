@@ -35,10 +35,10 @@
 
 #include "iplayerinfo.h"
 
-#include "convar.h"
 #include "ndebugoverlay.h"
 
 #include "bot.h"
+#include "bot_cvars.h"
 
 #include "in_buttons.h"
 
@@ -57,22 +57,20 @@
 
 
 #include <vector>    //bir3yk
-using namespace std;    //bir3yk
+#include <algorithm>
 
 int CWaypoints::m_iNumWaypoints = 0;
 CWaypoint CWaypoints::m_theWaypoints[CWaypoints::MAX_WAYPOINTS];
 float CWaypoints::m_fNextDrawWaypoints = 0;
 int CWaypoints::m_iWaypointTexture = 0;
 CWaypointVisibilityTable * CWaypoints::m_pVisibilityTable = NULL;
-vector<CWaypointType*> CWaypointTypes::m_Types;
+std::vector<CWaypointType*> CWaypointTypes::m_Types;
 char CWaypoints::m_szAuthor[32];
 char CWaypoints::m_szModifiedBy[32];
 char CWaypoints::m_szWelcomeMessage[128];
 const WptColor WptColor::white = WptColor(255,255,255,255) ;
 
 extern IVDebugOverlay *debugoverlay;
-
-extern ConVar bot_belief_fade;
 
 ///////////////////////////////////////////////////////////////
 // initialise
@@ -87,7 +85,11 @@ void CWaypointNavigator :: init ()
 	m_iNextWaypoint = -1;
 	m_iGoalWaypoint = -1;
 
-	m_currentRoute.Destroy();
+	while (!m_currentRoute.empty()) {
+		m_currentRoute.pop();
+	}
+
+	// TODO: queue doesn't implement .clear() -- maybe use deque instead?
 	while( !m_oldRoute.empty() )
 		m_oldRoute.pop();
 
@@ -97,7 +99,7 @@ void CWaypointNavigator :: init ()
 
 	Q_memset(m_fBelief,0,sizeof(float)*CWaypoints::MAX_WAYPOINTS);
 
-	m_iFailedGoals.Destroy();//.clear();//Destroy();
+	m_iFailedGoals.clear();
 }
 
 bool CWaypointNavigator :: beliefLoad ( ) 
@@ -268,16 +270,14 @@ bool CWaypointNavigator :: randomDangerPath (Vector *vec)
 	if ( m_iCurrentWaypoint == -1 )
 		return false;
 
-	if ( !m_currentRoute.IsEmpty() )
+	if ( !m_currentRoute.empty() )
 	{
-		static int *head;
+		const int head = m_currentRoute.top();
 		static CWaypoint *pW;
-		
-		head = m_currentRoute.GetHeadInfoPointer();
 
-		if ( head && (*head!= -1))
+		if (head != -1)
 		{
-			pOnRouteTo = CWaypoints::getWaypoint(*head);
+			pOnRouteTo = CWaypoints::getWaypoint(head);
 		}
 	}
 
@@ -365,9 +365,8 @@ float CWaypointNavigator :: getNextYaw ()
 }
 
 // best waypoints are those with lowest danger
-CWaypoint *CWaypointNavigator :: chooseBestFromBeliefBetweenAreas ( dataUnconstArray<AStarNode*> *goals, bool bHighDanger, bool bIgnoreBelief )
+CWaypoint *CWaypointNavigator :: chooseBestFromBeliefBetweenAreas ( std::vector<AStarNode*> &goals, bool bHighDanger, bool bIgnoreBelief )
 {
-	int i;
 	CWaypoint *pWpt = NULL;
 //	CWaypoint *pCheck;
 
@@ -375,17 +374,17 @@ CWaypoint *CWaypointNavigator :: chooseBestFromBeliefBetweenAreas ( dataUnconstA
 	float fSelect;
 
 	// simple checks
-	switch ( goals->Size() )
+	switch ( goals.size() )
 	{
 	case 0:return NULL;
-	case 1:return CWaypoints::getWaypoint(goals->ReturnValueFromIndex(0)->getWaypoint());
+	case 1:return CWaypoints::getWaypoint(goals[0]->getWaypoint());
 	default:
 		{
 			AStarNode *node;
 
-			for ( i = 0; i < goals->Size(); i ++ )
+			for (size_t i = 0; i < goals.size(); i++)
 			{
-				node = goals->ReturnValueFromIndex(i);
+				node = goals[i];
 
 				if ( bIgnoreBelief )
 				{
@@ -404,9 +403,9 @@ CWaypoint *CWaypointNavigator :: chooseBestFromBeliefBetweenAreas ( dataUnconstA
 
 			fBelief = 0;
 			
-			for ( i = 0; i < goals->Size(); i ++ )
+			for (size_t i = 0; i < goals.size(); i++)
 			{
-				node = goals->ReturnValueFromIndex(i);
+				node = goals[i];
 
 				if ( bIgnoreBelief )
 				{
@@ -428,7 +427,7 @@ CWaypoint *CWaypointNavigator :: chooseBestFromBeliefBetweenAreas ( dataUnconstA
 			}
 
 			if ( pWpt == NULL )
-				pWpt = CWaypoints::getWaypoint(goals->Random()->getWaypoint());
+				pWpt = CWaypoints::getWaypoint(goals[ randomInt(0, goals.size() - 1) ]->getWaypoint());
 		}
 	}
 		
@@ -436,9 +435,8 @@ CWaypoint *CWaypointNavigator :: chooseBestFromBeliefBetweenAreas ( dataUnconstA
 }
 
 // best waypoints are those with lowest danger
-CWaypoint *CWaypointNavigator :: chooseBestFromBelief ( dataUnconstArray<CWaypoint*> *goals, bool bHighDanger, int iSearchFlags, int iTeam )
+CWaypoint *CWaypointNavigator :: chooseBestFromBelief ( std::vector<CWaypoint*> &goals, bool bHighDanger, int iSearchFlags, int iTeam )
 {
-	int i;
 	CWaypoint *pWpt = NULL;
 	CWaypoint *pCheck;
 
@@ -447,13 +445,13 @@ CWaypoint *CWaypointNavigator :: chooseBestFromBelief ( dataUnconstArray<CWaypoi
 	float bBeliefFactor = 1.0f;
 
 	// simple checks
-	switch ( goals->Size() )
+	switch ( goals.size() )
 	{
-	case 0:return NULL;
-	case 1:return goals->ReturnValueFromIndex(0);
+	case 0:return nullptr;
+	case 1:return goals[0];
 	default:
 		{
-			for ( i = 0; i < goals->Size(); i ++ )
+			for (size_t i = 0; i < goals.size(); i ++ )
 			{
 				bBeliefFactor = 1.0f;
 
@@ -465,7 +463,7 @@ CWaypoint *CWaypointNavigator :: chooseBestFromBelief ( dataUnconstArray<CWaypoi
 
 						if ( pSentry != NULL )
 						{
-							if ( goals->ReturnValueFromIndex(i)->distanceFrom(CBotGlobals::entityOrigin(pSentry)) < 200.0f )
+							if ( goals[i]->distanceFrom(CBotGlobals::entityOrigin(pSentry)) < 200.0f )
 							{
 								bBeliefFactor *= 0.1f;
 							}
@@ -483,7 +481,7 @@ CWaypoint *CWaypointNavigator :: chooseBestFromBelief ( dataUnconstArray<CWaypoi
 						{
 							if ( ( iTeam == 0 ) || ( iTeam == CClassInterface::getTeam(pPlayer) ) )
 							{
-								if ( goals->ReturnValueFromIndex(i)->distanceFrom(CBotGlobals::entityOrigin(pPlayer)) < 200.0f )
+								if ( goals[i]->distanceFrom(CBotGlobals::entityOrigin(pPlayer)) < 200.0f )
 								{
 									bBeliefFactor *= 0.1f;
 								}
@@ -502,7 +500,7 @@ CWaypoint *CWaypointNavigator :: chooseBestFromBelief ( dataUnconstArray<CWaypoi
 						{
 							if ( ( iTeam == 0 ) || ( iTeam == CClassInterface::getTeam(pPlayer) ) )
 							{
-								if ( goals->ReturnValueFromIndex(i)->distanceFrom(CBotGlobals::entityOrigin(pPlayer)) < 200.0f )
+								if ( goals[i]->distanceFrom(CBotGlobals::entityOrigin(pPlayer)) < 200.0f )
 								{
 									bBeliefFactor *= 0.1f;
 								}
@@ -513,11 +511,11 @@ CWaypoint *CWaypointNavigator :: chooseBestFromBelief ( dataUnconstArray<CWaypoi
 
 				if ( bHighDanger )
 				{
-					fBelief += bBeliefFactor * (1.0f + (m_fBelief[CWaypoints::getWaypointIndex((*goals)[i])]));	
+					fBelief += bBeliefFactor * (1.0f + (m_fBelief[CWaypoints::getWaypointIndex(goals[i])]));	
 				}
 				else
 				{
-					fBelief += bBeliefFactor * (1.0f + (MAX_BELIEF - (m_fBelief[CWaypoints::getWaypointIndex((*goals)[i])])));
+					fBelief += bBeliefFactor * (1.0f + (MAX_BELIEF - (m_fBelief[CWaypoints::getWaypointIndex(goals[i])])));
 				}
 			}
 
@@ -525,9 +523,9 @@ CWaypoint *CWaypointNavigator :: chooseBestFromBelief ( dataUnconstArray<CWaypoi
 
 			fBelief = 0;
 			
-			for ( i = 0; i < goals->Size(); i ++ )
+			for (size_t i = 0; i < goals.size(); i++)
 			{
-				pCheck = goals->ReturnValueFromIndex(i);
+				pCheck = goals[i];
 
 				bBeliefFactor = 1.0f;
 
@@ -539,7 +537,7 @@ CWaypoint *CWaypointNavigator :: chooseBestFromBelief ( dataUnconstArray<CWaypoi
 
 						if ( pSentry != NULL )
 						{
-							if ( goals->ReturnValueFromIndex(i)->distanceFrom(CBotGlobals::entityOrigin(pSentry)) < 200.0f )
+							if ( goals[i]->distanceFrom(CBotGlobals::entityOrigin(pSentry)) < 200.0f )
 							{
 								bBeliefFactor *= 0.1f;
 							}
@@ -555,7 +553,7 @@ CWaypoint *CWaypointNavigator :: chooseBestFromBelief ( dataUnconstArray<CWaypoi
 
 						if ( (pPlayer != NULL) && !pPlayer->IsFree() && (CClassInterface::getTF2Class(pPlayer)==TF_CLASS_SNIPER) )
 						{
-							if ( goals->ReturnValueFromIndex(i)->distanceFrom(CBotGlobals::entityOrigin(pPlayer)) < 200.0f )
+							if ( goals[i]->distanceFrom(CBotGlobals::entityOrigin(pPlayer)) < 200.0f )
 							{
 								bBeliefFactor *= 0.1f;
 							}
@@ -571,7 +569,7 @@ CWaypoint *CWaypointNavigator :: chooseBestFromBelief ( dataUnconstArray<CWaypoi
 
 						if ( (pPlayer != NULL) && !pPlayer->IsFree() )
 						{
-							if ( goals->ReturnValueFromIndex(i)->distanceFrom(CBotGlobals::entityOrigin(pPlayer)) < 200.0f )
+							if ( goals[i]->distanceFrom(CBotGlobals::entityOrigin(pPlayer)) < 200.0f )
 							{
 								bBeliefFactor *= 0.1f;
 							}
@@ -581,11 +579,11 @@ CWaypoint *CWaypointNavigator :: chooseBestFromBelief ( dataUnconstArray<CWaypoi
 
 				if ( bHighDanger )
 				{
-					fBelief += bBeliefFactor * (1.0f + (m_fBelief[CWaypoints::getWaypointIndex((*goals)[i])]));	
+					fBelief += bBeliefFactor * (1.0f + (m_fBelief[CWaypoints::getWaypointIndex(goals[i])]));
 				}
 				else
 				{
-					fBelief += bBeliefFactor * (1.0f + (MAX_BELIEF - (m_fBelief[CWaypoints::getWaypointIndex((*goals)[i])])));
+					fBelief += bBeliefFactor * (1.0f + (MAX_BELIEF - (m_fBelief[CWaypoints::getWaypointIndex(goals[i])])));
 				}
 
 				if ( fSelect <= fBelief )
@@ -596,7 +594,7 @@ CWaypoint *CWaypointNavigator :: chooseBestFromBelief ( dataUnconstArray<CWaypoi
 			}
 
 			if ( pWpt == NULL )
-				pWpt = goals->Random();
+				pWpt = goals[ randomInt(0, goals.size() - 1) ];
 		}
 	}
 		
@@ -644,13 +642,12 @@ void CWaypointNavigator :: beliefOne ( int iWptIndex, BotBelief iBeliefType, flo
 void CWaypointNavigator :: belief ( Vector vOrigin, Vector vOther, float fBelief, 
 								   float fStrength, BotBelief iType )
 {
-	static int i;
 	static float factor;
 	static float fEDist;
 	static int iWptIndex;
 	CWaypoint *pWpt;
-	dataUnconstArray<int> m_iVisibles;
-	dataUnconstArray<int> m_iInvisibles;
+	WaypointList m_iVisibles;
+	WaypointList m_iInvisibles;
 	static int iWptFrom;
 	static int iWptTo;
 
@@ -664,13 +661,13 @@ void CWaypointNavigator :: belief ( Vector vOrigin, Vector vOther, float fBelief
 
 	fEDist = (vOrigin-vOther).Length(); // range
 
-	m_iVisibles.Add(iWptFrom);
-	m_iVisibles.Add(iWptTo);
+	m_iVisibles.push_back(iWptFrom);
+	m_iVisibles.push_back(iWptTo);
 
 	CWaypointLocations::GetAllVisible(iWptFrom,iWptTo,vOrigin,vOther,fEDist,&m_iVisibles,&m_iInvisibles);
 	CWaypointLocations::GetAllVisible(iWptFrom,iWptTo,vOther,vOrigin,fEDist,&m_iVisibles,&m_iInvisibles);
 
-	for ( i = 0; i < m_iVisibles.Size(); i ++ )
+	for (size_t i = 0; i < m_iVisibles.size(); i++)
 	{
 		pWpt = CWaypoints::getWaypoint(m_iVisibles[i]);
 		iWptIndex = CWaypoints::getWaypointIndex(pWpt);
@@ -695,7 +692,7 @@ void CWaypointNavigator :: belief ( Vector vOrigin, Vector vOther, float fBelief
 		}
 	}
 
-	for ( i = 0; i < m_iInvisibles.Size(); i ++ )
+	for (size_t i = 0; i < m_iInvisibles.size(); i++)
 	{
 		pWpt = CWaypoints::getWaypoint(m_iInvisibles[i]);
 		iWptIndex = CWaypoints::getWaypointIndex(pWpt);
@@ -751,8 +748,8 @@ void CWaypointNavigator :: belief ( Vector vOrigin, Vector vOther, float fBelief
 		m_oldRoute.pop();
 	}*/
 
-	m_iVisibles.Destroy();
-	m_iInvisibles.Destroy();
+	m_iVisibles.clear();
+	m_iInvisibles.clear();
 
 	m_bBeliefChanged = true;
 }
@@ -841,9 +838,9 @@ void CWaypointNavigator :: failMove ()
 	m_lastFailedPath.iTo = m_iCurrentWaypoint;
 	m_lastFailedPath.bSkipped = false;
 
-	if ( !m_iFailedGoals.IsMember(m_iGoalWaypoint) )
+	if ( std::find(m_iFailedGoals.begin(), m_iFailedGoals.end(), m_iGoalWaypoint) == m_iFailedGoals.end() )
 	{
-		m_iFailedGoals.Add(m_iGoalWaypoint);
+		m_iFailedGoals.push_back(m_iGoalWaypoint);
 		m_fNextClearFailedGoals = engine->Time() + randomFloat(8.0f,30.0f);
 	}
 }
@@ -880,9 +877,6 @@ bool CWaypointNavigator :: workRoute ( Vector vFrom,
 									  int iGoalId,
 									  int iConditions, int iDangerId )
 {
-	extern ConVar bot_pathrevs;
-	extern ConVar rcbot_debug_show_route;
-
 	if ( bRestart )
 	{
 		CWaypoint *pGoalWaypoint;
@@ -925,7 +919,7 @@ bool CWaypointNavigator :: workRoute ( Vector vFrom,
 		Vector vIgnore;
 		float fIgnoreSize;
 
-		bool bIgnore = m_pBot->getIgnoreBox(&vIgnore,&fIgnoreSize) && (pGoalWaypoint->distanceFrom(vFrom) > (fIgnoreSize*2));
+		const bool bIgnore = m_pBot->getIgnoreBox(&vIgnore,&fIgnoreSize) && (pGoalWaypoint->distanceFrom(vFrom) > (fIgnoreSize*2));
 
 		m_iCurrentWaypoint = CWaypointLocations::NearestWaypoint(vFrom,CWaypointLocations::REACHABLE_RANGE,m_iLastFailedWpt,
 			true,false,true,NULL,false,m_pBot->getTeam(),true,false,vIgnore,0,NULL,bIgnore,fIgnoreSize);
@@ -1020,7 +1014,7 @@ bool CWaypointNavigator :: workRoute ( Vector vFrom,
 			break;
 
 		// can get here now
-		m_iFailedGoals.Remove(iCurrentNode);//.Remove(iCurrentNode);
+		m_iFailedGoals.erase(std::remove(m_iFailedGoals.begin(), m_iFailedGoals.end(), iCurrentNode), m_iFailedGoals.end());
 
 		currWpt = CWaypoints::getWaypoint(iCurrentNode);
 
@@ -1166,9 +1160,9 @@ bool CWaypointNavigator :: workRoute ( Vector vFrom,
 		if ( m_lastFailedPath.bSkipped )
 			m_lastFailedPath.bValid = false;
 
-		if ( !m_iFailedGoals.IsMember(m_iGoalWaypoint) )
+		if (std::find(m_iFailedGoals.begin(), m_iFailedGoals.end(), m_iGoalWaypoint) == m_iFailedGoals.end())
 		{
-			m_iFailedGoals.Add(m_iGoalWaypoint);
+			m_iFailedGoals.push_back(m_iGoalWaypoint);
 			m_fNextClearFailedGoals = engine->Time() + randomFloat(8.0f,30.0f);
 		}
 
@@ -1180,11 +1174,12 @@ bool CWaypointNavigator :: workRoute ( Vector vFrom,
 
 	iCurrentNode = m_iGoalWaypoint;
 
-	m_currentRoute.Destroy();
+	while ( !m_currentRoute.empty() )
+		m_currentRoute.pop();
 
 	iLoops = 0;
 
-	int iNumWaypoints = CWaypoints::numWaypoints();
+	const int iNumWaypoints = CWaypoints::numWaypoints();
 	float fDistance = 0.0;
 	int iParent;
 
@@ -1192,7 +1187,7 @@ bool CWaypointNavigator :: workRoute ( Vector vFrom,
 	{
 		iLoops++;
 
-		m_currentRoute.Push(iCurrentNode);
+		m_currentRoute.push(iCurrentNode);
 		m_oldRoute.push(iCurrentNode);
 
 		iParent = paths[iCurrentNode].getParent();
@@ -1223,7 +1218,9 @@ bool CWaypointNavigator :: workRoute ( Vector vFrom,
 		while ( !m_oldRoute.empty () )
 			m_oldRoute.pop();
 
-		m_currentRoute.Destroy();
+		while ( !m_currentRoute.empty() )
+			m_currentRoute.pop();
+
 		*bFail = true;
 	}
 	else
@@ -1246,16 +1243,14 @@ Vector CWaypointNavigator :: getNextPoint ()
 
 bool CWaypointNavigator :: getNextRoutePoint ( Vector *point )
 {
-	if ( !m_currentRoute.IsEmpty() )
+	if ( !m_currentRoute.empty() )
 	{
-		static int *head;
+		const int head = m_currentRoute.top();
 		static CWaypoint *pW;
-		
-		head = m_currentRoute.GetHeadInfoPointer();
 
-		if ( head && (*head!= -1))
+		if (head)
 		{
-			pW = CWaypoints::getWaypoint(*head);
+			pW = CWaypoints::getWaypoint(head);
 			*point = pW->getOrigin();// + pW->applyRadius();
 
 			return true;
@@ -1267,11 +1262,11 @@ bool CWaypointNavigator :: getNextRoutePoint ( Vector *point )
 
 bool CWaypointNavigator :: canGetTo ( Vector vOrigin )
 {
-	int iwpt = CWaypointLocations::NearestWaypoint(vOrigin,100,-1,true,false,true,NULL,false,m_pBot->getTeam());
+	const int iwpt = CWaypointLocations::NearestWaypoint(vOrigin,100,-1,true,false,true,NULL,false,m_pBot->getTeam());
 
 	if ( iwpt >= 0 )
 	{
-		if ( m_iFailedGoals.IsMember(iwpt) )
+		if (std::find(m_iFailedGoals.begin(), m_iFailedGoals.end(), iwpt) != m_iFailedGoals.end())
 			return false;
 	}
 	else
@@ -1285,12 +1280,15 @@ void CWaypointNavigator :: rollBackPosition ()
 	m_vPreviousPoint = m_pBot->getOrigin();
 	m_iCurrentWaypoint = CWaypointLocations::NearestWaypoint(m_vPreviousPoint,CWaypointLocations::REACHABLE_RANGE,m_iLastFailedWpt,true,false,true,NULL,false,m_pBot->getTeam());
 
-	while ( !m_currentRoute.IsEmpty() ) // reached goal!!
-	{		
-		if ( m_iCurrentWaypoint == m_currentRoute.Pop() )
+	// TODO figure out what this is actually intended to do
+	while ( !m_currentRoute.empty() ) // reached goal!!
+	{
+		const int iRouteWaypoint = m_currentRoute.top();
+		m_currentRoute.pop();
+		if (m_iCurrentWaypoint == iRouteWaypoint && !m_currentRoute.empty())
 		{
-			if ( !m_currentRoute.IsEmpty() )
-				m_iCurrentWaypoint = m_currentRoute.Pop();
+			m_iCurrentWaypoint = m_currentRoute.top();
+			m_currentRoute.pop();
 		}
 	}
 
@@ -1337,7 +1335,7 @@ void CWaypointNavigator :: updatePosition ()
 
 	if ( !m_bWorkingRoute )
 	{
-		bool movetype_ok = CClassInterface::isMoveType(m_pBot->getEdict(),MOVETYPE_LADDER)||CClassInterface::isMoveType(m_pBot->getEdict(),MOVETYPE_FLYGRAVITY);
+		const bool movetype_ok = CClassInterface::isMoveType(m_pBot->getEdict(),MOVETYPE_LADDER)||CClassInterface::isMoveType(m_pBot->getEdict(),MOVETYPE_FLYGRAVITY);
 
 		//bTouched = false;
 
@@ -1348,7 +1346,7 @@ void CWaypointNavigator :: updatePosition ()
 
 		if ( bTouched )
 		{
-			int iWaypointID = CWaypoints::getWaypointIndex(pWaypoint);
+			const int iWaypointID = CWaypoints::getWaypointIndex(pWaypoint);
 			int iWaypointFlagsPrev = 0;
 
 			fPrevBelief = getBelief(iWaypointID);
@@ -1370,7 +1368,7 @@ void CWaypointNavigator :: updatePosition ()
 			m_bDangerPoint = false;
 
 
-			if ( m_currentRoute.IsEmpty() ) // reached goal!!
+			if ( m_currentRoute.empty() ) // reached goal!!
 			{
 				// fix: bots jumping at wrong positions
 				m_pBot->touchedWpt(pWaypoint,-1);
@@ -1387,10 +1385,12 @@ void CWaypointNavigator :: updatePosition ()
 			else
 			{
 				iWaypointFlagsPrev = CWaypoints::getWaypoint(m_iCurrentWaypoint)->getFlags();
-				int iPrevWpt = m_iPrevWaypoint;
+				const int iPrevWpt = m_iPrevWaypoint;
 				m_vPreviousPoint = m_pBot->getOrigin();
 				m_iPrevWaypoint = m_iCurrentWaypoint;
-				m_iCurrentWaypoint = m_currentRoute.Pop();
+
+				m_iCurrentWaypoint = m_currentRoute.top();
+				m_currentRoute.pop();
 
 				// fix: bots jumping at wrong positions
 				m_pBot->touchedWpt(pWaypoint,m_iCurrentWaypoint,iPrevWpt);
@@ -1421,7 +1421,7 @@ void CWaypointNavigator :: updatePosition ()
 	// fix for bots not finding goals
 	if ( m_fNextClearFailedGoals && ( m_fNextClearFailedGoals < engine->Time() ) )
 	{
-		m_iFailedGoals.Destroy();
+		m_iFailedGoals.clear();
 		m_fNextClearFailedGoals = 0;
 	}
 
@@ -1441,8 +1441,10 @@ void CWaypointNavigator :: updatePosition ()
 
 void CWaypointNavigator :: clear()
 {
-	m_currentRoute.Destroy();
-	m_iFailedGoals.Destroy();//.clear();//Destroy();
+	while (!m_currentRoute.empty()) {
+		m_currentRoute.pop();
+	}
+	m_iFailedGoals.clear();
 }
 // free up memory
 void CWaypointNavigator :: freeMapMemory ()
@@ -1458,7 +1460,7 @@ void CWaypointNavigator :: freeAllMemory ()
 
 bool CWaypointNavigator :: routeFound ()
 {
-	return !m_currentRoute.IsEmpty();
+	return !m_currentRoute.empty();
 }
 
 /////////////////////////////////////////////////////////
@@ -1523,7 +1525,6 @@ bool CWaypoint :: touched ( edict_t *pEdict )
 bool CWaypoint :: touched ( Vector vOrigin, Vector vOffset, float fTouchDist, bool onground )
 {
 	static Vector v_dynamic;
-	extern ConVar rcbot_ladder_offs;
 
 	v_dynamic = m_vOrigin+vOffset;
 
@@ -1582,8 +1583,8 @@ void CWaypoint :: draw ( edict_t *pEdict, bool bDrawPaths, unsigned short int iD
 	Vector vAim;
 
 	CBotMod *pCurrentMod = CBotGlobals::getCurrentMod();
-	
-	WptColor colour = CWaypointTypes::getColour(m_iFlags);
+
+	const WptColor colour = CWaypointTypes::getColour(m_iFlags);
 
 	//////////////////////////////////////////
 
@@ -1616,8 +1617,8 @@ void CWaypoint :: draw ( edict_t *pEdict, bool bDrawPaths, unsigned short int iD
 					CBot *pBot = CBots::getBotPointer(pEdict);
 
 					if ( pBot )
-					{					
-						char belief = (char)((int)pBot->getNavigator()->getBelief(CWaypoints::getWaypointIndex(this)));
+					{
+						const char belief = (char)((int)pBot->getNavigator()->getBelief(CWaypoints::getWaypointIndex(this)));
 
 						// show danger - red = dangerous / blue = safe
 						r = belief;
@@ -1714,7 +1715,7 @@ void CWaypoint :: draw ( edict_t *pEdict, bool bDrawPaths, unsigned short int iD
 // clear the waypoints possible paths
 void CWaypoint :: clearPaths ()
 {
-	m_thePaths.Clear();
+	m_thePaths.clear();
 }
 // get the distance from this waypoint from vector position vOrigin
 float CWaypoint :: distanceFrom ( Vector vOrigin )
@@ -1722,9 +1723,9 @@ float CWaypoint :: distanceFrom ( Vector vOrigin )
 	return (m_vOrigin - vOrigin).Length();
 }
 ///////////////////////////////////////////////////
-void CWaypoints :: updateWaypointPairs ( vector<edict_wpt_pair_t> *pPairs, int iWptFlag, const char *szClassname )
+void CWaypoints :: updateWaypointPairs ( std::vector<edict_wpt_pair_t> *pPairs, int iWptFlag, const char *szClassname )
 {
-	register short int iSize = numWaypoints();
+	const register short int iSize = numWaypoints();
 	CWaypoint *pWpt;
 	edict_wpt_pair_t pair;
 	CTraceFilterWorldAndPropsOnly filter;
@@ -1775,7 +1776,7 @@ bool CWaypoints :: save ( bool bVisiblityMade, edict_t *pPlayer, const char *psz
 		return false; // give up
 	}
 
-	int iSize = numWaypoints();
+	const int iSize = numWaypoints();
 
 	// write header
 	// ----
@@ -1933,7 +1934,7 @@ bool CWaypoints :: load (const char *szMapName)
 	else
 		sprintf(m_szWelcomeMessage,"Waypoints Loaded");
 
-	int iSize = header.iNumWaypoints;
+	const int iSize = header.iNumWaypoints;
 
 	// ok lets read the waypoints
 	// initialize
@@ -1985,14 +1986,14 @@ void CWaypoint :: init ()
 	m_vOrigin = Vector(0,0,0);
 	m_bUsed = false; // ( == "deleted" )
 	setAim(0);
-	m_thePaths.Clear();
+	m_thePaths.clear();
 	m_iArea = 0;
 	m_fRadius = 0;	
 	m_bUsed = true;
 	m_fNextCheckGroundTime = 0;
 	m_bHasGround = false;
 	m_fRadius = 0;
-	m_OpensLaterInfo.Clear();
+	m_OpensLaterInfo.clear();
 	m_bIsReachable = true; 
 	m_fCheckReachableTime = 0;
 }
@@ -2070,7 +2071,7 @@ bool CWaypoint :: checkGround ()
 // draw waypoints to this client pClient
 void CWaypoints :: drawWaypoints( CClient *pClient )
 {
-	float fTime = engine->Time();
+	const float fTime = engine->Time();
 	CWaypoint *pWpt;
 	//////////////////////////////////////////
 	// TODO
@@ -2153,7 +2154,7 @@ void CWaypoints :: precacheWaypointTexture ()
 // return nearest waypoint not visible to pinch point
 CWaypoint *CWaypoints :: getPinchPointFromWaypoint ( Vector vPlayerOrigin, Vector vPinchOrigin )
 {
-	int iWpt = CWaypointLocations::GetCoverWaypoint(vPlayerOrigin,vPinchOrigin,NULL,&vPinchOrigin);
+	const int iWpt = CWaypointLocations::GetCoverWaypoint(vPlayerOrigin,vPinchOrigin,NULL,&vPinchOrigin);
 
 	return getWaypoint(iWpt);
 }
@@ -2171,7 +2172,7 @@ void CWaypoints :: deleteWaypoint ( int iIndex )
 	m_theWaypoints[iIndex].clearPaths();
 
 	// remove from waypoint locations
-	Vector vOrigin = m_theWaypoints[iIndex].getOrigin();
+	const Vector vOrigin = m_theWaypoints[iIndex].getOrigin();
 	float fOrigin[3] = { vOrigin.x, vOrigin.y, vOrigin.z };
 	CWaypointLocations::DeleteWptLocation(iIndex,fOrigin);
 
@@ -2214,12 +2215,12 @@ void CWaypoints :: shiftAreas (int val)
 int CWaypoints :: getClosestFlagged ( int iFlags, Vector &vOrigin, int iTeam, float *fReturnDist, unsigned char *failedwpts )
 {
 	int i = 0;
-	int size = numWaypoints();
+	const int size = numWaypoints();
 
 	float fDist = 8192.0;
 	float distance;
 	int iwpt = -1;
-	int iFrom = CWaypointLocations::NearestWaypoint(vOrigin,fDist,-1,true,false,true,NULL,false,iTeam);
+	const int iFrom = CWaypointLocations::NearestWaypoint(vOrigin,fDist,-1,true,false,true,NULL,false,iTeam);
 
 	CWaypoint *pWpt;
 	CBotMod *pCurrentMod = CBotGlobals::getCurrentMod();
@@ -2267,21 +2268,21 @@ void CWaypoints :: deletePathsTo ( int iWpt )
 	CWaypoint *pWaypoint = CWaypoints::getWaypoint(iWpt);
 
 	int iNumPathsTo = pWaypoint->numPathsToThisWaypoint();
-	dataUnconstArray<int> m_PathsTo;
+	WaypointList pathsTo;
 
 	// this will go into an evil loop unless we do this first
 	// and use a temporary copy as a side effect of performing
 	// a remove will affect the original array
 	for ( int i = 0; i < iNumPathsTo; i ++ )
 	{
-		m_PathsTo.Add(pWaypoint->getPathToThisWaypoint(i));
+		pathsTo.push_back(pWaypoint->getPathToThisWaypoint(i));
 	}
 
-	iNumPathsTo = m_PathsTo.Size();
+	iNumPathsTo = pathsTo.size();
 
 	for ( int i = 0; i < iNumPathsTo; i ++ )
 	{
-		int iOther = m_PathsTo.ReturnValueFromIndex(i);
+		const int iOther = pathsTo[i];
 
 		CWaypoint *pOther = getWaypoint(iOther);
 
@@ -2307,11 +2308,9 @@ int CWaypoints :: addWaypoint ( CClient *pClient, const char *type1, const char 
 	int iIndex = -1; // waypoint index
 	int iPrevFlags = 0;
 	int iArea = 0;
-	Vector vWptOrigin = pClient->getOrigin();
-	QAngle playerAngles = CBotGlobals::playerAngles (pClient->getPlayer());
+	const Vector vWptOrigin = pClient->getOrigin();
+	const QAngle playerAngles = CBotGlobals::playerAngles (pClient->getPlayer());
 	float fMaxDistance = 0.0; // distance for auto type
-
-	extern ConVar rcbot_wpt_autotype;
 
 	CBotMod *pCurrentMod = CBotGlobals::getCurrentMod();
 
@@ -2432,8 +2431,7 @@ int CWaypoints :: addWaypoint ( CClient *pClient, const char *type1, const char 
 
 int CWaypoints :: addWaypoint ( edict_t *pPlayer, Vector vOrigin, int iFlags, bool bAutoPath, int iYaw, int iArea, float fRadius )
 {
-	int iIndex = freeWaypointIndex();
-	extern ConVar rcbot_wpt_autoradius;
+	const int iIndex = freeWaypointIndex();
 
 	if ( iIndex == -1 )	
 	{
@@ -2522,18 +2520,17 @@ CWaypoint *CWaypoints :: randomRouteWaypoint ( CBot *pBot, Vector vOrigin, Vecto
 {
 	register short int i;
 	static short int size;
-	static CWaypoint *pWpt;
 	static CWaypointNavigator *pNav;
 	
 	pNav = (CWaypointNavigator*)pBot->getNavigator();
 
 	size = numWaypoints();
 
-	dataUnconstArray<CWaypoint*> goals;
+	std::vector<CWaypoint*> goals;
 
 	for ( i = 0; i < size; i ++ )
 	{
-		pWpt = &m_theWaypoints[i];
+		CWaypoint *pWpt = &m_theWaypoints[i];
 
 		if ( pWpt->isUsed() && pWpt->forTeam(iTeam) )// && (pWpt->getArea() == iArea) )
 		{
@@ -2562,22 +2559,17 @@ CWaypoint *CWaypoints :: randomRouteWaypoint ( CBot *pBot, Vector vOrigin, Vecto
 					flDot = DotProduct (vecLOS , vForward );
 
 					if ( flDot > 0.17f ) // 80 degrees*/
-					goals.Add(pWpt);
+					goals.push_back(pWpt);
 				}
 			}
 		}
 	}
 
-	pWpt = NULL;
-
-	if ( !goals.IsEmpty() )
+	if ( !goals.empty() )
 	{
-		pWpt = pNav->chooseBestFromBelief(&goals);
+		return pNav->chooseBestFromBelief(goals);
 	}
-
-	goals.Clear();
-
-	return pWpt;
+	return nullptr;
 }
 
 #define MAX_DEPTH 10
@@ -2634,7 +2626,7 @@ CWaypoint *CWaypoints :: nearestPipeWaypoint ( Vector vTarget, Vector vOrigin, i
 	// 2 : loop through waypoints find visible waypoints to vTarget
 	// 3 : loop through visible waypoints find another waypoint invisible to vTarget but visible to waypoint 2
 
-	short int iTarget = (short int)CWaypointLocations::NearestWaypoint(vTarget,BLAST_RADIUS,-1,true,true);
+	const short int iTarget = (short int)CWaypointLocations::NearestWaypoint(vTarget,BLAST_RADIUS,-1,true,true);
 	CWaypoint *pTarget = CWaypoints::getWaypoint(iTarget);
 	//vector<short int> waypointlist;
 	int inearest = -1;
@@ -2642,9 +2634,9 @@ CWaypoint *CWaypoints :: nearestPipeWaypoint ( Vector vTarget, Vector vOrigin, i
 	if ( pTarget == NULL )
 		return NULL;
 
-	CWaypointVisibilityTable *pTable = CWaypoints::getVisiblity();	
+	CWaypointVisibilityTable *pTable = CWaypoints::getVisiblity();
 
-	register short int numwaypoints = (short int)numWaypoints();
+	const register short int numwaypoints = (short int)numWaypoints();
 
 	float finearestdist = 9999.0f;
 	float fjnearestdist = 9999.0f;
@@ -2747,7 +2739,8 @@ CWaypoint *CWaypoints :: randomWaypointGoalNearestArea ( int iFlags, int iTeam, 
 	
 	size = numWaypoints();
 
-	dataUnconstArray<AStarNode*> goals;
+	// TODO inline AStarNode entries
+	std::vector<AStarNode*> goals;
 
 	CBotMod *pCurrentMod = CBotGlobals::getCurrentMod();
 
@@ -2788,14 +2781,14 @@ CWaypoint *CWaypoints :: randomWaypointGoalNearestArea ( int iFlags, int iTeam, 
 				node->setWaypoint(i);
 				node->setHeuristic(131072.0f/(fDist*fDist));
 			
-				goals.Add(node);
+				goals.push_back(node);
 			}
 		}
 	}
 
 	pWpt = NULL;
 
-	if ( !goals.IsEmpty() )
+	if ( !goals.empty() )
 	{
 		if ( pBot )
 		{
@@ -2803,22 +2796,19 @@ CWaypoint *CWaypoints :: randomWaypointGoalNearestArea ( int iFlags, int iTeam, 
 		
 			pNav = (CWaypointNavigator*)pBot->getNavigator();
 
-			pWpt = pNav->chooseBestFromBeliefBetweenAreas(&goals,bHighDanger,bIgnoreBelief);
+			pWpt = pNav->chooseBestFromBeliefBetweenAreas(goals,bHighDanger,bIgnoreBelief);
 		}
 		else
-			pWpt = CWaypoints::getWaypoint(goals.Random()->getWaypoint());
+			pWpt = CWaypoints::getWaypoint(goals[ randomInt(0, goals.size() - 1) ]->getWaypoint());
 
 		//pWpt = goals.Random();
 	}
 
-	for ( i = 0; i < goals.Size(); i ++ )
+	for ( i = 0; i < goals.size(); i ++ )
 	{
-		node = goals.ReturnValueFromIndex(i);
-
+		node = goals[i];
 		delete node;
 	}
-
-	goals.Clear();
 
 	return pWpt;
 }
@@ -2838,7 +2828,8 @@ CWaypoint *CWaypoints :: randomWaypointGoalBetweenArea ( int iFlags, int iTeam, 
 
 	size = numWaypoints();
 
-	dataUnconstArray<AStarNode*> goals;
+	// TODO inline AStarNode instead of doing manual `new`s
+	std::vector<AStarNode*> goals;
 
 	for ( i = 0; i < size; i ++ )
 	{
@@ -2872,14 +2863,14 @@ CWaypoint *CWaypoints :: randomWaypointGoalBetweenArea ( int iFlags, int iTeam, 
 
 				node->setHeuristic(fCost);
 			
-				goals.Add(node);
+				goals.push_back(node);
 			}
 		}
 	}
 
 	pWpt = NULL;
 
-	if ( !goals.IsEmpty() )
+	if ( !goals.empty() )
 	{
 		if ( pBot )
 		{
@@ -2887,22 +2878,19 @@ CWaypoint *CWaypoints :: randomWaypointGoalBetweenArea ( int iFlags, int iTeam, 
 		
 			pNav = (CWaypointNavigator*)pBot->getNavigator();
 
-			pWpt = pNav->chooseBestFromBeliefBetweenAreas(&goals,bHighDanger,bIgnoreBelief);
+			pWpt = pNav->chooseBestFromBeliefBetweenAreas(goals, bHighDanger, bIgnoreBelief);
 		}
 		else
-			pWpt = CWaypoints::getWaypoint(goals.Random()->getWaypoint());
+			pWpt = CWaypoints::getWaypoint(goals[ randomInt(0, goals.size()) ]->getWaypoint());
 
 		//pWpt = goals.Random();
 	}
 
-	for ( i = 0; i < goals.Size(); i ++ )
+	for (size_t i = 0; i < goals.size(); i++)
 	{
-		node = goals.ReturnValueFromIndex(i);
-
+		node = goals[i];
 		delete node;
 	}
-
-	goals.Clear();
 
 	return pWpt;
 }
@@ -2915,7 +2903,7 @@ CWaypoint *CWaypoints :: randomWaypointGoal ( int iFlags, int iTeam, int iArea, 
 
 	size = numWaypoints();
 
-	dataUnconstArray<CWaypoint*> goals;
+	std::vector<CWaypoint*> goals;
 
 	CBotMod *pCurrentMod = CBotGlobals::getCurrentMod();
 
@@ -2935,14 +2923,14 @@ CWaypoint *CWaypoints :: randomWaypointGoal ( int iFlags, int iTeam, int iArea, 
 				else if ( bForceArea && (pWpt->getArea() != iArea) )
 					continue;
 
-				goals.Add(pWpt);
+				goals.push_back(pWpt);
 			}
 		}
 	}
 
 	pWpt = NULL;
 
-	if ( !goals.IsEmpty() )
+	if ( !goals.empty() )
 	{
 		if ( pBot )
 		{
@@ -2950,16 +2938,11 @@ CWaypoint *CWaypoints :: randomWaypointGoal ( int iFlags, int iTeam, int iArea, 
 
 			pNav = (CWaypointNavigator*)pBot->getNavigator();
 
-			pWpt = pNav->chooseBestFromBelief(&goals,bHighDanger,iSearchFlags);
+			pWpt = pNav->chooseBestFromBelief(goals, bHighDanger, iSearchFlags);
 		}
 		else
-			pWpt = goals.Random();
-
-		//pWpt = goals.Random();
+			pWpt = goals[ randomInt(0, goals.size() - 1) ];
 	}
-
-	goals.Clear();
-
 	return pWpt;
 }
 
@@ -2987,7 +2970,7 @@ bool CWaypoint :: checkReachable ()
 	if ( m_fCheckReachableTime < engine->Time() )
 	{
 		CWaypoint *pOther;
-		int numPathsTo = numPathsToThisWaypoint();
+		const int numPathsTo = numPathsToThisWaypoint();
 		int i;
 
 		for ( i = 0; i < numPathsTo; i ++ )
@@ -3019,32 +3002,29 @@ bool CWaypoint :: checkReachable ()
 
 int CWaypoint :: numPaths ()
 {
-	return m_thePaths.Size();
+	return m_thePaths.size();
 }
 
 int CWaypoint :: getPath ( int i )
 {
-	return m_thePaths.ReturnValueFromIndex(i);
+	return m_thePaths[i];
 }
 
 bool CWaypoint :: isPathOpened ( Vector vPath )
 {
-	wpt_opens_later_t *info;
-
-	for ( int i = 0; i < m_OpensLaterInfo.Size(); i ++ )
+	for ( int i = 0; i < m_OpensLaterInfo.size(); i ++ )
 	{
-		info = m_OpensLaterInfo.ReturnPointerFromIndex(i);
+		wpt_opens_later_t &info = m_OpensLaterInfo[i];
 
-		if ( info->vOrigin == vPath )
+		if ( info.vOrigin == vPath )
 		{
-			if ( info->fNextCheck < engine->Time() )
+			if ( info.fNextCheck < engine->Time() )
 			{
-				info->bVisibleLastCheck = CBotGlobals::checkOpensLater(m_vOrigin,vPath);
-
-				info->fNextCheck = engine->Time() + 2.0f;
+				info.bVisibleLastCheck = CBotGlobals::checkOpensLater(m_vOrigin,vPath);
+				info.fNextCheck = engine->Time() + 2.0f;
 			}
 
-			return info->bVisibleLastCheck;
+			return info.bVisibleLastCheck;
 		}
 	}
 
@@ -3055,29 +3035,29 @@ bool CWaypoint :: isPathOpened ( Vector vPath )
 	newinfo.vOrigin = vPath;
 	newinfo.bVisibleLastCheck = CBotGlobals::checkOpensLater(m_vOrigin,vPath);
 
-	m_OpensLaterInfo.Add(newinfo);
+	m_OpensLaterInfo.push_back(newinfo);
 
 	return newinfo.bVisibleLastCheck;
 }
 
 void CWaypoint :: addPathFrom ( int iWaypointIndex )
 {
-	m_PathsTo.Add(iWaypointIndex);
+	m_PathsTo.push_back(iWaypointIndex);
 }
 
 void CWaypoint :: removePathFrom ( int iWaypointIndex )
 {
-	m_PathsTo.Remove(iWaypointIndex);
+	m_PathsTo.erase(std::remove(m_PathsTo.begin(), m_PathsTo.end(), iWaypointIndex), m_PathsTo.end());
 }
 
 int CWaypoint :: numPathsToThisWaypoint ()
 {
-	return m_PathsTo.Size();
+	return m_PathsTo.size();
 }
 
 int CWaypoint :: getPathToThisWaypoint ( int i )
 {
-	return m_PathsTo.ReturnValueFromIndex(i);
+	return m_PathsTo[i];
 }
 
 bool CWaypoint :: addPathTo ( int iWaypointIndex )
@@ -3087,14 +3067,13 @@ bool CWaypoint :: addPathTo ( int iWaypointIndex )
 	if ( pTo == NULL )
 		return false;
 	// already in list
-	if ( m_thePaths.IsMember(iWaypointIndex) )
+	if (std::find(m_thePaths.begin(), m_thePaths.end(), iWaypointIndex) != m_thePaths.end())
 		return false;
 	// dont have a path loop
 	if ( this == pTo )
 		return false;
 
-	m_thePaths.Add(iWaypointIndex);
-
+	m_thePaths.push_back(iWaypointIndex);
 	pTo->addPathFrom(CWaypoints::getWaypointIndex(this));
 
 	return true;
@@ -3114,8 +3093,7 @@ void CWaypoint :: removePathTo ( int iWaypointIndex )
 
 	if ( pOther != NULL )
 	{
-		m_thePaths.Remove(iWaypointIndex);
-
+		m_thePaths.erase(std::remove(m_thePaths.begin(), m_thePaths.end(), iWaypointIndex), m_thePaths.end());
 		pOther->removePathFrom(CWaypoints::getWaypointIndex(this));
 	}
 
@@ -3440,8 +3418,8 @@ void CWaypointTest :: go ( edict_t *pPlayer )
 					if ( pWpt2->hasSomeFlags(iCheck) )
 					{
 						bool bfail = false;
-						bool brestart = true;
-						bool bnointerruptions = true;
+						const bool brestart = true;
+						const bool bnointerruptions = true;
 
 						while ( pNav->workRoute(
 							pWpt1->getOrigin(),

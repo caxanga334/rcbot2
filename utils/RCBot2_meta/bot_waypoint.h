@@ -31,12 +31,16 @@
 #ifndef __RCBOT_WAYPOINT_H__
 #define __RCBOT_WAYPOINT_H__
 
-#include <stdio.h>
+#include <cstdio>
+
+// this must be before bot_client.h to avoid unknown override / missing type warnings
+#include <vector>
+using WaypointList = std::vector<int>;
 
 #include "bot.h"
-#include "bot_genclass.h"
 #include "bot_client.h"
 #include "bot_wpt_color.h"
+#include "bot_mtrand.h"
 
 //#include "bot_navigator.h"
 
@@ -135,25 +139,19 @@ public:
 	static const int W_FL_UNREACHABLE = 4;
 	static const int W_FL_LADDER = 8;
 	static const int W_FL_FLAG = 16;
-	static const int W_FL_COOP_GOAL = 16; // (Synergy) Map Goal
 	static const int W_FL_CAPPOINT = 32;
-	static const int W_FL_COOP_MAPEND = 32; // (Synergy) Map end
 	static const int W_FL_NOBLU = 64;
 	static const int W_FL_NOAXIS = 64;
-	static const int W_FL_NO_VEHICLES = 64; // (Synergy) Vehicles not allowed
 	static const int W_FL_NORED = 128;
 	static const int W_FL_NOALLIES = 128;
 	static const int W_FL_HEALTH = 256;
 	static const int W_FL_OPENS_LATER = 512;
 	static const int W_FL_ROCKET_JUMP = 1024;
 	static const int W_FL_BOMB_TO_OPEN = 1024; // DOD:S
-	static const int W_FL_USE_BUTTON = 1024; // (Synergy) Button, Door, etc
 	static const int W_FL_SNIPER = 2048;
 	static const int W_FL_AMMO = 4096;
 	static const int W_FL_RESUPPLY = 8192;
 	static const int W_FL_BOMBS_HERE = 8192;
-	static const int W_FL_AMMO_CRATE = 8192; // (Synergy) Ammo Crate
-	static const int W_FL_PAIN = 16384; // (Synergy) Bots take damage, die at this waypoint
 	static const int W_FL_SENTRY = 16384;
 	static const int W_FL_MACHINEGUN = 16384;
 	static const int W_FL_DOUBLEJUMP = 32768;
@@ -200,7 +198,7 @@ public:
 	static CWaypointType *getTypeByFlags ( int iFlags );
 
 private:
-	static vector<CWaypointType*> m_Types;
+	static std::vector<CWaypointType*> m_Types;
 };
 
 class CWaypointTest
@@ -229,14 +227,14 @@ public:
 
 	CWaypoint ()
 	{
-		m_thePaths.Init();
+		m_thePaths.clear();
 		init();
 //		m_iId = -1;
 	}
 
 	CWaypoint ( Vector vOrigin, int iFlags = 0, int iYaw = 0, int m_fRadius = 0 )
 	{
-		m_thePaths.Clear();
+		m_thePaths.clear();
 		init();
 		m_iFlags = iFlags;
 		m_vOrigin = vOrigin;		
@@ -245,7 +243,7 @@ public:
 		m_fNextCheckGroundTime = 0;
 		m_bHasGround = false;
 		m_fRadius = 0;
-		m_OpensLaterInfo.Clear();
+		m_OpensLaterInfo.clear();
 		m_bIsReachable = true; 
 		m_fCheckReachableTime = 0;
 //		m_iId = iId;
@@ -334,7 +332,7 @@ public:
 
 	inline void freeMapMemory ()
 	{
-		m_thePaths.Clear();//Destroy();
+		m_thePaths.clear();
 	}
 
 	inline int getArea () { return m_iArea; }
@@ -388,16 +386,16 @@ private:
 	// not deleted
 	bool m_bUsed;
 	// paths to other waypoints
-	dataUnconstArray<int> m_thePaths;
+	WaypointList m_thePaths;
 	// for W_FL_WAIT_GROUND waypoints
 	float m_fNextCheckGroundTime;
 	bool m_bHasGround;
 	// Update m_iNumPathsTo (For display)
 	bool m_bIsReachable; 
 	float m_fCheckReachableTime;
-	dataUnconstArray<int> m_PathsTo; // paths to this waypoint from other waypoints
+	WaypointList m_PathsTo; // paths to this waypoint from other waypoints
 
-	dataUnconstArray<wpt_opens_later_t> m_OpensLaterInfo;
+	std::vector<wpt_opens_later_t> m_OpensLaterInfo;
 };
 
 class CWaypoints
@@ -487,7 +485,7 @@ public:
 	static CWaypoint *getPinchPointFromWaypoint ( Vector vPlayerOrigin, Vector vPinchOrigin );
 	static CWaypoint *getNestWaypoint ( int iTeam, int iArea, bool bForceArea = false, CBot *pBot = NULL );
 
-	static void updateWaypointPairs ( vector<edict_wpt_pair_t> *pPairs, int iWptFlag, const char *szClassname );
+	static void updateWaypointPairs ( std::vector<edict_wpt_pair_t> *pPairs, int iWptFlag, const char *szClassname );
 	static bool hasAuthor () { return (m_szAuthor[0]!=0); }
 	static const char *getAuthor() { return m_szAuthor; }
 	static bool isModified () { return (m_szModifiedBy[0]!=0); }

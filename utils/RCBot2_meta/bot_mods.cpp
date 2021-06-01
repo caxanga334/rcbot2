@@ -46,7 +46,7 @@
 #include "bot_waypoint_locations.h"
 #include "bot_perceptron.h"
 
-vector<edict_wpt_pair_t> CHalfLifeDeathmatchMod::m_LiftWaypoints;
+std::vector<edict_wpt_pair_t> CHalfLifeDeathmatchMod::m_LiftWaypoints;
 
 void CBotMods :: parseFile ()
 {
@@ -58,7 +58,6 @@ void CBotMods :: parseFile ()
 
 	eModId modtype;
 	eBotType bottype;
-	char steamfolder[256];
 	char gamefolder[256];
 	char weaponlist[64];
 
@@ -122,7 +121,7 @@ void CBotMods :: parseFile ()
 		{
 			if ( curmod )
 			{
-				curmod->setup(gamefolder, steamfolder, modtype, bottype, weaponlist);
+				curmod->setup(gamefolder, modtype, bottype, weaponlist);
 				m_Mods.push_back(curmod);
 			}
 			
@@ -212,10 +211,6 @@ void CBotMods :: parseFile ()
 			else if ( !strcmpi("DOD",val) )
 				bottype = BOTTYPE_DOD;
 		}
-		else if ( curmod && !strcmpi(key,"steamdir") )
-		{
-			strncpy(steamfolder,val,255);
-		}
 		else if ( curmod && !strcmpi(key,"gamedir") )
 		{
 			strncpy(gamefolder,val,255);
@@ -228,7 +223,7 @@ void CBotMods :: parseFile ()
 
 	if ( curmod )
 	{
-		curmod->setup(gamefolder, steamfolder, modtype, bottype, weaponlist);
+		curmod->setup(gamefolder, modtype, bottype, weaponlist);
 		m_Mods.push_back(curmod);
 	}
 
@@ -313,34 +308,32 @@ void CBotMods :: createFile ()
 
 void CBotMods :: readMods()
 {
-	m_Mods.push_back(new CDODMod());
-	m_Mods.push_back(new CDODModDedicated());
+	// TODO improve game detection
+	#if SOURCE_ENGINE == SE_TF2
+		m_Mods.push_back(new CTeamFortress2Mod());
+	#elif SOURCE_ENGINE == SE_DODS
+		m_Mods.push_back(new CDODMod());
+	#elif SOURCE_ENGINE == SE_CSS
+		m_Mods.push_back(new CCounterStrikeSourceMod());
+	#elif SOURCE_ENGINE == SE_HL2DM
+		m_Mods.push_back(new CHalfLifeDeathmatchMod());
+	#else
 
-	m_Mods.push_back(new CCounterStrikeSourceMod());
-	m_Mods.push_back(new CHalfLifeDeathmatchMod());
+		m_Mods.push_back(new CFortressForeverMod());
 
-	m_Mods.push_back(new CCounterStrikeSourceModDedicated());
-	m_Mods.push_back(new CHalfLifeDeathmatchModDedicated());
+		m_Mods.push_back(new CHLDMSourceMod());
 
-	m_Mods.push_back(new CFortressForeverMod());
-	m_Mods.push_back(new CFortressForeverModDedicated());
+		// Look for extra MODs
 
-	m_Mods.push_back(new CTeamFortress2Mod());
-	m_Mods.push_back(new CTeamFortress2ModDedicated());
-
-	m_Mods.push_back(new CHLDMSourceMod());
-
-	// Look for extra MODs
-
-	parseFile();
+		parseFile();
+	#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-void CBotMod :: setup ( const char *szModFolder, const char *szSteamFolder, eModId iModId, eBotType iBotType, const char *szWeaponListName )
+void CBotMod :: setup ( const char *szModFolder, eModId iModId, eBotType iBotType, const char *szWeaponListName )
 {
 	m_szModFolder = CStrings::getString(szModFolder);
-	m_szSteamFolder = CStrings::getString(szSteamFolder);
 	m_iModId = iModId;
 	m_iBotType = iBotType;
 
@@ -353,19 +346,9 @@ void CBotMod :: setup ( const char *szModFolder, const char *szSteamFolder, eMod
 	return NULL;
 }*/
 
-bool CBotMod :: isSteamFolder ( char *szSteamFolder )
-{
-	return FStrEq(m_szSteamFolder,szSteamFolder);
-}
-
 bool CBotMod :: isModFolder ( char *szModFolder )
 {
 	return FStrEq(m_szModFolder,szModFolder);
-}
-
-char *CBotMod :: getSteamFolder ()
-{
-	return m_szSteamFolder;
 }
 
 char *CBotMod :: getModFolder ()
@@ -381,7 +364,7 @@ eModId CBotMod :: getModId ()
 //
 // MOD LIST
 
-vector<CBotMod*> CBotMods::m_Mods;
+std::vector<CBotMod*> CBotMods::m_Mods;
 
 void CBotMods :: freeMemory ()
 {
@@ -395,19 +378,19 @@ void CBotMods :: freeMemory ()
 	m_Mods.clear();
 }
 
-CBotMod *CBotMods :: getMod ( char *szModFolder, char *szSteamFolder )
+CBotMod *CBotMods :: getMod ( char *szModFolder )
 {
 	for ( unsigned int i = 0; i < m_Mods.size(); i ++ )
 	{
-		if ( m_Mods[i]->isModFolder(szModFolder) && m_Mods[i]->isSteamFolder(szSteamFolder) )
+		if ( m_Mods[i]->isModFolder(szModFolder) )
 		{
-			CBotGlobals::botMessage(NULL,1,"HL2 MOD ID %d (Steam Folder = %s) (Game Folder = %s) FOUND",m_Mods[i]->getModId(),szSteamFolder,szModFolder);
+			CBotGlobals::botMessage(NULL,1,"HL2 MOD ID %d (Game Folder = %s) FOUND",m_Mods[i]->getModId(), szModFolder);
 
 			return m_Mods[i];
 		}
 	}
 
-	CBotGlobals::botMessage(NULL,1,"HL2 MODIFICATION \"%s/%s\" NOT FOUND, EXITING... see bot_mods.ini in bot config folder",szSteamFolder,szModFolder);
+	CBotGlobals::botMessage(NULL,1,"HL2 MODIFICATION \"%s\" NOT FOUND, EXITING... see bot_mods.ini in bot config folder", szModFolder);
 
 	return NULL;
 }
@@ -448,7 +431,6 @@ bool CHalfLifeDeathmatchMod :: playerSpawned ( edict_t *pPlayer )
 
 void CHalfLifeDeathmatchMod :: initMod ()
 {
-	CBots::controlBotSetup(false);
 
 	CWeapons::loadWeapons((m_szWeaponListName==NULL)?"HL2DM":m_szWeaponListName, HL2DMWeaps);
 	

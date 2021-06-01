@@ -419,7 +419,7 @@ CBotSpySapBuildingSched :: CBotSpySapBuildingSched ( edict_t *pBuilding, eEngiBu
 //////////////////////////////////////
 CBotTauntSchedule :: CBotTauntSchedule ( edict_t *pPlayer, float fYaw )
 {
-	QAngle angles = QAngle(0,fYaw,0);
+	const QAngle angles = QAngle(0,fYaw,0);
 	Vector forward;
 	Vector vOrigin;
 	Vector vGoto;
@@ -733,13 +733,6 @@ void CBotTF2ShootLastEnemyPos::init()
 	setID(SCHED_SHOOT_LAST_ENEMY_POS);
 }
 
-CSynBotHealTeamMate::CSynBotHealTeamMate(CBot* pBot, edict_t* pTeamMate)
-{
-	addTask(new CFindPathTask(pTeamMate));
-	//addTask(new CMoveToTask(pTeamMate));
-	addTask(new CSYNHealTeamMate(pTeamMate));
-}
-
 ///////////////////////////////
 CDeployMachineGunSched :: CDeployMachineGunSched ( CBotWeapon *pWeapon, CWaypoint *pWaypoint, Vector vEnemy )
 {
@@ -766,13 +759,14 @@ void CBotSchedule :: execute ( CBot *pBot )
 	static CBotTask *pTask;
 	static eTaskState iState;
 
-	if ( m_Tasks.IsEmpty() )
+	if ( m_Tasks.empty() )
 	{
 		m_bFailed = true;
 		return;
 	}
 
-	pTask = m_Tasks.GetFrontInfo();
+	// why would task ever be null??
+	pTask = m_Tasks.front();
 
 	if ( pTask == NULL )
 	{
@@ -820,16 +814,14 @@ void CBotSchedule :: addTask ( CBotTask *pTask )
 {
 	// initialize
 	pTask->init();
-    // add
-	m_Tasks.Add(pTask);
+	// add
+	m_Tasks.push_back(pTask);
 }
 
 void CBotSchedule :: removeTop ()
 {
-	CBotTask *pTask = m_Tasks.GetFrontInfo();
-
-	m_Tasks.RemoveFront();
-
+	CBotTask *pTask = m_Tasks.front();
+	m_Tasks.pop_front();
 	delete pTask;
 }
 

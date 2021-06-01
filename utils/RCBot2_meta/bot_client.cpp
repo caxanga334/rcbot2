@@ -29,6 +29,8 @@
  *
  */
 #include "bot.h"
+#include "bot_cvars.h"
+
 #include "bot_client.h"
 #include "bot_waypoint_locations.h"
 #include "bot_accessclient.h"
@@ -106,7 +108,6 @@ bool CClient :: needToRenderMenu ()
 
 void CClient :: updateRenderMenuTime () 
 { 
-	extern ConVar rcbot_menu_update_time2;
 	m_fNextUpdateMenuTime = engine->Time() + rcbot_menu_update_time2.GetFloat(); 
 }
 
@@ -150,8 +151,6 @@ void CClient :: resetMenuCommands ()
 
 void CClient :: playSound ( const char *pszSound )
 {
-	extern ConVar bot_cmd_enable_wpt_sounds;
-
 	if ( isWaypointOn() )
 	{
 		if ( bot_cmd_enable_wpt_sounds.GetBool() )
@@ -221,7 +220,7 @@ public:
 	{
 		if ( (pBot->getEdict() != m_pPlayer) && (pBot->getTeam() == m_iTeam) && pBot->isVisible(m_pPlayer) )
 		{
-			float fDist = pBot->distanceFrom(m_pPlayer);
+			const float fDist = pBot->distanceFrom(m_pPlayer);
 
 			if ( !m_pNearestBot || (fDist < m_fNearestDist) )
 			{
@@ -246,8 +245,6 @@ private:
 // called each frame
 void CClient :: think ()
 {
-	extern ConVar bot_cmd_enable_wpt_sounds;
-
 	//if ( m_pPlayer  )
 	//	HookGiveNamedItem(m_pPlayer);
 
@@ -266,8 +263,7 @@ void CClient :: think ()
 		m_pPlayerInfo = playerinfomanager->GetPlayerInfo(m_pPlayer);
 	}
 
-	if ( CBotGlobals::isMod(MOD_TF2) )
-	{
+	#if SOURCE_ENGINE == SE_TF2
 		if ( (m_fMonitorHighFiveTime < engine->Time()) && (m_pPlayer != NULL) && (m_pPlayerInfo != NULL) && m_pPlayerInfo->IsConnected() && 
 			!m_pPlayerInfo->IsDead() && m_pPlayerInfo->IsPlayer() && !m_pPlayerInfo->IsObserver() && 
 			CClassInterface::getTF2HighFiveReady(m_pPlayer) )
@@ -278,22 +274,20 @@ void CClient :: think ()
 			{
 				// wanting high five partner
 				// search for bots nearby who can see this player
-				CBotFunc_HighFiveSearch *newFunc = new CBotFunc_HighFiveSearch(m_pPlayer,CClassInterface::getTeam(m_pPlayer));
+				CBotFunc_HighFiveSearch func(m_pPlayer, CClassInterface::getTeam(m_pPlayer));
 
-				CBots::botFunction(newFunc);
+				CBots::botFunction(&func);
 
-				CBot *pBot = newFunc->getNearestBot();
+				CBot *pBot = func.getNearestBot();
 
 				if ( pBot != NULL )
 				{
 					((CBotTF2*)pBot)->highFivePlayer(m_pPlayer,CClassInterface::getTF2TauntYaw(m_pPlayer));
 					m_fMonitorHighFiveTime = engine->Time() + 3.0f;
-				}				
-
-				delete newFunc;
+				}
 			}
 		}
-	}
+	#endif
 
 	if ( m_szSoundToPlay[0] != 0 )
 	{
@@ -345,7 +339,6 @@ void CClient :: think ()
 
 		if ( (m_fUpdatePos > 0) && (m_fSpeed > 0) )
 		{
-			extern ConVar rcbot_show_welcome_msg; // Added by pongo1231
 			if ( !m_bSentWelcomeMessage && rcbot_show_welcome_msg.GetBool() )
 			{
 				m_bSentWelcomeMessage = true;
@@ -423,7 +416,7 @@ void CClient :: think ()
 					if ( msg[i] == 0 )
 						break;
 					i++;
-				}while ( 1 ) ;
+				}while ( true ) ;
 				//int ent_index, int line_offset, float duration, int r, int g, int b, int a, const char *format, ...
 			//	debugoverlay->AddEntityTextOverlay();
 #endif
@@ -806,7 +799,6 @@ void CClient :: think ()
 				
 				if ( (m_iLastJumpWaypointIndex==-1) && bCheckDistance && ((vPlayerOrigin - m_vLastAutoWaypointPlacePos).Length() > 200) )
 				{
-					extern ConVar rcbot_autowaypoint_dist;
 					int iNearestWpt = CWaypointLocations::NearestWaypoint(vPlayerOrigin, rcbot_autowaypoint_dist.GetFloat(), -1, true, false, false, NULL);
 					
 					if ( iNearestWpt == -1 )
@@ -832,8 +824,8 @@ void CClient :: think ()
 #ifndef __linux__
 					if ( m_bDebugAutoWaypoint && !engine->IsDedicatedServer() )
 					{
-						debugoverlay->AddLineOverlay(vCheckOrigin+Vector(0,0,16),vCheckOrigin-Vector(0,0,16),255,255,255,0,2);
-						debugoverlay->AddLineOverlay(vPlayerOrigin,vCheckOrigin,255,255,255,0,2);
+						debugoverlay->AddLineOverlay(vCheckOrigin+Vector(0,0,16),vCheckOrigin-Vector(0,0,16),255,255,255,false,2);
+						debugoverlay->AddLineOverlay(vPlayerOrigin,vCheckOrigin,255,255,255,false,2);
 					}
 #endif					
 					if ( tr->fraction < 1.0 )
@@ -944,8 +936,6 @@ void CClient :: think ()
 
 void CClient::giveMessage(char *msg,float fTime)
 {
-	extern ConVar rcbot_tooltips;
-
 	if ( rcbot_tooltips.GetBool() )
 	{
 		m_NextTooltip.push(new CToolTip(msg,NULL));

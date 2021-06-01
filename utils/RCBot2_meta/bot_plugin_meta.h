@@ -51,11 +51,12 @@
 #include "engine_wrappers.h"
 #include <shareddefs.h>
 
+#if defined SM_EXT
+#include <bot_sm_ext.h>
+#endif
+
 class CUserCmd;
 class IMoveHelper;
-class CEconItemView;
-class CTF2Loadout;
-class CEconWearable;
 
 #if defined WIN32 && !defined snprintf
 #define snprintf _snprintf
@@ -85,41 +86,16 @@ public: //hooks
 	void Hook_ClientActive(edict_t *pEntity, bool bLoadGame);
 	void Hook_ClientDisconnect(edict_t *pEntity);
 	void Hook_ClientPutInServer(edict_t *pEntity, char const *playername);
-	void Hook_SetCommandClient(int index);
-	void Hook_ClientSettingsChanged(edict_t *pEdict);
+	
 	//Called for a game event.  Same definition as server plugins???
 	bool FireGameEvent( IGameEvent *pevent, bool bDontBroadcast );
 	void Hook_PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper);
-	CBaseEntity *Hook_GiveNamedItem(const char *name, int subtype, CEconItemView *cscript, bool b);
-	void Hook_EquipWearable(CEconWearable *pItem);
-	void Hook_EquipWeapon(CBaseEntity *pWeapon);
-	void Hook_RemovePlayerItem(CBaseEntity *pWeapon);
-
-	CBaseEntity *Hook_GetPlayerWeaponSlot(int iSlot);
-	void Hook_RemoveWearable(CBaseEntity *pWearable);
+	
 	bool Hook_ClientConnect(edict_t *pEntity, 
 		const char *pszName,
 		const char *pszAddress,
 		char *reject,
 		int maxrejectlen);
-	bf_write *Hook_MessageBegin(IRecipientFilter *filter, int msg_type);
-	void Hook_MessageEnd();
-
-	void Hook_WriteChar(int val);
-	void Hook_WriteShort(int val);
-	void Hook_WriteByte(int val);
-	void Hook_WriteFloat(float val);
-	bool Hook_WriteString(const char *pStr);
-
-	static CBaseEntity *TF2_getPlayerWeaponSlot(edict_t *pPlayer, int iSlot);
-	static void TF2_removeWearable(edict_t *pPlayer, CBaseEntity *pWearable);
-	static void TF2_removePlayerItem(edict_t *pPlayer, CBaseEntity *pItem);
-	static void TF2_RemoveWeaponSlot(edict_t *pPlayer, int iSlot);
-	static void TF2_equipWeapon(edict_t *pPlayer, CBaseEntity *pWeapon);
-	static bool givePlayerLoadOut(edict_t *pPlayer, CTF2Loadout *pLoadout, int iSlot, void *pVTable, void *pVTable_Attributes);
-	static void giveRandomLoadout(edict_t *pPlayer, int iClass, int iSlot, void *pVTable, void *pVTable_Attributes);
-	static void TF2_equipWearable(edict_t *pPlayer, CBaseEntity *pWearable);
-	static bool TF2_ClearAttributeCache(edict_t *pEdict);
 
 	static void HudTextMessage(edict_t *pEntity, const char *szMessage);
 	static void BroadcastTextMessage(const char *szMessage);
@@ -128,6 +104,11 @@ public: //hooks
 	void Hook_ClientCommand(edict_t *pEntity, const CCommand &args);
 #else
 	void Hook_ClientCommand(edict_t *pEntity);
+#endif
+
+public: // SourceMod
+#if defined SM_EXT
+	void *OnMetamodQuery(const char* iface, int *ret);
 #endif
 
 public:
@@ -141,10 +122,11 @@ public:
 	const char *GetDate();
 	const char *GetLogTag();
 
-	static bool UTIL_TF2EquipHat(edict_t *pEdict, CTF2Loadout *pHat, void *vTable, void *vTableAttributes);
-	static CTF2Loadout *UTIL_TF2EquipRandomHat(edict_t *pEdict, void *vTable, void *vTableAttributes);
-
 private:
+#if defined SM_EXT
+	void BindToSourcemod();
+#endif
+
 	int m_iClientCommandIndex;
 
 	// Bot Quota

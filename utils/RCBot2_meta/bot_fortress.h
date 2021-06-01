@@ -36,7 +36,6 @@
 #include "bot_utility.h"
 
 //#include <stack>
-//using namespace std;
 
 #define TF2_ROCKETSPEED   1100
 #define TF2_GRENADESPEED  1065 // TF2 wiki
@@ -363,137 +362,6 @@ private:
 	int m_iPoint;
 	int m_iTeam;
 	const char *m_szName;
-};
-
-
-class CBasePlayer;
-
-template< class T, class I = int >
-class CUtlMemoryTF2Items : public CUtlMemory< T, I >
-{
-public:
-	CUtlMemoryTF2Items( int nGrowSize = 0, int nInitSize = 0 ) { CUtlMemory< T, I >( nGrowSize, nInitSize ); }
-    CUtlMemoryTF2Items( T* pMemory, int numElements ) { CUtlMemory< T, I >( pMemory, numElements ); }
-    CUtlMemoryTF2Items( const T* pMemory, int numElements ) { CUtlMemory< T, I >( pMemory, numElements ); }
-    //~CUtlMemoryTF2Items() { ~CUtlMemory< T, I >(); }
-    
-	void Purge()
-	{
-		if ( !CUtlMemory< T, I >::IsExternallyAllocated() )
-		{
-			if (CUtlMemory< T, I >::m_pMemory)
-			{
-				UTLMEMORY_TRACK_FREE();
-				//free( (void*)m_pMemory );
-#ifdef TF2ITEMS_DEBUG_ITEMS
-				META_CONPRINTF("CUtlMemory tried to be freed!\n");
-#endif
-				CUtlMemory< T, I >::m_pMemory = 0;
-			}
-			CUtlMemory< T, I >::m_nAllocationCount = 0;
-		}
-	}
-};
-
-// Taken from the TF2Items extension by Asher "asherkin" Baker
-class CAttributeManager;
-
-class CEconItemAttribute
-{
-public:
-	CEconItemAttribute() {};
-
-	CEconItemAttribute(uint16 iAttributeDefinitionIndex, float flValue/* = -1.0*/)
-	{
-		this->m_iAttributeDefinitionIndex = iAttributeDefinitionIndex;
-		this->m_flValue = flValue;
-		this->m_nRefundableCurrency = 0;
-		this->m_pVTable = NULL;
-	}
-
-public:
-	void *m_pVTable;
-
-	uint16 m_iAttributeDefinitionIndex;
-	float m_flValue;
-	int32 m_nRefundableCurrency;
-};
-
-class CEconItem;
-
-class CEconItemHandle
-{
-public:
-	void *m_pVTable;
-
-	CEconItem *m_pItem;
-
-	int64 m_ulItemID;
-	uint64 m_SteamID;
-};
-
-class CAttributeList
-{
-public:
-	void *m_pVTable;
-
-	CUtlVector<CEconItemAttribute, CUtlMemoryTF2Items<CEconItemAttribute> > m_Attributes;
-	void *m_pAttributeManager;
-
-
-public:
-	CAttributeList& operator=(const CAttributeList &other)
-	{
-		m_pVTable = other.m_pVTable;
-
-		m_Attributes = other.m_Attributes;
-		m_pAttributeManager = other.m_pAttributeManager;
-
-
-		return *this;
-	}
-};
-
-
-class ITexture;
-class ITextureCompositor;
-class CEconItemView
-{
-public:
-	void *m_pVTable; //0
-
-	uint16 m_iItemDefinitionIndex; //4
-
-	int32 m_iEntityQuality; //8
-	uint32 m_iEntityLevel; //12
-
-	uint64 m_iItemID; //16
-	uint32 m_iItemIDHigh; //24
-	uint32 m_iItemIDLow; //28
-
-	uint32 m_iAccountID; //32
-
-	uint32 m_iInventoryPosition; //36
-
-	CEconItemHandle m_ItemHandle; //40 (44, 48, 52, 56, 60)
-
-	bool m_bColorInit; //64
-	bool m_bPaintOverrideInit; //65
-	bool m_bHasPaintOverride; //66
-	//67
-
-	float m_flOverrideIndex; //68
-	uint32 m_unRGB; //72
-	uint32 m_unAltRGB; //76
-
-	int32 m_iTeamNumber; //80
-
-	bool m_bInitialized; //84
-
-	CAttributeList m_AttributeList; //88 (92, 96, 100, 104, 108, 112)
-	CAttributeList m_NetworkedDynamicAttributesForDemos; //116 (120, 124, 128, 132, 136, 140)
-
-	bool m_bDoNotIterateStaticAttributes; //144
 };
 
 #define EVENT_FLAG_PICKUP 0
@@ -858,21 +726,6 @@ protected:
 //
 //
 //
-class CTF2Loadout;
-
-class CTF2LoadoutAdded
-{
-public:
-	CTF2LoadoutAdded ( CBaseEntity *pEnt, CTF2Loadout *pLoadout )
-	{
-		m_pEnt = pEnt;
-		m_loadout = pLoadout;
-	}
-
-	CBaseEntity *m_pEnt;
-	CTF2Loadout *m_loadout;
-	
-};
 
 class CBotTF2 : public CBotFortress
 {
@@ -884,9 +737,6 @@ public:
 	virtual CBotWeapon *getCurrentWeapon();
 
 	void onInventoryApplication();
-
-	void giveWeapon ( int slot, int index );
-	void PostGiveNamedItem ( CEconItemView *cscript );
 
 	void MannVsMachineWaveComplete();
 	void MannVsMachineAlarmTriggered (Vector vLoc);
@@ -916,9 +766,9 @@ public:
 
 	bool wantToInvestigateSound ();
 
-	void getDefendArea ( vector<int> *m_iAreas );
+	void getDefendArea ( std::vector<int> *m_iAreas );
 
-	void getAttackArea ( vector <int> *m_iAreas );
+	void getAttackArea ( std::vector<int> *m_iAreas );
 
 	int getCurrentAttackArea () { return m_iCurrentAttackArea; }
 	int getCurrentDefendArea () { return m_iCurrentDefendArea; }
@@ -1062,8 +912,6 @@ public:
 
 	void teleportedPlayer ( void );
 
-	void upgradeWeapon(int iSlot);
-
 	inline bool isCarrying () { return m_bIsCarryingObj; }
 
 	void updateCarrying ();
@@ -1072,7 +920,6 @@ public:
 
 	void MvM_Upgrade ();
 
-	//void addLoadoutWeapon ( CTF2Loadout *weap );
 private:
 	// time for next jump
 	float m_fDoubleJumpTime;
@@ -1133,25 +980,12 @@ private:
 	float m_fCarryTime;
 
 	float m_fCheckNextCarrying;
-	float m_fEquipHatTime;
-
-	bool m_bHatEquipped;
-
-	//stack<CTF2LoadoutAdded*> m_toApply;
 
 	void *m_pVTable;
-	void *m_pVTable_Attributes;
 
 	float m_fUseBuffItemTime;
 
-	CTF2Loadout *m_pHat;
-	CTF2Loadout *m_pMisc;
-	CTF2Loadout *m_pMelee;
-	CTF2Loadout *m_pPrimary;
-	CTF2Loadout *m_pSecondary;
-
 	int m_iDesiredResistType;
-	//dataStack<CTF2LoadoutAdded*> m_LoadoutsApplyAttributes;
 };
 
 class CBotFF : public CBotFortress

@@ -5,8 +5,6 @@
 #include "bot.h"
 #include "bot_globals.h"
 #include "bot_getprop.h"
-#include "datamap.h"
-#include "bot_cvars.h"
 
 CClassInterfaceValue CClassInterface :: g_GetProps[GET_PROPDATA_MAX];
 bool CClassInterfaceValue :: m_berror = false;
@@ -108,7 +106,7 @@ bool g_PrintProps = false;
 
 SendProp *UTIL_FindSendProp(SendTable *pTable, const char *name)
 {
-	int count = pTable->GetNumProps();
+	const int count = pTable->GetNumProps();
 	//SendTable *pTable;
 	SendProp *pProp;
 	for (int i=0; i<count; i++)
@@ -176,7 +174,7 @@ bool UTIL_FindInSendTable(SendTable *pTable,
 						  unsigned int offset)
 {
 	const char *pname;
-	int props = pTable->GetNumProps();
+	const int props = pTable->GetNumProps();
 	SendProp *prop;
 
 	for (int i=0; i<props; i++)
@@ -294,82 +292,6 @@ void UTIL_FindPropPrint(const char *prop_name)
 	{
 		bInterfaceErr = true;
 	}
-}
-
-/**
- * Finds a named offset in a datamap.
- *
- * @param pMap		Datamap to search.
- * @param name		Name of the property to find.
- * @return		Offset of a data map property, or 0 if not found.
- */
-unsigned int UTIL_FindInDataMap(datamap_t* pMap, const char* name)
-{
-	while (pMap)
-	{
-		for (int i = 0; i < pMap->dataNumFields; i++)
-		{
-			if (pMap->dataDesc[i].fieldName == NULL)
-			{
-				continue;
-			}
-			if (strcmp(name, pMap->dataDesc[i].fieldName) == 0)
-			{
-				return pMap->dataDesc[i].fieldOffset[TD_OFFSET_NORMAL];
-			}
-			if (pMap->dataDesc[i].td)
-			{
-				unsigned int offset;
-				if ((offset = UTIL_FindInDataMap(pMap->dataDesc[i].td, name)) != 0)
-				{
-					return offset;
-				}
-			}
-		}
-		pMap = pMap->baseMap;
-	}
-
-	return 0;
-}
-
-class VEmptyClass {};
-datamap_t* VGetDataDescMap(CBaseEntity* pThisPtr, int offset)
-{
-	void** this_ptr = *reinterpret_cast<void***>(&pThisPtr);
-	void** vtable = *reinterpret_cast<void***>(pThisPtr);
-	void* vfunc = vtable[offset];
-
-	union
-	{
-		datamap_t* (VEmptyClass::* mfpnew)();
-#ifndef PLATFORM_POSIX
-		void* addr;
-	} u;
-	u.addr = vfunc;
-#else
-		struct
-		{
-			void* addr;
-			intptr_t adjustor;
-		} s;
-} u;
-	u.s.addr = vfunc;
-	u.s.adjustor = 0;
-#endif
-
-	return (datamap_t*)(reinterpret_cast<VEmptyClass*>(this_ptr)->*u.mfpnew)();
-}
-
-datamap_t* CBaseEntity_GetDataDescMap(CBaseEntity* pEntity)
-{
-	int offset = rcbot_datamap_offset.GetInt();
-
-	if (offset == -1)
-	{
-		return NULL;
-	}
-
-	return VGetDataDescMap(pEntity, offset);
 }
 
 void CClassInterfaceValue :: findOffset ( )
@@ -545,20 +467,14 @@ void CClassInterface:: init ()
 		//8484 : m_bCarryingObject
 		DEFINE_GETPROP(GETPROP_TF2_ISCARRYINGOBJ,"CTFPlayer","m_bCarryingObject",0);
 		DEFINE_GETPROP(GETPROP_TF2_GETCARRIEDOBJ,"CTFPlayer","m_hCarriedObject",0);
-		DEFINE_GETPROP(GETPROP_TF2_ATTRIBUTELIST,"CTFPlayer","m_AttributeList",0);
 
 		// Addon stuff for TF2
 		DEFINE_GETPROP(GETPROP_TF2_ITEMDEFINITIONINDEX,"CTFWeaponBase","m_iItemDefinitionIndex",0);
 		DEFINE_GETPROP(GETPROP_TF2_DISGUISEWEARABLE,"CTFWearable","m_bDisguiseWearable",0);
-		DEFINE_GETPROP(GETPROP_TF2_ENTITYLEVEL,"CBaseAttributableItem","m_iEntityLevel",0);
 		DEFINE_GETPROP(GETPROP_TF2_RAGEMETER,"CTFPlayer","m_flRageMeter",0);
 		DEFINE_GETPROP(GETPROP_TF2_RAGEDRAINING,"CTFPlayer","m_bRageDraining",0);
-		DEFINE_GETPROP(GETPROP_TF2_ENTITYQUALITY,"CBaseAttributableItem","m_iEntityQuality",0);
-		DEFINE_GETPROP(GETPROP_TF2_WEAPON_INITIALIZED,"CBaseAttributableItem","m_bInitialized",0);
 		DEFINE_GETPROP(GETPROP_SIMULATIONTIME,"CBaseEntity","m_flSimulationTime",0);
 		DEFINE_GETPROP(GETPROP_TF2_INUPGRADEZONE,"CTFPlayer","m_bInUpgradeZone",0);
-		DEFINE_GETPROP(GETPROP_TF2_EXTRAWEARABLE, "CTFWeaponBase", "m_hExtraWearable", 0);
-		DEFINE_GETPROP(GETPROP_TF2_EXTRAWEARABLEVIEWMODEL, "CTFWeaponBase", "m_hExtraWearableViewModel", 0); 
 		DEFINE_GETPROP(GETPROP_TF2_ENERGYDRINKMETER, "CTFPlayer", "m_flEnergyDrinkMeter", 0);
 		DEFINE_GETPROP(GETPROP_TF2_MEDIEVALMODE, "CTFGameRulesProxy", "m_bPlayingMedieval", 0);
 		DEFINE_GETPROP(GETPROP_TF2_ACTIVEWEAPON, "CTFPlayer", "m_hActiveWeapon", 0);
@@ -566,12 +482,7 @@ void CClassInterface:: init ()
 		DEFINE_GETPROP(GETPROP_TF2_BUILDER_MODE, "CTFWeaponBuilder", "m_iObjectMode", 0);
 		DEFINE_GETPROP(GETPROP_TF2_CHARGE_RESIST_TYPE, "CWeaponMedigun", "m_nChargeResistType", 0);
 		DEFINE_GETPROP(GETPROP_TF2_ROUNDSTATE, "CTFGameRulesProxy", "m_iRoundState", 0);
-		DEFINE_GETPROP(GETPROP_TF2DESIREDCLASS, "CTFPlayer", "m_iDesiredClass", 0);
-
-		// Synergy
-		DEFINE_GETPROP(GETPROP_SYN_HEALTHPACK, "CSynergyPlayer", "m_iHealthPack", 0);
-		DEFINE_GETPROP(GETPROP_SYN_VEHICLE_ENTITY, "CSynergyPlayer", "m_hVehicle", 0);
-		DEFINE_GETPROP(GETPROP_SYN_VEHICLE_PLAYER, "CPropVehicleDriveable", "m_hPlayer", 0);
+		DEFINE_GETPROP(GETPROP_TF2DESIREDCLASS, "CTFPlayer", "m_iDesiredPlayerClass", 0);
 
 		for ( unsigned int i = 0; i < GET_PROPDATA_MAX; i ++ )
 		{
@@ -671,7 +582,7 @@ edict_t *CClassInterface::FindEntityByClassnameNearest(Vector vstart, const char
 	float fDist;
 	const char *pszClassname;
 	// speed up loop by by using smaller ints in register
-	register short int max = (short int)gpGlobals->maxEntities;
+	const register short int max = (short int)gpGlobals->maxEntities;
 
 	for (register short int i = 0; i < max; i++)
 	{
@@ -699,53 +610,6 @@ edict_t *CClassInterface::FindEntityByClassnameNearest(Vector vstart, const char
 			{
 				fMindist = fDist;
 				pfound = current;
-			}
-		}
-	}
-
-	return pfound;
-}
-
-// returns the closests entities to the given vector.
-edict_t* CClassInterface::FindNearbyEntityByClassname(Vector vstart, const char* classname, float fMaxDist, edict_t* pOwner)
-{
-	edict_t* current;
-	edict_t* pfound = NULL;
-	float fDist;
-	float fShortest = fMaxDist;
-	const char* pszClassname;
-	// speed up loop by by using smaller ints in register
-	register short int max = static_cast<short int>(gpGlobals->maxEntities);
-
-	for (register short int i = 0; i < max; i++)
-	{
-		current = engine->PEntityOfEntIndex(i);
-
-		if (current == NULL)
-			continue;
-
-		if (current->IsFree())
-			continue;
-
-		if (pOwner != NULL)
-		{
-			if (getOwner(current) != pOwner)
-				continue;
-		}
-
-		pszClassname = current->GetClassName(); // For Debugging purposes
-
-		if (strcmp(classname, pszClassname) == 0)
-		{
-			fDist = (vstart - CBotGlobals::entityOrigin(current)).Length();
-
-			if (!pfound || (fDist < fMaxDist))
-			{
-				if (fShortest > fDist)
-				{
-					fShortest = fDist;
-					pfound = current;
-				}
 			}
 		}
 	}

@@ -48,7 +48,6 @@
 #define __BOT_MENU_H__
 
 #include <vector>
-using namespace std;
 
 class CClient;
 class CBotMenu;
@@ -189,7 +188,7 @@ public:
 	void selectedMenu ( CClient *pClient, unsigned int iMenu );
 
 private:
-	vector<CBotMenuItem*> m_MenuItems;
+	std::vector<CBotMenuItem*> m_MenuItems;
 };
 
 class CWaypointFlagMenu : public CBotMenu
@@ -455,7 +454,7 @@ public:
 	const char *getCaption(CClient *pClient,WptColor &color );
 };*/
 
-typedef enum 
+enum 
 {
 	BOT_MENU_WPT = 0,
 	//BOT_MENU_BOT = 1,

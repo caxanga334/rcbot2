@@ -136,18 +136,12 @@ typedef enum
 	GETPROP_SENTRYGUN_PLACING,
 	GETPROP_TF2_ISCARRYINGOBJ,
 	GETPROP_TF2_GETCARRIEDOBJ,
-	GETPROP_TF2_ATTRIBUTELIST,
 	GETPROP_TF2_ITEMDEFINITIONINDEX,
 	GETPROP_TF2_DISGUISEWEARABLE,
-	GETPROP_TF2_ENTITYLEVEL,
 	GETPROP_TF2_RAGEMETER,
 	GETPROP_TF2_RAGEDRAINING,
-	GETPROP_TF2_ENTITYQUALITY,
 	GETPROP_SIMULATIONTIME,
-	GETPROP_TF2_WEAPON_INITIALIZED,
 	GETPROP_TF2_INUPGRADEZONE,
-	GETPROP_TF2_EXTRAWEARABLE,
-	GETPROP_TF2_EXTRAWEARABLEVIEWMODEL,
 	GETPROP_TF2_ENERGYDRINKMETER,
 	GETPROP_TF2_MEDIEVALMODE,
 	GETPROP_TF2_ACTIVEWEAPON,
@@ -156,9 +150,6 @@ typedef enum
 	GETPROP_TF2_CHARGE_RESIST_TYPE,
 	GETPROP_TF2_ROUNDSTATE,
 	GETPROP_TF2DESIREDCLASS, //Jrob
-	GETPROP_SYN_HEALTHPACK,
-	GETPROP_SYN_VEHICLE_ENTITY,
-	GETPROP_SYN_VEHICLE_PLAYER,
 	GET_PROPDATA_MAX
 }getpropdata_id;
 
@@ -167,9 +158,6 @@ ServerClass *UTIL_FindServerClass(const char *name);
 void UTIL_FindServerClassPrint(const char*name_cmd);
 void UTIL_FindServerClassnamePrint(const char *name_cmd);
 void UTIL_FindPropPrint(const char *prop_name);
-unsigned int UTIL_FindInDataMap(datamap_t* pMap, const char* name);
-datamap_t* CBaseEntity_GetDataDescMap(CBaseEntity* pEntity);
-datamap_t* VGetDataDescMap(CBaseEntity* pThisPtr, int offset);
 
 class CClassInterfaceValue
 {
@@ -354,7 +342,6 @@ private:
 extern CClassInterfaceValue g_GetProps[GET_PROPDATA_MAX];
 class CTFObjectiveResource;
 class CTeamRoundTimer;
-class CAttributeList;
 #define DEFINE_GETPROP(id,classname,value,preoffs)\
  g_GetProps[id] = CClassInterfaceValue( CClassInterfaceValue ( classname, value, preoffs ) )
 
@@ -367,7 +354,6 @@ public:
 	static edict_t *FindEntityByNetClass(int start, const char *classname);
 	static edict_t *FindEntityByNetClassNearest(Vector vstart, const char *classname);
 	static edict_t *FindEntityByClassnameNearest(Vector vstart, const char *classname, float fMinDist = 8192.0f, edict_t *pOwner = NULL );
-	static edict_t* FindNearbyEntityByClassname(Vector vstart, const char* classname, float fMaxDist = 1024.0f, edict_t* pOwner = NULL);
 
 	// TF2
 	static int getTF2Score ( edict_t *edict );
@@ -383,15 +369,7 @@ public:
 	inline static int getTF2Conditions ( edict_t *edict ) { return g_GetProps[GETPROP_TF2_CONDITIONS].getInt(edict,0); }
 	inline static bool getVelocity ( edict_t *edict, Vector *v ) {return g_GetProps[GETPROP_VELOCITY].getVector(edict,v); }
 	inline static int getTF2Class ( edict_t *edict ) { return g_GetProps[GETPROP_TF2CLASS].getInt(edict,0); }
-	inline static edict_t *getExtraWearable(edict_t *edict) { return g_GetProps[GETPROP_TF2_EXTRAWEARABLE].getEntity(edict); }
-	inline static edict_t *getExtraWearableViewModel(edict_t *edict) { return g_GetProps[GETPROP_TF2_EXTRAWEARABLEVIEWMODEL].getEntity(edict); }
 	inline static float TF2_getEnergyDrinkMeter(edict_t * edict) { return g_GetProps[GETPROP_TF2_ENERGYDRINKMETER].getFloat(edict, 0); }
-	inline static void setInitialized ( edict_t *edict ) 
-	{
-		bool *m_bInitialized = g_GetProps[GETPROP_TF2_WEAPON_INITIALIZED].getBoolPointer(edict);
-
-		*m_bInitialized = true;
-	}
 	inline static edict_t *TF2_getActiveWeapon(edict_t *edict) { return g_GetProps[GETPROP_TF2_ACTIVEWEAPON].getEntity(edict); }
 	// set weapon
 	static bool TF2_setActiveWeapon(edict_t *edict, edict_t *pWeapon)
@@ -426,7 +404,7 @@ public:
 	}
 	//end Jrob
 	inline static bool TF2_IsMedievalMode(void*gamerules) { return g_GetProps[GETPROP_TF2_MEDIEVALMODE].getBool(gamerules, false, false);}
-	inline static int TF2_getRoundState(void *gamerules) { return g_GetProps[GETPROP_TF2_ROUNDSTATE].getInt(gamerules, 0, 0); }
+	inline static int TF2_getRoundState(void *gamerules) { return g_GetProps[GETPROP_TF2_ROUNDSTATE].getInt(gamerules, 0, false); }
 	inline static float getTF2SpyCloakMeter ( edict_t *edict ) { return g_GetProps[GETPROP_TF2SPYMETER].getFloat(edict,0); }
 	inline static int getWaterLevel ( edict_t *edict ) { return g_GetProps[GETPROP_WATERLEVEL].getInt(edict,0); }
 	inline static void updateSimulationTime ( edict_t *edict )
@@ -460,28 +438,7 @@ public:
 	{
 		return g_GetProps[GETPROP_TF2_ITEMDEFINITIONINDEX].getInt(edict, 0);
 	}
-	inline static void setEntityIndex_Level_Quality( edict_t *edict, int iIndex, int iLevel = 0, int iQuality = 0 )
-	{
-		int *pdata = g_GetProps[GETPROP_TF2_ITEMDEFINITIONINDEX].getIntPointer(edict);
-
-		if ( pdata )
-			*pdata = iIndex;
-
-		if ( iLevel )
-		{
-			int *pdata = g_GetProps[GETPROP_TF2_ENTITYLEVEL].getIntPointer(edict);
-
-			if ( pdata )
-				*pdata = iLevel;
-		}
-		if ( iQuality )
-		{
-			int *pdata = g_GetProps[GETPROP_TF2_ENTITYQUALITY].getIntPointer(edict);
-
-			if ( pdata )
-				*pdata = iQuality;
-		}
-	}
+	
 	inline static bool isCarryingObj ( edict_t *edict ) { return g_GetProps[GETPROP_TF2_ISCARRYINGOBJ].getBool(edict,false); }
 	inline static edict_t *getCarriedObj ( edict_t *edict ) { return g_GetProps[GETPROP_TF2_GETCARRIEDOBJ].getEntity(edict); }
 	inline static bool getMedigunHealing ( edict_t *edict ) { return g_GetProps[GETPROP_TF2MEDIGUN_HEALING].getBool(edict,false); }
@@ -528,7 +485,6 @@ public:
 	inline static int getDODBombTeam ( edict_t *pBombTarget ) { return g_GetProps[GETPROP_DOD_BOMB_TEAM].getInt(pBombTarget,0); }
 	inline static int *getWeaponClip1Pointer ( edict_t *pgun ) { return g_GetProps[GETPROP_WEAPONCLIP1].getIntPointer(pgun); }
 	inline static int *getWeaponClip2Pointer ( edict_t *pgun ) { return g_GetProps[GETPROP_WEAPONCLIP2].getIntPointer(pgun); }
-	inline static CAttributeList *getAttributeList ( edict_t *player ) { return (CAttributeList*)g_GetProps[GETPROP_TF2_ATTRIBUTELIST].getVoidPointer(player); }
 	inline static int getOffset(int id) { return g_GetProps[id].getOffset(); }
 	inline static void getWeaponClip ( edict_t *pgun, int *iClip1, int *iClip2 ) { *iClip1 = g_GetProps[GETPROP_WEAPONCLIP1].getInt(pgun,0); *iClip2 = g_GetProps[GETPROP_WEAPONCLIP2].getInt(pgun,0); }
 	inline static void getAmmoTypes ( edict_t *pgun, int *iAmmoType1, int *iAmmoType2 ) { *iAmmoType1 = g_GetProps[GETPROP_WEAPON_AMMOTYPE1].getInt(pgun,-1); *iAmmoType2 = g_GetProps[GETPROP_WEAPON_AMMOTYPE2].getInt(pgun,-1);} 
@@ -717,91 +673,9 @@ public:
 		return g_GetProps[GETPROP_SENTRYGUN_PLACING].getBool(pSentry,false);
 	}
 
-	// Synergy
-
-	// Amount of health pack the player contains
-	inline static int getSynPlrHealthPack(edict_t* edict) { return g_GetProps[GETPROP_SYN_HEALTHPACK].getInt(edict, 0); }
-
-	// Get the vehicle entity of the player
-	inline static edict_t* getSynPlrVehicle(edict_t* edict) { return g_GetProps[GETPROP_SYN_VEHICLE_ENTITY].getEntity(edict); }
-
-	// Get the driver of the given vehicle edict
-	inline static edict_t* getSynVehicleDriver(edict_t* edict) { return g_GetProps[GETPROP_SYN_VEHICLE_PLAYER].getEntity(edict); }
-
 private:
 	static CClassInterfaceValue g_GetProps[GET_PROPDATA_MAX];
 
-};
-
-class CDataInterface
-{
-public:
-	// Returns the value of m_iHealth
-	inline int GetEntityHealth(CBaseEntity* pEntity)
-	{
-		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
-		int offset = UTIL_FindInDataMap(pDataMap, "m_iHealth");
-		int iHealth = *(int*)((char*)pEntity + offset);
-		//return iHealth;
-		return *(int*)((char*)pEntity + offset);
-	}
-	// Returns the value of m_iMaxHealth
-	inline int GetEntityMaxHealth(CBaseEntity* pEntity)
-	{
-		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
-		int offset = UTIL_FindInDataMap(pDataMap, "m_iMaxHealth");
-		int iMaxHealth = *(int*)((char*)pEntity + offset);
-		return iMaxHealth;
-	}
-	// Divides m_iHealth and m_iMaxHealth to form a percentage
-	// Range 1.0-0.0 where 1.0 = FULL HEALTH
-	inline float GetEntityHealthPercent(CBaseEntity* pEntity)
-	{
-		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
-		int offset = UTIL_FindInDataMap(pDataMap, "m_iHealth");
-		int offset2 = UTIL_FindInDataMap(pDataMap, "m_iMaxHealth");
-		int iHealth = *(int*)((char*)pEntity + offset);
-		int iMaxHealth = *(int*)((char*)pEntity + offset2);
-		return (static_cast<float>(iHealth) / iMaxHealth);
-	}
-	// returns true if m_bLocked is 1, generally exists in doors, buttons and vehicles
-	inline bool IsEntityLocked(CBaseEntity* pEntity)
-	{
-		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
-		int offset = UTIL_FindInDataMap(pDataMap, "m_bLocked");
-		int iLocked = *(int*)((char*)pEntity + offset);
-		if (iLocked == 1)
-			return true;
-		else
-			return false;
-	}
-	// returns true if m_bDisabled is 1
-	inline bool IsEntityDisabled(CBaseEntity* pEntity)
-	{
-		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
-		int offset = UTIL_FindInDataMap(pDataMap, "m_bDisabled");
-		int iDisabled = *(int*)((char*)pEntity + offset);
-		if (iDisabled == 1)
-			return true;
-		else
-			return false;
-	}
-	// returns the value of m_toggle_state
-	inline int GetEntityToggleState(CBaseEntity* pEntity)
-	{
-		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
-		int offset = UTIL_FindInDataMap(pDataMap, "m_toggle_state");
-		int iState = *(int*)((char*)pEntity + offset);
-		return iState;
-	}
-	// returns the value of m_spawnflags
-	inline int GetEntitySpawnFlags(CBaseEntity* pEntity)
-	{
-		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
-		int offset = UTIL_FindInDataMap(pDataMap, "m_spawnflags");
-		int iSpawnFlags = *(int*)((char*)pEntity + offset);
-		return iSpawnFlags;
-	}
 };
 
 #endif

@@ -3,17 +3,11 @@
 
 extern ConVar rcbot_tf2_debug_spies_cloakdisguise;
 extern ConVar rcbot_tf2_medic_letgotime;
-//extern ConVar rcbot_const_round_offset;
 extern ConVar rcbot_const_point_master_offset;
-//extern ConVar rcbot_const_point_offset;
-//extern ConVar rcbot_const_point_data_offset;
 extern ConVar rcbot_tf2_pyro_airblast;
 extern ConVar rcbot_projectile_tweak;
-//extern ConVar bot_sv_cheat_warning;
 extern ConVar bot_cmd_enable_wpt_sounds;
-//extern ConVar bot_cmd_nocheats;
 extern ConVar bot_general_difficulty;
-//extern ConVar bot_sv_cheats_auto;
 extern ConVar bot_visrevs_clients;
 extern ConVar bot_spyknifefov;
 extern ConVar bot_visrevs;
@@ -71,11 +65,7 @@ extern ConVar rcbot_melee_only;
 extern ConVar rcbot_debug_iglev;
 extern ConVar rcbot_dont_move;
 extern ConVar rcbot_runplayercmd_dods;
-extern ConVar rcbot_runplayercmd_tf2;
-extern ConVar rcbot_runplayercmd_syn;
-extern ConVar rcbot_runplayercmd_hookonce;
 extern ConVar rcbot_ladder_offs;
-extern ConVar rcbot_datamap_offset;
 extern ConVar rcbot_ffa;
 extern ConVar rcbot_prone_enemy_only;
 extern ConVar rcbot_menu_update_time1;
@@ -96,33 +86,20 @@ extern ConVar rcbot_tf2_payload_dist_retreat;
 extern ConVar rcbot_spy_runaway_health;
 extern ConVar rcbot_supermode;
 extern ConVar rcbot_addbottime;
-extern ConVar rcbot_customloadouts;
-extern ConVar rcbot_givenameditem_offset;
-extern ConVar rcbot_equipwearable_offset;
-extern ConVar rcbot_rmplayeritem_offset;
-extern ConVar rcbot_enable_attributes;
-extern ConVar rcbot_force_generation;
-extern ConVar rcbot_equiphats;
-extern ConVar rcbot_getweaponslot_offset;
-extern ConVar rcbot_removewearable_offset;
-extern ConVar rcbot_weaponequip_offset;
 extern ConVar rcbot_gamerules_offset;
 extern ConVar rcbot_bot_quota_interval;
+extern ConVar rcbot_const_point_master_offset;
 //extern ConVar rcbot_util_learning;
-//extern ConVar rcbot_bot_add_cmd;
 
 /** Additional convars by pongo1231 **/
 extern ConVar rcbot_show_welcome_msg;
 extern ConVar rcbot_force_class;
 
 extern ConVar *sv_gravity;
-extern ConVar *sv_cheats;
 extern ConVar *mp_teamplay;
 extern ConVar *sv_tags;
 extern ConVar *mp_friendlyfire;
-
-extern ConCommandBase *puppet_bot_cmd;
-
+extern ConVar *mp_stalemate_enable;
 
 void RCBOT2_Cvar_setup (ICvar *cvar);
 
