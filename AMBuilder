@@ -35,6 +35,8 @@ sourceFiles = [
   "utils/RCBot2_meta/bot_som.cpp",
   "utils/RCBot2_meta/bot_squads.cpp",
   "utils/RCBot2_meta/bot_strings.cpp",
+  "utils/RCBot2_meta/bot_synergy.cpp",
+  "utils/RCBot2_meta/bot_synergy_mod.cpp",
   "utils/RCBot2_meta/bot_task.cpp",
   "utils/RCBot2_meta/bot_tf2_mod.cpp",
   "utils/RCBot2_meta/bot_utility.cpp",
