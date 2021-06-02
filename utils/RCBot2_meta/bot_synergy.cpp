@@ -20,9 +20,6 @@
 #include "bot_navigator.h"
 #include "bot_perceptron.h"
 #include "bot_waypoint_visibility.h"
-#define HL2_DLL
-#include "baseentity.h"
-#undef HL2_DLL
 
 bool CBotSynergy::isEnemy(edict_t *pEdict, bool bCheckWeapons)
 {
@@ -36,37 +33,7 @@ bool CBotSynergy::isEnemy(edict_t *pEdict, bool bCheckWeapons)
 
     if(strncmp(szclassname, "npc_", 4) == 0) // Attack NPCs
     {// TODO: Filter NPCs
-        CBaseEntity* pEntity = pEdict->GetUnknown()->GetBaseEntity();
-        
-        switch (pEntity->Classify())
-        {
-        case CLASS_NONE:
-        case CLASS_BULLSEYE:
-        case CLASS_PLAYER:
-        case CLASS_PLAYER_ALLY:
-        case CLASS_PLAYER_ALLY_VITAL:
-        case CLASS_VORTIGAUNT:
-        case CLASS_CITIZEN_PASSIVE:
-        case CLASS_CITIZEN_REBEL:
-            return false;
-            break;
-        case CLASS_COMBINE:
-        case CLASS_COMBINE_GUNSHIP:
-        case CLASS_COMBINE_HUNTER:
-        case CLASS_METROPOLICE:
-        case CLASS_ANTLION:
-        case CLASS_BARNACLE:
-        case CLASS_MANHACK:
-        case CLASS_ZOMBIE:
-        case CLASS_STALKER:
-        case CLASS_HEADCRAB:
-        case CLASS_SCANNER:
-            return true;
-            break;
-        default:
-            return false;
-            break;
-        }
+        return true;
     }
 
     return false;
