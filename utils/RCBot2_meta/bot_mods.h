@@ -697,7 +697,7 @@ public:
 	void initMod ();
 	void mapInit ();
 
-	virtual const char *getPlayerClass ()
+	const char *getPlayerClass () override
 	{
 		return "CSynergyPlayer";
 	}

@@ -51,6 +51,18 @@
 #include "bot_perceptron.h"
 #include "bot_waypoint_visibility.h"
 
+void CBotSynergy::spawnInit()
+{
+    CBot::spawnInit();
+
+    m_CurrentUtil = BOT_UTIL_MAX;
+}
+
+void CBotSynergy::modThink()
+{
+    m_fIdealMoveSpeed = CClassInterface::getMaxSpeed(m_pEdict);
+}
+
 bool CBotSynergy::isEnemy(edict_t *pEdict, bool bCheckWeapons)
 {
     if(m_pEdict == pEdict) // Not self

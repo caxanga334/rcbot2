@@ -34,7 +34,8 @@
 class CBotSynergy : public CBot
 {
     bool isSYN () override { return true; }
-    void modThink () override { return; }
+    void spawnInit () override;
+    void modThink () override;
     void getTasks (unsigned int iIgnore=0) override;
     virtual bool executeAction(eBotAction iAction);
     unsigned int maxEntityIndex() override { return gpGlobals->maxEntities; }
