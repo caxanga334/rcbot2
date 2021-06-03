@@ -697,6 +697,11 @@ public:
 	void initMod ();
 	void mapInit ();
 
+	virtual const char *getPlayerClass ()
+	{
+		return "CSynergyPlayer";
+	}
+
 	//void entitySpawn ( edict_t *pEntity );
 };
 
