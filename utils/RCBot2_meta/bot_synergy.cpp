@@ -93,6 +93,9 @@ void CBotSynergy::getTasks (unsigned int iIgnore)
     removeCondition(CONDITION_CHANGED);
     bCheckCurrent = true; // important for checking current schedule
 
+	// Utilities
+	ADD_UTILITY(BOT_UTIL_ROAM, true, 0.01f); // Roam around
+
 	utils.execute();
 
 	while ((next = utils.nextBest()) != NULL)
