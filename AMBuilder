@@ -80,7 +80,7 @@ mods_requiring_runcmd_overrides = [
   # hack: DOD:S uses `Bot_Think`, which forces all `bot`-spawned entities to use Valve's
   # default bot AI.  we'll hook into their RunPlayerMove for now, but for consistency across
   # games it'd be better to supercede `Bot_Think` (or `Bot_RunAll` higher up the call stack)
-  'dods',
+  'dods','sdk2013',
 ]
 
 ###############
