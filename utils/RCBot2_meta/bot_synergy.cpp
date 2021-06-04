@@ -51,6 +51,12 @@
 #include "bot_perceptron.h"
 #include "bot_waypoint_visibility.h"
 
+void CBotSynergy::init(bool bVarInit)
+{
+	CBot::init(bVarInit); // call base first
+	m_fFov = 110.0f; // Coop mod, give bot larger FOV (default is 75)
+}
+
 void CBotSynergy::spawnInit()
 {
     CBot::spawnInit();
@@ -81,6 +87,70 @@ bool CBotSynergy::isEnemy(edict_t *pEdict, bool bCheckWeapons)
     return false;
 }
 
+bool CBotSynergy::setVisible ( edict_t *pEntity, bool bVisible )
+{
+	bool bValid = CBot::setVisible(pEntity, bVisible);
+
+	static float fDist = distanceFrom(pEntity);
+	const char* szclassname = pEntity->GetClassName();
+	CBotWeapon* pWeapon = NULL;
+
+	// Is valid and NOT invisible
+	if (bValid && bVisible && !(CClassInterface::getEffects(pEntity) & EF_NODRAW))
+	{
+		if(strcmp(szclassname, "item_ammo_crate") == 0 && (!m_pNearbyCrate.get() || fDist < distanceFrom(m_pNearbyCrate.get())))
+		{
+			m_pNearbyCrate = pEntity;
+		}
+		else if(strncmp(szclassname, "item_ammo", 9) == 0 && (!m_pNearbyAmmo.get() || fDist < distanceFrom(m_pNearbyAmmo.get())))
+		{
+			m_pNearbyAmmo = pEntity;
+			if(strncmp(szclassname, "item_ammo_crate", 15))
+			{
+				m_pNearbyAmmo = NULL; // Invalidate if this entity is an ammo crate
+			}
+		}
+		else if(strncmp(szclassname, "item_healthkit", 14) == 0 && (!m_pNearbyHealthKit.get() || fDist < distanceFrom(m_pNearbyHealthKit.get())))
+		{
+			m_pNearbyHealthKit = pEntity;
+			if(getHealthPercent() <= 0.75f)
+				updateCondition(CONDITION_CHANGED);
+		}
+		else if(strncmp(szclassname, "item_battery", 12) == 0 && (!m_pNearbyBattery.get() || fDist < distanceFrom(m_pNearbyBattery.get())))
+		{
+			m_pNearbyHealthKit = pEntity;
+		}
+		else if(strncmp(szclassname, "weapon_", 7) == 0 && (!m_pNearbyWeapon.get() || fDist < distanceFrom(m_pNearbyWeapon.get())))
+		{
+			pWeapon = m_pWeapons->getWeapon(CWeapons::getWeapon(szclassname));
+			if(pWeapon && pWeapon->hasWeapon())
+			{
+				m_pNearbyWeapon = NULL; // bot already has this weapon
+			}
+			else
+			{
+				m_pNearbyWeapon = pEntity;
+				updateCondition(CONDITION_CHANGED);
+			}
+		}		
+	}
+	else
+	{
+		if(pEntity == m_pNearbyAmmo.get_old())
+			m_pNearbyAmmo = NULL;
+		else if(pEntity == m_pNearbyCrate.get_old())
+			m_pNearbyCrate = NULL;
+		else if(pEntity == m_pNearbyHealthKit.get_old())
+			m_pNearbyHealthKit = NULL;
+		else if(pEntity == m_pNearbyBattery.get_old())
+			m_pNearbyBattery = NULL;
+		else if(pEntity == m_pNearbyWeapon.get_old())
+			m_pNearbyWeapon = NULL;
+	}
+
+	return bValid;
+}
+
 void CBotSynergy::getTasks (unsigned int iIgnore)
 {
     static CBotUtilities utils;
@@ -94,6 +164,8 @@ void CBotSynergy::getTasks (unsigned int iIgnore)
     bCheckCurrent = true; // important for checking current schedule
 
 	// Utilities
+	ADD_UTILITY(BOT_UTIL_PICKUP_WEAPON, m_pNearbyWeapon.get() != NULL, 0.75f) // New weapons are interesting, high priority
+	ADD_UTILITY(BOT_UTIL_GETHEALTHKIT, m_pNearbyHealthKit.get() != NULL, 1.0f - getHealthPercent()); // Pick up health kits
 	ADD_UTILITY(BOT_UTIL_ROAM, true, 0.01f); // Roam around
 
 	utils.execute();
@@ -132,6 +204,14 @@ bool CBotSynergy::executeAction(eBotAction iAction)
 {
     switch (iAction)
     {
+	case BOT_UTIL_PICKUP_WEAPON:
+		m_pSchedules->addFront(new CBotPickupSched(m_pNearbyWeapon.get()));
+		return true;
+	break;
+	case BOT_UTIL_GETHEALTHKIT:
+		m_pSchedules->addFront(new CBotPickupSched(m_pNearbyHealthKit.get()));
+		return true;
+	break;
     case BOT_UTIL_ROAM:
     {
 		// roam
