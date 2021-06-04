@@ -62,6 +62,11 @@ void CBotSynergy::spawnInit()
     CBot::spawnInit();
 
     m_CurrentUtil = BOT_UTIL_MAX;
+	m_pNearbyAmmo = NULL;
+	m_pNearbyBattery = NULL;
+	m_pNearbyCrate = NULL;
+	m_pNearbyHealthKit = NULL;
+	m_pNearbyWeapon = NULL;
 }
 
 void CBotSynergy::modThink()
@@ -79,9 +84,23 @@ bool CBotSynergy::isEnemy(edict_t *pEdict, bool bCheckWeapons)
 
     const char* szclassname = pEdict->GetClassName();
 
+	// BUGBUG!! Maps can override NPC relationship with the ai_relationship entity, making this classname filter useless
     if(strncmp(szclassname, "npc_", 4) == 0) // Attack NPCs
-    {// TODO: Filter NPCs
-        return true;
+    {
+		if (((strcmp(szclassname, "npc_combinegunship") == 0) || (strcmp(szclassname, "npc_helicopter") == 0) || (strcmp(szclassname, "npc_strider") == 0))
+			&& m_pWeapons->hasWeapon(SYN_WEAPON_RPG))
+		{
+			return true; // ignore gunships, helicopters and striders if I don't have an RPG.
+		}
+
+		if (strcmp(szclassname, "npc_metropolice") == 0 || strcmp(szclassname, "npc_combine_s") == 0 || strcmp(szclassname, "npc_manhack") == 0 ||
+			strcmp(szclassname, "npc_zombie") == 0 || strcmp(szclassname, "npc_fastzombie") == 0 || strcmp(szclassname, "npc_poisonzombie") == 0 || strcmp(szclassname, "npc_zombine") == 0 ||
+			strcmp(szclassname, "npc_antlionguard") == 0 || strcmp(szclassname, "npc_antlion") == 0 || strcmp(szclassname, "npc_headcrab") == 0 || strcmp(szclassname, "npc_headcrab_fast") == 0 ||
+			strcmp(szclassname, "npc_headcrab_black") == 0 || strcmp(szclassname, "npc_hunter") == 0 || strcmp(szclassname, "npc_fastzombie_torso") == 0 || strcmp(szclassname, "npc_zombie_torso") == 0 ||
+			strcmp(szclassname, "npc_barnacle") == 0)
+		{
+			return true;
+		}
     }
 
     return false;
