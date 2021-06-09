@@ -132,12 +132,15 @@ bool CBotSynergy::setVisible ( edict_t *pEntity, bool bVisible )
 		else if(strncmp(szclassname, "item_healthkit", 14) == 0 && (!m_pNearbyHealthKit.get() || fDist < distanceFrom(m_pNearbyHealthKit.get())))
 		{
 			m_pNearbyHealthKit = pEntity;
-			if(getHealthPercent() <= 0.75f)
+			if(getHealthPercent() <= 0.90f)
 				updateCondition(CONDITION_CHANGED);
 		}
 		else if(strncmp(szclassname, "item_battery", 12) == 0 && (!m_pNearbyBattery.get() || fDist < distanceFrom(m_pNearbyBattery.get())))
 		{
 			m_pNearbyHealthKit = pEntity;
+			if(getArmorPercent() < 1.0f)
+				updateCondition(CONDITION_CHANGED);
+
 		}
 		else if(strncmp(szclassname, "weapon_", 7) == 0 && (!m_pNearbyWeapon.get() || fDist < distanceFrom(m_pNearbyWeapon.get())))
 		{
@@ -185,6 +188,7 @@ void CBotSynergy::getTasks (unsigned int iIgnore)
 	// Utilities
 	ADD_UTILITY(BOT_UTIL_PICKUP_WEAPON, m_pNearbyWeapon.get() != NULL, 0.75f) // New weapons are interesting, high priority
 	ADD_UTILITY(BOT_UTIL_GETHEALTHKIT, m_pNearbyHealthKit.get() != NULL, 1.0f - getHealthPercent()); // Pick up health kits
+	ADD_UTILITY(BOT_UTIL_HL2DM_FIND_ARMOR, m_pNearbyBattery.get() != NULL, 1.0f - getArmorPercent()); // Pick up armor batteries
 	ADD_UTILITY(BOT_UTIL_ROAM, true, 0.01f); // Roam around
 
 	utils.execute();
