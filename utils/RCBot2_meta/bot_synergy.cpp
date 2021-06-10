@@ -151,8 +151,12 @@ bool CBotSynergy::setVisible ( edict_t *pEntity, bool bVisible )
 			}
 			else
 			{
-				m_pNearbyWeapon = pEntity;
-				updateCondition(CONDITION_CHANGED);
+				edict_t* pOwner = CClassInterface::getOwner(pEntity);
+				if(pOwner == NULL) // Don't pick if owned by someone
+				{
+					m_pNearbyWeapon = pEntity;
+					updateCondition(CONDITION_CHANGED);
+				}
 			}
 		}		
 	}
