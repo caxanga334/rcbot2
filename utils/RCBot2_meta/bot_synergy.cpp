@@ -61,12 +61,28 @@ void CBotSynergy::spawnInit()
 {
     CBot::spawnInit();
 
+	if ( m_pWeapons ) // reset weapons
+		m_pWeapons->clearWeapons();
+
     m_CurrentUtil = BOT_UTIL_MAX;
 	m_pNearbyAmmo = NULL;
 	m_pNearbyBattery = NULL;
 	m_pNearbyCrate = NULL;
 	m_pNearbyHealthKit = NULL;
 	m_pNearbyWeapon = NULL;
+}
+
+void CBotSynergy::died(edict_t *pKiller, const char *pszWeapon)
+{
+	CBot::died(pKiller, pszWeapon);
+
+	if(pKiller)
+	{
+		if(CBotGlobals::entityIsValid(pKiller))
+		{
+			m_pNavigator->belief(CBotGlobals::entityOrigin(pKiller), getEyePosition(), bot_beliefmulti.GetFloat(), distanceFrom(pKiller), BELIEF_DANGER);
+		}
+	}
 }
 
 void CBotSynergy::modThink()

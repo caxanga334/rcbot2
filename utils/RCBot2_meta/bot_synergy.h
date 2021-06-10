@@ -37,6 +37,7 @@ public:
     bool isSYN () override { return true; }
     void init (bool bVarInit=false) override;
     void spawnInit () override;
+    void died ( edict_t *pKiller, const char *pszWeapon ) override;
     void modThink () override;
     void getTasks (unsigned int iIgnore=0) override;
     virtual bool executeAction(eBotAction iAction);
