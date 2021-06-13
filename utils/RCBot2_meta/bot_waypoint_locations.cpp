@@ -249,6 +249,9 @@ void CWaypointLocations :: AutoPathInBucket ( edict_t *pPlayer, int i, int j, in
 
 		if ( pOtherWpt == pWpt )
 			continue;
+
+		if( pOtherWpt->hasFlag(CWaypointTypes::W_FL_UNREACHABLE) ) // Stop auto adding paths to waypoints with unreachable flag
+			continue;
 		
 		vOtherWptOrigin = pOtherWpt->getOrigin();
 
