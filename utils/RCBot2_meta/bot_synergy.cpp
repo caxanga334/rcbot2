@@ -51,7 +51,6 @@
 #include "bot_perceptron.h"
 #include "bot_plugin_meta.h"
 #include "bot_waypoint_visibility.h"
-#include "gametrace.h"
 
 extern IVDebugOverlay *debugoverlay;
 
