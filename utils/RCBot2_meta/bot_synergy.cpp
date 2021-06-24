@@ -49,7 +49,11 @@
 #include "bot_waypoint_locations.h"
 #include "bot_navigator.h"
 #include "bot_perceptron.h"
+#include "bot_plugin_meta.h"
 #include "bot_waypoint_visibility.h"
+#include "gametrace.h"
+
+extern IVDebugOverlay *debugoverlay;
 
 void CBotSynergy::init(bool bVarInit)
 {
@@ -297,4 +301,51 @@ bool CBotSynergy::executeAction(eBotAction iAction)
     }
 
     return false;
+}
+
+void CBotSynergy::touchedWpt(CWaypoint *pWaypoint, int iNextWaypoint, int iPrevWaypoint)
+{
+	if(iNextWaypoint != -1 && pWaypoint->hasFlag(CWaypointTypes::W_FL_USE))
+	{
+		CWaypoint *pNext = CWaypoints::getWaypoint(iNextWaypoint);
+		if(pNext && pNext->hasFlag(CWaypointTypes::W_FL_USE))
+		{
+			/**
+			 * Perform a trace to check if there is something blocking the path between the current waypoint and the next waypoint.
+			 * Originally I wanted to use tr->GetEntityIndex() and check if the hit entity is a door
+			 * but that function causes link errors when compiling, so I had to fall back to manually searching for door entities.
+			 * BUGBUG!! Because RCBot2 currently lacks the ability to read datamaps, it's impossible to prevent the bot from trying to open a locked door.
+			**/
+			CTraceFilterHitAll filter;
+			trace_t *tr = CBotGlobals::getTraceResult();
+			CBotGlobals::traceLine(pWaypoint->getOrigin() + Vector(0,0,CWaypoint::WAYPOINT_HEIGHT/2), pNext->getOrigin() + Vector(0,0,CWaypoint::WAYPOINT_HEIGHT/2), MASK_PLAYERSOLID, &filter);
+			if(tr->fraction < 1.0f)
+			{
+				edict_t *pDoor;
+				pDoor = CClassInterface::FindEntityByClassnameNearest(getOrigin(), "prop_door_rotating", rcbot_syn_use_search_range.GetFloat());
+				if(pDoor != NULL)
+				{
+					m_pSchedules->addFront(new CSynOpenDoorSched(pDoor));
+				}
+				else
+				{
+					pDoor = CClassInterface::FindEntityByClassnameNearest(getOrigin(), "func_door", rcbot_syn_use_search_range.GetFloat());
+					if(pDoor != NULL)
+					{
+						m_pSchedules->addFront(new CSynOpenDoorSched(pDoor));
+					}
+					else
+					{
+						pDoor = CClassInterface::FindEntityByClassnameNearest(getOrigin(), "func_door_rotating", rcbot_syn_use_search_range.GetFloat());
+						if(pDoor != NULL)
+						{
+							m_pSchedules->addFront(new CSynOpenDoorSched(pDoor));
+						}
+					}
+				}
+			}
+		}
+	}
+
+	CBot::touchedWpt(pWaypoint, iNextWaypoint, iPrevWaypoint);
 }

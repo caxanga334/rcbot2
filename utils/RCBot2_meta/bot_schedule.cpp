@@ -89,6 +89,7 @@ const char *szSchedules[SCHED_MAX+1] =
 	"SCHED_RETURN_TO_INTEL",
 	"SCHED_INVESTIGATE_HIDE",
 	"SCHED_TAUNT",
+	"SCHED_SYN_OPEN_DOOR",
 	"SCHED_MAX"
 };
 ////////////////////// unused
@@ -751,6 +752,12 @@ void CBotDefendPointSched ::init ()
 	setID(SCHED_DEFENDPOINT);
 }
 
+CSynOpenDoorSched::CSynOpenDoorSched(edict_t *pDoor)
+{
+	addTask(new CMoveToTask(pDoor));
+	addTask(new CBotHL2DMUseButton(pDoor));
+	addTask(new CBotWaitTask(3.0f));
+}
 
 /////////////////////////////////////////////
 void CBotSchedule :: execute ( CBot *pBot )

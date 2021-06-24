@@ -1378,6 +1378,20 @@ public:
 
 	void execute ( CBot *pBot, CBotSchedule *pSchedule );
 };
+
+class CBotWaitTask : public CBotTask
+{
+public:
+	CBotWaitTask(float waittime)
+	{
+		m_ftime = engine->Time() + waittime;
+	}
+	void execute ( CBot *pBot, CBotSchedule *pSchedule );
+	void debugString (char *string);
+private:
+	float m_ftime;
+};
+
 /*
 class CAttackTask : public CBotTask
 {

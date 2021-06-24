@@ -816,6 +816,21 @@ void CPrimaryAttack:: execute ( CBot *pBot, CBotSchedule *pSchedule )
 	complete();
 }
 
+void CBotWaitTask::execute ( CBot *pBot, CBotSchedule *pSchedule )
+{
+	pBot->stopMoving();
+
+	if(engine->Time() >= m_ftime)
+	{
+		complete();
+	}
+}
+
+void CBotWaitTask::debugString(char *string)
+{
+	sprintf(string,"CBotWaitTask (%.1f)",m_ftime - engine->Time());
+}
+
 ////////////////////////////
 
 CBotTF2PushPayloadBombTask :: CBotTF2PushPayloadBombTask (edict_t * pPayloadBomb)

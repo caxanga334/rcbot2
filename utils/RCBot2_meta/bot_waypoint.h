@@ -150,6 +150,7 @@ public:
 	static const int W_FL_OPENS_LATER    = (1 << 9);
 	static const int W_FL_ROCKET_JUMP    = (1 << 10);
 	static const int W_FL_BOMB_TO_OPEN   = (1 << 10); // DOD:S
+	static const int W_FL_USE            = (1 << 10); // Synergy: Use Button/Door
 	static const int W_FL_SNIPER         = (1 << 11);
 	static const int W_FL_AMMO           = (1 << 12);
 	static const int W_FL_RESUPPLY       = (1 << 13);

@@ -93,6 +93,8 @@ extern ConVar rcbot_const_point_master_offset;
 
 //Synergy Cvars
 extern ConVar rcbot_runplayercmd_syn;
+extern ConVar rcbot_syn_use_search_range;
+
 
 /** Additional convars by pongo1231 **/
 extern ConVar rcbot_show_welcome_msg;

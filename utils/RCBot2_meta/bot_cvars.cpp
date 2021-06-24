@@ -98,6 +98,7 @@ ConVar rcbot_force_class("rcbot_force_class", "0", 0, "Force bots to choose spec
 
 // Synergy CVars
 ConVar rcbot_runplayercmd_syn("rcbot_runplayer_cmd_syn","424",0,"offset of the Synergy PlayerRunCommand function");
+ConVar rcbot_syn_use_search_range("rcbot_syn_use_search_range", "256", 0, "Sets the maximum button search range.", true, 150.0f, true, 1024.0f);
 
 ConVar *sv_gravity = NULL;
 ConVar *mp_teamplay = NULL;
