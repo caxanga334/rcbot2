@@ -55,3 +55,27 @@ void CSynergyMod::mapInit()
 {
     CBotGlobals::botMessage(NULL, 0, "CSynergyMod::mapInit called!");
 }
+
+/**
+ * Checks if the given entity is locked. (Door, buttons)
+ * 
+ * @param pEntity   The entity to check
+ * @return          true if the entity is locked, false if unlocked or invalid
+ **/
+bool CSynergyMod::IsEntityLocked(edict_t *pEntity)
+{
+    CBaseEntity *pBaseEntity = pEntity->GetUnknown()->GetBaseEntity();
+	datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pBaseEntity);
+	int offset = UTIL_FindInDataMap(pDataMap, "m_bLocked");
+    if(offset == 0)
+    {
+        const char *szclassname = pEntity->GetClassName();
+        CBotGlobals::botMessage(NULL, 0 , "Offset 0 for entity %s!", szclassname);
+        return false;
+    }
+    int value = *(int*)((char*)pBaseEntity + offset);
+    if(value == 1)
+        return true; // Locked
+    else
+        return false; // Unlocked
+}

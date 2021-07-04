@@ -703,6 +703,8 @@ public:
 	}
 
 	//void entitySpawn ( edict_t *pEntity );
+
+	static bool IsEntityLocked(edict_t *pEntity);
 };
 
 #define NEWENUM typedef enum {

@@ -51,6 +51,7 @@
 #include "bot_perceptron.h"
 #include "bot_plugin_meta.h"
 #include "bot_waypoint_visibility.h"
+#include "random.h"
 
 extern IVDebugOverlay *debugoverlay;
 
@@ -73,6 +74,7 @@ void CBotSynergy::spawnInit()
 	m_pNearbyCrate = NULL;
 	m_pNearbyHealthKit = NULL;
 	m_pNearbyWeapon = NULL;
+	m_fGoToGoalTime = engine->Time();
 }
 
 void CBotSynergy::died(edict_t *pKiller, const char *pszWeapon)
@@ -381,21 +383,21 @@ void CBotSynergy::touchedWpt(CWaypoint *pWaypoint, int iNextWaypoint, int iPrevW
 			{
 				edict_t *pDoor;
 				pDoor = CClassInterface::FindEntityByClassnameNearest(getOrigin(), "prop_door_rotating", rcbot_syn_use_search_range.GetFloat());
-				if(pDoor != NULL)
+				if(pDoor != NULL && !CSynergyMod::IsEntityLocked(pDoor))
 				{
 					m_pSchedules->addFront(new CSynOpenDoorSched(pDoor));
 				}
 				else
 				{
 					pDoor = CClassInterface::FindEntityByClassnameNearest(getOrigin(), "func_door", rcbot_syn_use_search_range.GetFloat());
-					if(pDoor != NULL)
+					if(pDoor != NULL && !CSynergyMod::IsEntityLocked(pDoor))
 					{
 						m_pSchedules->addFront(new CSynOpenDoorSched(pDoor));
 					}
 					else
 					{
 						pDoor = CClassInterface::FindEntityByClassnameNearest(getOrigin(), "func_door_rotating", rcbot_syn_use_search_range.GetFloat());
-						if(pDoor != NULL)
+						if(pDoor != NULL && !CSynergyMod::IsEntityLocked(pDoor))
 						{
 							m_pSchedules->addFront(new CSynOpenDoorSched(pDoor));
 						}
