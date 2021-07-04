@@ -160,6 +160,9 @@ ServerClass *UTIL_FindServerClass(const char *name);
 void UTIL_FindServerClassPrint(const char*name_cmd);
 void UTIL_FindServerClassnamePrint(const char *name_cmd);
 void UTIL_FindPropPrint(const char *prop_name);
+unsigned int UTIL_FindInDataMap(datamap_t* pMap, const char* name);
+datamap_t* CBaseEntity_GetDataDescMap(CBaseEntity* pEntity);
+datamap_t* VGetDataDescMap(CBaseEntity* pThisPtr, int offset);
 
 class CClassInterfaceValue
 {

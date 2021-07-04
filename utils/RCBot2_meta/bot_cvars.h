@@ -87,6 +87,7 @@ extern ConVar rcbot_spy_runaway_health;
 extern ConVar rcbot_supermode;
 extern ConVar rcbot_addbottime;
 extern ConVar rcbot_gamerules_offset;
+extern ConVar rcbot_datamap_offset;
 extern ConVar rcbot_bot_quota_interval;
 extern ConVar rcbot_const_point_master_offset;
 //extern ConVar rcbot_util_learning;

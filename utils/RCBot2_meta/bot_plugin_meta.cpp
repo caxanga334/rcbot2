@@ -409,11 +409,15 @@ bool RCBotPluginMeta::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxle
 		rcbot_gamerules_offset.SetValue(val);
 	if (pKVL->getInt("runplayermove_synergy_win", &val))
 		rcbot_runplayercmd_syn.SetValue(val);
+	if (pKVL->getInt("getdatadescmap_win", &val))
+		rcbot_datamap_offset.SetValue(val);
 #else
 	if (pKVL->getInt("runplayermove_dods_linux", &val))
 		rcbot_runplayercmd_dods.SetValue(val);
 	if (pKVL->getInt("runplayermove_synergy_linux", &val))
 		rcbot_runplayercmd_syn.SetValue(val);
+	if (pKVL->getInt("getdatadescmap_linux", &val))
+		rcbot_datamap_offset.SetValue(val);
 #endif
 
 	g_pGameRules_Obj = new CGameRulesObject(pKVL, gameServerFactory);
