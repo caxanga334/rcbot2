@@ -697,4 +697,50 @@ private:
 
 };
 
+class CDataInterface
+{
+public:
+	/**
+	* Gets the entity's health via datamaps
+	* 
+	* @param pEntity	The entity to get the health from
+	* @return			The entity current health (m_iHealth) value
+	**/
+	inline static int GetEntityHealth(CBaseEntity* pEntity)
+	{
+		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
+		int offset = UTIL_FindInDataMap(pDataMap, "m_iHealth");
+		int iHealth = *(int*)((char*)pEntity + offset);
+		return iHealth;
+	}
+	/**
+	* Gets the entity's maxhealth via datamaps
+	* 
+	* @param pEntity	The entity to get the health from
+	* @return			The entity current max health (m_iMaxHealth) value
+	**/
+	inline static int GetEntityMaxHealth(CBaseEntity* pEntity)
+	{
+		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
+		int offset = UTIL_FindInDataMap(pDataMap, "m_iMaxHealth");
+		int iMaxHealth = *(int*)((char*)pEntity + offset);
+		return iMaxHealth;
+	}
+	/**
+	* Gets the entity's health as percentage
+	* 
+	* @param pEntity	The entity to get the health from
+	* @return			The entity health as percentage, range 1 to 0, where 1 is full health
+	**/
+	inline static float GetEntityHealthPercent(CBaseEntity* pEntity)
+	{
+		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
+		int offset = UTIL_FindInDataMap(pDataMap, "m_iHealth");
+		int offset2 = UTIL_FindInDataMap(pDataMap, "m_iMaxHealth");
+		int iHealth = *(int*)((char*)pEntity + offset);
+		int iMaxHealth = *(int*)((char*)pEntity + offset);
+		return (static_cast<float>(iHealth / iMaxHealth));
+	}
+};
+
 #endif
