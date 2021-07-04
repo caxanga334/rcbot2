@@ -212,7 +212,8 @@ void CBotSynergy::getTasks (unsigned int iIgnore)
 	ADD_UTILITY(BOT_UTIL_PICKUP_WEAPON, m_pNearbyWeapon.get() != NULL, 0.75f) // New weapons are interesting, high priority
 	ADD_UTILITY(BOT_UTIL_GETHEALTHKIT, m_pNearbyHealthKit.get() != NULL, 1.0f - getHealthPercent()); // Pick up health kits
 	ADD_UTILITY(BOT_UTIL_HL2DM_FIND_ARMOR, m_pNearbyBattery.get() != NULL, 1.0f - getArmorPercent()); // Pick up armor batteries
-	ADD_UTILITY(BOT_UTIL_ROAM, true, 0.01f); // Roam around
+	ADD_UTILITY(BOT_UTIL_ATTACK_POINT, m_fGoToGoalTime <= engine->Time(), 0.01f); // Go to waypoints with 'goal' flag
+	ADD_UTILITY(BOT_UTIL_ROAM, true, 0.0001f); // Roam around
 
 	utils.execute();
 
@@ -258,6 +259,55 @@ bool CBotSynergy::executeAction(eBotAction iAction)
 		m_pSchedules->addFront(new CBotPickupSched(m_pNearbyHealthKit.get()));
 		return true;
 	break;
+    case BOT_UTIL_ATTACK_POINT:
+    {
+		// roam
+		CWaypoint* pWaypoint = NULL;
+		CWaypoint* pRoute = NULL;
+		CBotSchedule* pSched = new CBotSchedule();
+		m_fGoToGoalTime = engine->Time() + 90.0f + RandomFloat(30.0f, 150.0f);
+
+		pSched->setID(SCHED_ATTACKPOINT);
+
+		// Make the bot more likely to use alternate paths based on their braveness and current health
+		if(getHealthPercent() + m_pProfile->m_fBraveness <= 1.0f)
+			updateCondition(CONDITION_COVERT);
+		else
+			removeCondition(CONDITION_COVERT);
+
+        pWaypoint = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_GOAL);
+
+		if (pWaypoint)
+		{
+			pRoute = CWaypoints::randomRouteWaypoint(this, getOrigin(), pWaypoint->getOrigin(), 0, 0);
+			if ((m_fUseRouteTime <= engine->Time()))
+			{
+				if (pRoute)
+				{
+					int iRoute = CWaypoints::getWaypointIndex(pRoute); // Route waypoint
+					int iWaypoint = CWaypoints::getWaypointIndex(pWaypoint); // Goal Waypoint
+					pSched->addTask(new CFindPathTask(iRoute, LOOK_WAYPOINT));
+					pSched->addTask(new CMoveToTask(pRoute->getOrigin()));
+					pSched->addTask(new CFindPathTask(iWaypoint, LOOK_WAYPOINT));
+					pSched->addTask(new CMoveToTask(pWaypoint->getOrigin()));
+					m_pSchedules->add(pSched);
+					m_fUseRouteTime = engine->Time() + 30.0f;
+				}
+			}
+
+			if (pRoute == NULL)
+			{
+				int iWaypoint = CWaypoints::getWaypointIndex(pWaypoint);
+				pSched->addTask(new CFindPathTask(iWaypoint, LOOK_WAYPOINT));
+				pSched->addTask(new CMoveToTask(pWaypoint->getOrigin()));
+				m_pSchedules->add(pSched);
+			}
+
+			return true;
+		}
+
+		break;
+    }
     case BOT_UTIL_ROAM:
     {
 		// roam
@@ -267,18 +317,27 @@ bool CBotSynergy::executeAction(eBotAction iAction)
 
 		pSched->setID(SCHED_GOTO_ORIGIN);
 
+		// Make the bot more likely to use alternate paths based on their braveness and current health
+		if(getHealthPercent() + m_pProfile->m_fBraveness <= 1.0f)
+			updateCondition(CONDITION_COVERT);
+		else
+			removeCondition(CONDITION_COVERT);
+
         pWaypoint = CWaypoints::randomWaypointGoal(-1);
 
 		if (pWaypoint)
 		{
 			pRoute = CWaypoints::randomRouteWaypoint(this, getOrigin(), pWaypoint->getOrigin(), 0, 0);
-			if ((m_fUseRouteTime < engine->Time()))
+			if ((m_fUseRouteTime <= engine->Time()))
 			{
 				if (pRoute)
 				{
-					int iRoute = CWaypoints::getWaypointIndex(pRoute);
+					int iRoute = CWaypoints::getWaypointIndex(pRoute); // Route waypoint
+					int iWaypoint = CWaypoints::getWaypointIndex(pWaypoint); // Goal Waypoint
 					pSched->addTask(new CFindPathTask(iRoute, LOOK_WAYPOINT));
 					pSched->addTask(new CMoveToTask(pRoute->getOrigin()));
+					pSched->addTask(new CFindPathTask(iWaypoint, LOOK_WAYPOINT));
+					pSched->addTask(new CMoveToTask(pWaypoint->getOrigin()));
 					m_pSchedules->add(pSched);
 					m_fUseRouteTime = engine->Time() + 30.0f;
 				}

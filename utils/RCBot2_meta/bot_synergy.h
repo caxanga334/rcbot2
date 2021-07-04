@@ -52,6 +52,7 @@ protected:
     MyEHandle m_pNearbyBattery; // Armor battery
     MyEHandle m_pNearbyAmmo; // ammo pickups
     MyEHandle m_pNearbyCrate; // ammo crate
+    float m_fGoToGoalTime; // Time control used to check if the bot should roam or not
 };
 
 #endif
