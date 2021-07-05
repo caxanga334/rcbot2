@@ -705,6 +705,9 @@ public:
 	//void entitySpawn ( edict_t *pEntity );
 
 	static bool IsEntityLocked(edict_t *pEntity);
+	static bool IsCombineMinePlayerPlaced(edict_t *pMine);
+	static bool IsCombineMineDisarmed(edict_t *pMine);
+	static bool IsCombineMineArmed(edict_t *pMine);
 };
 
 #define NEWENUM typedef enum {

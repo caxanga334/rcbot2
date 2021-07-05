@@ -5360,6 +5360,61 @@ void CBotHL2DMSnipe :: execute (CBot *pBot,CBotSchedule *pSchedule)
 		m_fEnemyTime = engine->Time();
 	}
 }
+
+void CBotSynDisarmMineTask::execute(CBot *pBot,CBotSchedule *pSchedule)
+{
+	if(m_pMine.get() == NULL)
+	{
+		fail();
+	}
+
+	if(CSynergyMod::IsCombineMinePlayerPlaced(m_pMine.get()))
+	{
+		fail();
+	}
+
+	Vector minepos = CBotGlobals::entityOrigin(m_pMine.get());
+
+	pBot->wantToChangeWeapon(false);
+	pBot->wantToShoot(false);
+	pBot->wantToListen(false);
+	pBot->setLookAtTask(LOOK_VECTOR);
+	pBot->setLookVector(minepos);
+	pBot->duck(true);
+
+	if(!(pBot->getCurrentWeapon() == pBot->getWeapons()->getWeapon(CWeapons::getWeapon(SYN_WEAPON_PHYSCANNON))))
+	{
+		pBot->selectBotWeapon(pBot->getWeapons()->getWeapon(CWeapons::getWeapon(SYN_WEAPON_PHYSCANNON)));
+	}
+	
+	if(pBot->distanceFrom(m_pMine.get()) <= 250.0f)
+	{
+		pBot->stopMoving();
+		pBot->secondaryAttack(true);
+		if(!m_bTimeSet)
+		{
+			m_ftime = engine->Time() + 3.0f;
+			m_bTimeSet = true;
+		}
+	}
+	else
+	{
+		pBot->setMoveLookPriority(MOVELOOK_TASK);
+		pBot->setMoveTo(minepos);
+	}
+
+	if(m_bTimeSet && m_ftime < engine->Time())
+	{
+		pBot->letGoOfButton(IN_ATTACK2);
+		pBot->letGoOfButton(IN_DUCK);
+		complete();
+	}
+}
+
+void CBotSynDisarmMineTask::debugString(char *string)
+{
+	sprintf(string, "CBotSynDisarmMineTask");
+}
 ///////////////////////////////////////////
 // interrupts
 

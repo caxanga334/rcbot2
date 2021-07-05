@@ -1392,6 +1392,22 @@ private:
 	float m_ftime;
 };
 
+class CBotSynDisarmMineTask : public CBotTask
+{
+public:
+	CBotSynDisarmMineTask(edict_t *pMine)
+	{
+		m_pMine = pMine;
+		m_bTimeSet = false;
+	}
+	void execute ( CBot *pBot, CBotSchedule *pSchedule );
+	void debugString (char *string);
+private:
+	float m_ftime;
+	bool m_bTimeSet;
+	MyEHandle m_pMine;
+};
+
 /*
 class CAttackTask : public CBotTask
 {

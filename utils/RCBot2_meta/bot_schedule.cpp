@@ -90,6 +90,8 @@ const char *szSchedules[SCHED_MAX+1] =
 	"SCHED_INVESTIGATE_HIDE",
 	"SCHED_TAUNT",
 	"SCHED_SYN_OPEN_DOOR",
+	"SCHED_SYN_DISARM_MINE",
+	"SCHED_SYN_PLANT_MINE",
 	"SCHED_MAX"
 };
 ////////////////////// unused
@@ -757,6 +759,11 @@ CSynOpenDoorSched::CSynOpenDoorSched(edict_t *pDoor)
 	addTask(new CMoveToTask(pDoor));
 	addTask(new CBotHL2DMUseButton(pDoor));
 	addTask(new CBotWaitTask(3.0f));
+}
+
+CSynDisarmMineSched::CSynDisarmMineSched(edict_t *pMine)
+{
+	addTask(new CBotSynDisarmMineTask(pMine));
 }
 
 /////////////////////////////////////////////

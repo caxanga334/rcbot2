@@ -93,6 +93,53 @@ void CBotSynergy::died(edict_t *pKiller, const char *pszWeapon)
 void CBotSynergy::modThink()
 {
     m_fIdealMoveSpeed = CClassInterface::getMaxSpeed(m_pEdict);
+
+	if(m_pNearbyGrenade && distanceFrom(m_pNearbyGrenade.get()) <= 200.0f) // Nearby grenade, RUN for cover!
+	{
+		updateCondition(CONDITION_RUN);
+		if(!m_pSchedules->isCurrentSchedule(SCHED_GOOD_HIDE_SPOT))
+		{
+			m_pSchedules->removeSchedule(SCHED_GOOD_HIDE_SPOT);
+			m_pSchedules->addFront(new CGotoHideSpotSched(this, m_pNearbyGrenade, false)); // bIsGrenade is false because when true the bot will do a DoD specific task
+		}
+	}
+
+	if(m_pNearbyMine && distanceFrom(m_pNearbyMine.get()) <= 512.0f && !CSynergyMod::IsCombineMineDisarmed(m_pNearbyMine.get()))
+	{
+		if(CSynergyMod::IsCombineMinePlayerPlaced(m_pNearbyMine.get()))
+		{
+			m_pNearbyMine = NULL; // The mine is friendly now.
+		}
+		else
+		{
+			if(m_pWeapons->hasWeapon(SYN_WEAPON_PHYSCANNON))
+			{
+				if(!m_pSchedules->isCurrentSchedule(SCHED_SYN_DISARM_MINE))
+				{
+					m_pSchedules->removeSchedule(SCHED_SYN_DISARM_MINE);
+					m_pSchedules->addFront(new CSynDisarmMineSched(m_pNearbyMine.get()));
+				}
+			}
+			else
+			{
+				m_pNavigator->belief(CBotGlobals::entityOrigin(m_pNearbyMine.get()), getEyePosition(), MAX_BELIEF, distanceFrom(m_pNearbyMine.get()), BELIEF_DANGER);
+			}
+		}
+	}
+}
+
+void CBotSynergy::updateConditions()
+{
+	CBot::updateConditions();
+
+	if (m_pEnemy.get() != NULL)
+	{
+		if(CDataInterface::GetEntityHealth(m_pEnemy.get()->GetNetworkable()->GetBaseEntity()) <= 0)
+		{
+			updateCondition(CONDITION_ENEMY_DEAD);
+			m_pEnemy = NULL;
+		}
+	}
 }
 
 bool CBotSynergy::isEnemy(edict_t *pEdict, bool bCheckWeapons)
@@ -173,13 +220,35 @@ bool CBotSynergy::setVisible ( edict_t *pEntity, bool bVisible )
 			else
 			{
 				edict_t* pOwner = CClassInterface::getOwner(pEntity);
-				if(pOwner == NULL) // Don't pick if owned by someone
+				if(pOwner == NULL) // Don't pick weapons owned by someone
 				{
 					m_pNearbyWeapon = pEntity;
 					updateCondition(CONDITION_CHANGED);
 				}
 			}
-		}		
+		}
+		else if(strncmp(szclassname, "npc_grenade_frag", 16) == 0 && (!m_pNearbyGrenade.get() || fDist < distanceFrom(m_pNearbyGrenade.get())))
+		{
+			edict_t *pOwner = CClassInterface::getOwner(pEntity);
+			IPlayerInfo *p = playerinfomanager->GetPlayerInfo(pEntity);
+			if(pOwner == NULL || p == NULL) // Only care about grenades that doesn't have an owner or isn't owned by a player
+			{
+				m_pNearbyGrenade = pEntity;
+				m_pNavigator->belief(CBotGlobals::entityOrigin(pEntity), getEyePosition(), bot_beliefmulti.GetFloat(), distanceFrom(pEntity), BELIEF_DANGER);
+			}
+		}
+		else if(strncmp(szclassname, "combine_mine", 12) == 0 && (!m_pNearbyMine.get() || fDist < distanceFrom(m_pNearbyMine.get())))
+		{
+			if(!CSynergyMod::IsCombineMinePlayerPlaced(pEntity)) // Ignore player placed (friendly) mines
+			{
+				m_pNearbyMine = pEntity;
+				int iWaypoint = CWaypoints::nearestWaypointGoal(-1, CBotGlobals::entityOrigin(pEntity),512.0f);
+				if(iWaypoint != -1)
+				{
+					m_pNavigator->beliefOne(iWaypoint, BELIEF_DANGER, distanceFrom(pEntity));
+				}
+			}
+		}
 	}
 	else
 	{
@@ -193,6 +262,10 @@ bool CBotSynergy::setVisible ( edict_t *pEntity, bool bVisible )
 			m_pNearbyBattery = NULL;
 		else if(pEntity == m_pNearbyWeapon.get_old())
 			m_pNearbyWeapon = NULL;
+		else if(pEntity == m_pNearbyMine.get_old())
+			m_pNearbyMine = NULL;
+		else if(pEntity == m_pNearbyGrenade.get_old())
+			m_pNearbyGrenade = NULL;
 	}
 
 	return bValid;
@@ -422,4 +495,9 @@ void CBotSynergy::touchedWpt(CWaypoint *pWaypoint, int iNextWaypoint, int iPrevW
 	}
 
 	CBot::touchedWpt(pWaypoint, iNextWaypoint, iPrevWaypoint);
+}
+
+bool CBotSynergy::walkingTowardsWaypoint(CWaypoint *pWaypoint, bool *bOffsetApplied, Vector &vOffset)
+{
+	return CBot::walkingTowardsWaypoint(pWaypoint, bOffsetApplied, vOffset);
 }

@@ -697,9 +697,75 @@ private:
 
 };
 
+// For reference: https://github.com/alliedmodders/sourcemod/blob/master/core/smn_entities.cpp
 class CDataInterface
 {
 public:
+	/**
+	* Gets the entity's given prop via datamaps
+	* 
+	* @param pEntity	The entity to read
+	* @param prop		The property to read
+	* @return			The property value
+	**/
+	inline static int GetEntPropInt(CBaseEntity *pEntity, const char *prop)
+	{
+		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
+		int offset = UTIL_FindInDataMap(pDataMap, prop);
+		int propvalue = *(int *)((uint8_t *)pEntity + offset); // to-do: bit count?
+		return propvalue;
+	}
+
+	/**
+	* Gets the entity's given prop via datamaps
+	* 
+	* @param pEntity	The entity to read
+	* @param prop		The property to read
+	* @return			The property value
+	**/
+	inline static float GetEntPropFloat(CBaseEntity *pEntity, const char *prop)
+	{
+		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
+		int offset = UTIL_FindInDataMap(pDataMap, prop);
+		float propvalue = *(float *)((uint8_t *)pEntity + offset);
+		return propvalue;
+	}
+
+	/**
+	* Gets the entity's given prop via datamaps
+	* 
+	* @param pEntity	The entity to read
+	* @param prop		The property to read
+	* @return			The property value or NULL if the edict is invalid
+	**/
+	inline static edict_t *GetEntPropEdict(CBaseEntity *pEntity, const char *prop)
+	{
+		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
+		int offset = UTIL_FindInDataMap(pDataMap, prop);
+		edict_t *pEdict = *(edict_t **) ((uint8_t *) pEntity + offset);
+		if(!pEdict || pEdict->IsFree())
+		{
+			return NULL;
+		}
+			
+		return pEdict;
+	}
+
+	/**
+	* Gets the entity's given prop via datamaps
+	* 
+	* @param pEntity	The entity to read
+	* @param prop		The property to read
+	* @return			The property value
+	**/
+	inline static Vector *GetEntPropVector(CBaseEntity *pEntity, const char *prop)
+	{
+		datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pEntity);
+		int offset = UTIL_FindInDataMap(pDataMap, prop);
+		Vector *propvalue = (Vector *)((uint8_t *)pEntity + offset);
+		return propvalue;
+	}
+
 	/**
 	* Gets the entity's health via datamaps
 	* 

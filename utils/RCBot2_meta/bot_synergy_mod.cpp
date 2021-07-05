@@ -79,3 +79,57 @@ bool CSynergyMod::IsEntityLocked(edict_t *pEntity)
     else
         return false; // Unlocked
 }
+
+/**
+ * Checks if the given combine mine was placed by a player
+ * 
+ * @param pMine     The mine entity to check
+ * @return          True if the given mine was placed by a player
+ **/
+bool CSynergyMod::IsCombineMinePlayerPlaced(edict_t *pMine)
+{
+    CBaseEntity *pBaseEntity = pMine->GetUnknown()->GetBaseEntity();
+	datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pBaseEntity);
+	int offset = UTIL_FindInDataMap(pDataMap, "m_bPlacedByPlayer");
+    int value = *(int*)((char*)pBaseEntity + offset);
+    if(value == 1)
+        return true;
+
+    return false;
+}
+
+/**
+ * Checks if the given combine mine is disarmed
+ * 
+ * @param pMine     The mine entity to check
+ * @return          True if the given mine is disarmed
+ **/
+bool CSynergyMod::IsCombineMineDisarmed(edict_t *pMine)
+{
+    CBaseEntity *pBaseEntity = pMine->GetUnknown()->GetBaseEntity();
+	datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pBaseEntity);
+	int offset = UTIL_FindInDataMap(pDataMap, "m_bDisarmed");
+    int value = *(int*)((char*)pBaseEntity + offset);
+    if(value == 1)
+        return true;
+
+    return false;    
+}
+
+/**
+ * Checks if the given combine mine is armed
+ * 
+ * @param pMine     The mine entity to check
+ * @return          True if the given mine is armed
+ **/
+bool CSynergyMod::IsCombineMineArmed(edict_t *pMine)
+{
+    CBaseEntity *pBaseEntity = pMine->GetUnknown()->GetBaseEntity();
+	datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pBaseEntity);
+	int offset = UTIL_FindInDataMap(pDataMap, "m_iMineState");
+    int value = *(int*)((char*)pBaseEntity + offset);
+    if(value > 0)
+        return true;
+
+    return false;      
+}
