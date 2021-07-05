@@ -365,7 +365,7 @@ bool CBotSynergy::executeAction(eBotAction iAction)
 
 void CBotSynergy::touchedWpt(CWaypoint *pWaypoint, int iNextWaypoint, int iPrevWaypoint)
 {
-	if(iNextWaypoint != -1 && pWaypoint->hasFlag(CWaypointTypes::W_FL_USE))
+	if(iNextWaypoint != -1 && pWaypoint->hasFlag(CWaypointTypes::W_FL_USE)) // Use waypoint: Check for door
 	{
 		CWaypoint *pNext = CWaypoints::getWaypoint(iNextWaypoint);
 		if(pNext && pNext->hasFlag(CWaypointTypes::W_FL_USE))
@@ -404,6 +404,20 @@ void CBotSynergy::touchedWpt(CWaypoint *pWaypoint, int iNextWaypoint, int iPrevW
 					}
 				}
 			}
+		}
+	}
+	else // Check for button
+	{
+		edict_t *pEntity;
+		pEntity = CClassInterface::FindEntityByClassnameNearest(getOrigin(), "func_button", rcbot_syn_use_search_range.GetFloat());
+		if(pEntity != NULL && !CSynergyMod::IsEntityLocked(pEntity))
+		{
+			CBotSchedule *sched = new CBotSchedule();
+			sched->setID(SCHED_GOTO_ORIGIN);
+			sched->addTask(new CMoveToTask(pEntity));
+			sched->addTask(new CBotHL2DMUseButton(pEntity));
+			sched->addTask(new CBotWaitTask(RandomFloat(3.0f, 6.0f)));
+			m_pSchedules->addFront(sched);
 		}
 	}
 
