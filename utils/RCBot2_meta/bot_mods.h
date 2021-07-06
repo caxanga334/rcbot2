@@ -708,6 +708,7 @@ public:
 	static bool IsCombineMinePlayerPlaced(edict_t *pMine);
 	static bool IsCombineMineDisarmed(edict_t *pMine);
 	static bool IsCombineMineArmed(edict_t *pMine);
+	static bool IsCombineMineHeldByPhysgun(edict_t *pMine);
 };
 
 #define NEWENUM typedef enum {

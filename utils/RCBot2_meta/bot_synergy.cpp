@@ -112,7 +112,7 @@ void CBotSynergy::modThink()
 		}
 		else
 		{
-			if(m_pWeapons->hasWeapon(SYN_WEAPON_PHYSCANNON))
+			if(m_pWeapons->hasWeapon(SYN_WEAPON_PHYSCANNON) && !CSynergyMod::IsCombineMineHeldByPhysgun(m_pNearbyMine.get()))
 			{
 				if(!m_pSchedules->isCurrentSchedule(SCHED_SYN_DISARM_MINE))
 				{

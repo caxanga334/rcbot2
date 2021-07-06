@@ -2911,15 +2911,19 @@ void CBot :: doButtons ()
 	m_iButtons = m_pButtons->getBitMask();
 }
 
-void CBot :: secondaryAttack ( bool bHold )
+void CBot :: secondaryAttack ( bool bHold, float fTime )
 {
-	float fLetGoTime = 0.15;
-	float fHoldTime = 0.12;
+	float fLetGoTime = 0.15f;
+	float fHoldTime = 0.12f;
 
 	if ( bHold )
 	{
-		fLetGoTime = 0.0;
-		fHoldTime = 1.0;
+		fLetGoTime = 0.0f;
+
+		if ( fTime )
+			fHoldTime = fTime;
+		else
+			fHoldTime = 1.0f;
 	}
 
 	// not currently in "letting go" stage?

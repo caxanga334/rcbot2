@@ -611,7 +611,7 @@ public:
 	bool isHoldingPrimaryAttack();
 
 	void primaryAttack ( bool bHold=false, float fTime =0.0f );
-	void secondaryAttack(bool bHold=false);
+	void secondaryAttack( bool bHold=false, float fTime = 0.0f );
 	void jump ();
 	void duck ( bool hold = false );
 	void use ();

@@ -5368,52 +5368,69 @@ void CBotSynDisarmMineTask::execute(CBot *pBot,CBotSchedule *pSchedule)
 		fail();
 	}
 
-	if(CSynergyMod::IsCombineMinePlayerPlaced(m_pMine.get()))
-	{
-		fail();
-	}
+	//if(CSynergyMod::IsCombineMinePlayerPlaced(m_pMine.get()))
+	//{
+	//	fail();
+	//}
 
-	Vector minepos = CBotGlobals::entityOrigin(m_pMine.get());
+	m_vMinePos = CBotGlobals::entityOrigin(m_pMine.get());
+	m_fDist = pBot->distanceFrom(m_pMine.get());
 
 	pBot->wantToChangeWeapon(false);
 	pBot->wantToShoot(false);
 	pBot->wantToListen(false);
+	pBot->setMoveLookPriority(MOVELOOK_OVERRIDE);
 	pBot->setLookAtTask(LOOK_VECTOR);
-	pBot->setLookVector(minepos);
-	pBot->duck(true);
+	pBot->setLookVector(m_vMinePos);
+	pBot->setMoveLookPriority(MOVELOOK_TASK);
+	
 
 	if(!(pBot->getCurrentWeapon() == pBot->getWeapons()->getWeapon(CWeapons::getWeapon(SYN_WEAPON_PHYSCANNON))))
 	{
 		pBot->selectBotWeapon(pBot->getWeapons()->getWeapon(CWeapons::getWeapon(SYN_WEAPON_PHYSCANNON)));
 	}
+
+	if(m_fDist <= 400.0f)
+	{
+		pBot->duck(true);
+	}
 	
-	if(pBot->distanceFrom(m_pMine.get()) <= 250.0f)
+	if(m_fDist <= 250.0f)
 	{
 		pBot->stopMoving();
-		pBot->secondaryAttack(true);
-		if(!m_bTimeSet)
+		
+		if(!m_bTimeSet && CSynergyMod::IsCombineMineHeldByPhysgun(m_pMine.get()))
 		{
-			m_ftime = engine->Time() + 3.0f;
+			m_ftime = engine->Time() + 2.0f;
 			m_bTimeSet = true;
+		}
+
+		if(m_bTimeSet && m_ftime < engine->Time())
+		{
+			pBot->letGoOfButton(IN_ATTACK2);
+			pBot->tapButton(IN_ATTACK2); // Press M2 again to release
+			pBot->letGoOfButton(IN_DUCK);
+
+			if(CClassInterface::gravityGunObject(CClassInterface::getCurrentWeapon(pBot->getEdict())) == NULL)
+			{
+				pBot->jump(); // Sometimes the mine blocks the bot's path
+				complete();
+			}
+		}
+		else
+		{
+			pBot->secondaryAttack(true);
 		}
 	}
 	else
 	{
-		pBot->setMoveLookPriority(MOVELOOK_TASK);
-		pBot->setMoveTo(minepos);
-	}
-
-	if(m_bTimeSet && m_ftime < engine->Time())
-	{
-		pBot->letGoOfButton(IN_ATTACK2);
-		pBot->letGoOfButton(IN_DUCK);
-		complete();
+		pBot->setMoveTo(m_vMinePos);
 	}
 }
 
 void CBotSynDisarmMineTask::debugString(char *string)
 {
-	sprintf(string, "CBotSynDisarmMineTask");
+	sprintf(string, "CBotSynDisarmMineTask\nPos: (%0.4f,%0.4f,%0.4f)\nDistance: %.2f\nTime Set: %s", m_vMinePos.x, m_vMinePos.y, m_vMinePos.z, m_fDist, m_bTimeSet ? "true":"false");
 }
 ///////////////////////////////////////////
 // interrupts

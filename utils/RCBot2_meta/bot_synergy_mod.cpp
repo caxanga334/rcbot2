@@ -133,3 +133,21 @@ bool CSynergyMod::IsCombineMineArmed(edict_t *pMine)
 
     return false;      
 }
+
+/**
+ * Checks if the given combine mine is held by a physcannon (gravity gun)
+ * 
+ * @param pMine     The mine entity to check
+ * @return          True if the given mine is held by a physcannon (gravity gun)
+ **/
+bool CSynergyMod::IsCombineMineHeldByPhysgun(edict_t *pMine)
+{
+    CBaseEntity *pBaseEntity = pMine->GetUnknown()->GetBaseEntity();
+	datamap_t* pDataMap = CBaseEntity_GetDataDescMap(pBaseEntity);
+	int offset = UTIL_FindInDataMap(pDataMap, "m_bHeldByPhysgun");
+    int value = *(int*)((char*)pBaseEntity + offset);
+    if(value > 0)
+        return true;
+
+    return false;      
+}

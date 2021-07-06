@@ -1403,6 +1403,8 @@ public:
 	void execute ( CBot *pBot, CBotSchedule *pSchedule );
 	void debugString (char *string);
 private:
+	Vector m_vMinePos;
+	float m_fDist;
 	float m_ftime;
 	bool m_bTimeSet;
 	MyEHandle m_pMine;
