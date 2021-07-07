@@ -431,13 +431,7 @@ void CClient :: think ()
 	{
 		if ( !m_NextTooltip.empty() )
 		{
-			CToolTip *pTooltip = m_NextTooltip.front();
-			
-			pTooltip->send(m_pPlayer);
-
-			m_NextTooltip.pop();
-
-			delete pTooltip;
+			m_NextTooltip.front().send(m_pPlayer);
 
 			m_fNextBotServerMessage = engine->Time() + 11.0f;
 		}
@@ -934,11 +928,11 @@ void CClient :: think ()
 	}
 }
 
-void CClient::giveMessage(char *msg,float fTime)
+void CClient::giveMessage(const char *msg,float fTime)
 {
 	if ( rcbot_tooltips.GetBool() )
 	{
-		m_NextTooltip.push(new CToolTip(msg,NULL));
+		m_NextTooltip.emplace(CToolTip(msg, NULL));
 		m_fNextBotServerMessage = engine->Time() + fTime;
 	}
 }
