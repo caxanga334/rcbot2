@@ -1519,7 +1519,7 @@ void CBotFortress :: selectTeam ()
 
 void CBotFortress :: selectClass ()
 {
-	char buffer[32];
+	const char* cmd;
 	TF_Class _class;
 
 	if ( m_iDesiredClass == 0 )
@@ -1536,41 +1536,41 @@ void CBotFortress :: selectClass ()
 	m_iClass = _class;
 	if (_class == TF_CLASS_SCOUT)
 	{
-		sprintf(buffer, "joinclass scout");
+		cmd = "joinclass scout";
 	}
 	else if (_class == TF_CLASS_ENGINEER)
 	{
-		sprintf(buffer, "joinclass engineer");
+		cmd = "joinclass engineer";
 	}
 	else if (_class == TF_CLASS_DEMOMAN)
 	{
-		sprintf(buffer, "joinclass demoman");
+		cmd = "joinclass demoman";
 	}
 	else if (_class == TF_CLASS_SOLDIER)
 	{
-		sprintf(buffer, "joinclass soldier");
+		cmd = "joinclass soldier";
 	}
 	else if (_class == TF_CLASS_HWGUY)
 	{
-		sprintf(buffer, "joinclass heavyweapons");
+		cmd = "joinclass heavyweapons";
 	}
 	else if (_class == TF_CLASS_MEDIC)
 	{
-		sprintf(buffer, "joinclass medic");
+		cmd = "joinclass medic";
 	}
 	else if (_class == TF_CLASS_SPY)
 	{
-		sprintf(buffer, "joinclass spy");
+		cmd = "joinclass spy";
 	}
 	else if (_class == TF_CLASS_PYRO)
 	{
-		sprintf(buffer, "joinclass pyro");
+		cmd = "joinclass pyro";
 	}
 	else
 	{
-		sprintf(buffer, "joinclass sniper");
+		cmd = "joinclass sniper";
 	}
-	helpers->ClientCommand(m_pEdict, buffer);
+	helpers->ClientCommand(m_pEdict, cmd);
 
 	m_fChangeClassTime = engine->Time() + randomFloat(bot_min_cc_time.GetFloat(), bot_max_cc_time.GetFloat());
 }
