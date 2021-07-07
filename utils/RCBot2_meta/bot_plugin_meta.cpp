@@ -557,6 +557,8 @@ bool RCBotPluginMeta::Unload(char *error, size_t maxlen)
 #if defined SM_EXT
 	SM_UnloadExtension();
 #endif
+
+	CBots::kickRandomBot(MAX_PLAYERS);
 	
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, server, this, &RCBotPluginMeta::Hook_LevelInit, true);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, server, this, &RCBotPluginMeta::Hook_ServerActivate, true);
