@@ -41,30 +41,18 @@
 
 //#define GAME_DLL
 
-//#include "cbase.h"
 #include "mathlib.h"
 
 #include "vector.h"
-#include "vplane.h"
 #include "eiface.h"
 #ifdef __linux__
 #include "shareddefs.h" //bir3yk
 #endif
-#include "usercmd.h"
-#include "bitbuf.h"
 #include "in_buttons.h"
 #include "ndebugoverlay.h"
-#include "tier0/threadtools.h" // for critical sections
-#include "vstdlib/vstdlib.h"
-#include "vstdlib/random.h" // for random functions
-#include "iservernetworkable.h" // may come in handy
 #ifdef __linux__
 #include "shake.h"    //bir3yk
 #endif
-
-//#include "cbase.h"
-//#include "basehlcombatweapon.h"
-//#include "basecombatcharacter.h"
 
 #include "bot.h"
 #include "bot_cvars.h"
@@ -80,11 +68,6 @@
 #include "bot_fortress.h"
 #include "bot_synergy.h"
 #include "bot_visibles.h"
-//#include "bot_memory.h"
-//#include "bot_ga.h"
-//#include "bot_ga_ind.h"
-//#include "bot_perceptron.h"
-#include "bot_ga_nn_const.h"
 #include "bot_weapons.h"
 #include "bot_profile.h"
 #include "bot_waypoint_locations.h"
@@ -92,7 +75,6 @@
 #include "bot_squads.h"
 
 #include "bot_mtrand.h"
-//#include "vstdlib/random.h" // for random functions
 
 #include "bot_getprop.h"
 #include "bot_profiling.h"

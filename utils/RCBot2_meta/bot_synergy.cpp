@@ -51,7 +51,7 @@
 #include "bot_perceptron.h"
 #include "bot_plugin_meta.h"
 #include "bot_waypoint_visibility.h"
-#include "random.h"
+#include "bot_mtrand.h"
 
 extern IVDebugOverlay *debugoverlay;
 

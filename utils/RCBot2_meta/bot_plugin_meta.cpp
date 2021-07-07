@@ -22,17 +22,10 @@
 #ifdef __linux__
 #include "shake.h"    //bir3yk
 #endif
-#include "IEffects.h"
-#include "igameevents.h"
-#include "IEngineTrace.h"
 
-#include "Color.h"
 #include "ndebugoverlay.h"
-#include "server_class.h"
-#include <ctime>
 #include "irecipientfilter.h"
 
-#include "KeyValues.h"
 
 #include "bot_cvars.h"
 
@@ -41,10 +34,8 @@
 #include "bot_configfile.h"
 #include "bot_globals.h"
 #include "bot_profile.h"
-#include "bot_waypoint.h"
 #include "bot_menu.h"
 #include "bot_getprop.h"
-#include "bot_fortress.h"
 #include "bot_event.h"
 #include "bot_profiling.h"
 #include "bot_wpt_dist.h"
