@@ -393,37 +393,35 @@ bool RCBotPluginMeta::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxle
 
 	FILE *fp = fopen(filename, "r");
 
-	CRCBotKeyValueList *pKVL = new CRCBotKeyValueList();
+	CRCBotKeyValueList kvl;
 
 	if (fp)
-		pKVL->parseFile(fp);
+		kvl.parseFile(fp);
 
 	void *gameServerFactory = reinterpret_cast<void*>(ismm->GetServerFactory(false));
 
 	int val;
 
 #ifdef _WIN32
-	if (pKVL->getInt("runplayermove_dods_win", &val))
+	if (kvl.getInt("runplayermove_dods_win", &val))
 		rcbot_runplayercmd_dods.SetValue(val);
-	if (pKVL->getInt("gamerules_win", &val))
+	if (kvl.getInt("gamerules_win", &val))
 		rcbot_gamerules_offset.SetValue(val);
-	if (pKVL->getInt("runplayermove_synergy_win", &val))
+	if (kvl.getInt("runplayermove_synergy_win", &val))
 		rcbot_runplayercmd_syn.SetValue(val);
-	if (pKVL->getInt("getdatadescmap_win", &val))
+	if (kvl.getInt("getdatadescmap_win", &val))
 		rcbot_datamap_offset.SetValue(val);
 #else
-	if (pKVL->getInt("runplayermove_dods_linux", &val))
+	if (kvl.getInt("runplayermove_dods_linux", &val))
 		rcbot_runplayercmd_dods.SetValue(val);
-	if (pKVL->getInt("runplayermove_synergy_linux", &val))
+	if (kvl.getInt("runplayermove_synergy_linux", &val))
 		rcbot_runplayercmd_syn.SetValue(val);
-	if (pKVL->getInt("getdatadescmap_linux", &val))
+	if (kvl.getInt("getdatadescmap_linux", &val))
 		rcbot_datamap_offset.SetValue(val);
 #endif
 
 	g_pGameRules_Obj = new CGameRulesObject(pKVL, gameServerFactory);
 	g_pGameRules_Create_Obj = new CCreateGameRulesObject(pKVL, gameServerFactory);
-
-	delete pKVL;
 
 	if (fp)
 		fclose(fp);
