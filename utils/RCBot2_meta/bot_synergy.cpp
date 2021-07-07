@@ -340,7 +340,7 @@ bool CBotSynergy::executeAction(eBotAction iAction)
 		CWaypoint* pWaypoint = NULL;
 		CWaypoint* pRoute = NULL;
 		CBotSchedule* pSched = new CBotSchedule();
-		m_fGoToGoalTime = engine->Time() + 90.0f + RandomFloat(30.0f, 150.0f);
+		m_fGoToGoalTime = engine->Time() + 90.0f + randomFloat(30.0f, 150.0f);
 
 		pSched->setID(SCHED_ATTACKPOINT);
 
@@ -489,7 +489,7 @@ void CBotSynergy::touchedWpt(CWaypoint *pWaypoint, int iNextWaypoint, int iPrevW
 			sched->setID(SCHED_GOTO_ORIGIN);
 			sched->addTask(new CMoveToTask(pEntity));
 			sched->addTask(new CBotHL2DMUseButton(pEntity));
-			sched->addTask(new CBotWaitTask(RandomFloat(3.0f, 6.0f)));
+			sched->addTask(new CBotWaitTask(randomFloat(3.0f, 6.0f)));
 			m_pSchedules->addFront(sched);
 		}
 	}
