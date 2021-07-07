@@ -179,6 +179,8 @@ bool CBotSynergy::setVisible ( edict_t *pEntity, bool bVisible )
 	bool bValid = CBot::setVisible(pEntity, bVisible);
 
 	static float fDist = distanceFrom(pEntity);
+	Vector entityorigin = Vector(0,0,0);
+	entityorigin = CBotGlobals::entityOrigin(pEntity);
 	const char* szclassname = pEntity->GetClassName();
 	CBotWeapon* pWeapon = NULL;
 
@@ -234,7 +236,7 @@ bool CBotSynergy::setVisible ( edict_t *pEntity, bool bVisible )
 			if(pOwner == NULL || p == NULL) // Only care about grenades that doesn't have an owner or isn't owned by a player
 			{
 				m_pNearbyGrenade = pEntity;
-				m_pNavigator->belief(CBotGlobals::entityOrigin(pEntity), getEyePosition(), bot_beliefmulti.GetFloat(), distanceFrom(pEntity), BELIEF_DANGER);
+				m_pNavigator->belief(entityorigin, getEyePosition(), bot_beliefmulti.GetFloat(), distanceFrom(pEntity), BELIEF_DANGER);
 			}
 		}
 		else if(strncmp(szclassname, "combine_mine", 12) == 0 && (!m_pNearbyMine.get() || fDist < distanceFrom(m_pNearbyMine.get())))
@@ -242,7 +244,7 @@ bool CBotSynergy::setVisible ( edict_t *pEntity, bool bVisible )
 			if(!CSynergyMod::IsCombineMinePlayerPlaced(pEntity)) // Ignore player placed (friendly) mines
 			{
 				m_pNearbyMine = pEntity;
-				int iWaypoint = CWaypoints::nearestWaypointGoal(-1, CBotGlobals::entityOrigin(pEntity),512.0f);
+				int iWaypoint = CWaypoints::nearestWaypointGoal(-1, entityorigin,512.0f);
 				if(iWaypoint != -1)
 				{
 					m_pNavigator->beliefOne(iWaypoint, BELIEF_DANGER, distanceFrom(pEntity));
