@@ -5366,6 +5366,7 @@ void CBotSynDisarmMineTask::execute(CBot *pBot,CBotSchedule *pSchedule)
 	if(m_pMine.get() == NULL)
 	{
 		fail();
+		return;
 	}
 
 	//if(CSynergyMod::IsCombineMinePlayerPlaced(m_pMine.get()))
