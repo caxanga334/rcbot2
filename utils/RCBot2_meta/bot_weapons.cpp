@@ -685,6 +685,8 @@ return;
 }
 
 }*/
+
+
 CBotWeapon *CBotWeapons :: getWeapon ( CWeapon *pWeapon )
 {
 	for ( register unsigned int i = 0; i < MAX_WEAPONS; i ++ )

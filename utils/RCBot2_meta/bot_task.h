@@ -451,6 +451,14 @@ public:
 	{
 		m_pButton = pButton;
 		m_fTime = 0.0f;
+		m_bOverrideLook = false;
+	}
+
+	CBotHL2DMUseButton ( edict_t *pButton, bool bOverrideLook )
+	{
+		m_pButton = pButton;
+		m_fTime = 0.0f;
+		m_bOverrideLook = bOverrideLook;
 	}
 	
 	void execute (CBot *pBot,CBotSchedule *pSchedule);
@@ -462,6 +470,7 @@ public:
 private:
 	MyEHandle m_pButton;
 	float m_fTime;
+	bool m_bOverrideLook;
 };
 
 class CBotTF2MedicHeal : public CBotTask
@@ -1408,6 +1417,26 @@ private:
 	float m_ftime;
 	bool m_bTimeSet;
 	MyEHandle m_pMine;
+};
+
+class CBotSynBreakICrateTask : public CBotTask
+{
+public:
+	CBotSynBreakICrateTask(edict_t *pCrate, CBotWeapon *pWeapon)
+	{
+		m_pCrate = pCrate;
+		m_pWeapon = pWeapon;
+		m_vPos = Vector(0,0,0);
+	}
+	void debugString(char *string)
+	{
+		sprintf(string, "Break Item Crate");
+	}
+	void execute ( CBot *pBot, CBotSchedule *pSchedule );
+private:
+	CBotWeapon* m_pWeapon;
+	MyEHandle m_pCrate;
+	Vector m_vPos;
 };
 
 /*

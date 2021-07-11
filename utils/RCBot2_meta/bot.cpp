@@ -2401,6 +2401,8 @@ Vector CBot::getAimVector ( edict_t *pEntity )
 			debugoverlay->AddTextOverlayRGB(m_vAimVector,line++,ftime,255,200,100,230,"v_size = (%0.2f,%0.2f,%0.2f)",v_size.x,v_size.y,v_size.z);
 			debugoverlay->AddTextOverlayRGB(m_vAimVector,line++,ftime,255,200,100,230,"v_desired_offset = (%0.2f,%0.2f,%0.2f)",v_desired_offset.x,v_desired_offset.y,v_desired_offset.z);
 			debugoverlay->AddTextOverlayRGB(m_vAimVector,line++,ftime,255,200,100,230,"m_vAimOffset = (%0.2f,%0.2f,%0.2f)",m_vAimOffset.x,m_vAimOffset.y,m_vAimOffset.z);
+			debugoverlay->AddLineOverlayAlpha(getEyePosition(), m_vAimVector, 255, 0, 0, 255, true, ftime);
+			debugoverlay->AddLineOverlayAlpha(getEyePosition(), v_origin, 0, 0, 255, 255, true, ftime);
 		}
 	}
 #endif

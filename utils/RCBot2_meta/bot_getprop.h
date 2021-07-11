@@ -152,6 +152,7 @@ typedef enum
 	GETPROP_TF2DESIREDCLASS, //Jrob
 	GETPROP_SYN_PLAYER_VEHICLE,
 	GETPROP_SYN_VEHICLE_DRIVER,
+	GETPROP_SYN_SUITPOWER,
 	GET_PROPDATA_MAX
 }getpropdata_id;
 
@@ -680,17 +681,38 @@ public:
 
 	// Synergy
 
-	// Gets the player's current vehicle
+	/**
+	 * Gets the player vehicle entity
+	 * 
+	 * @param pPlayer	The player to retreive the vehicle from
+	 * @return			The player's vehicle
+	 **/
 	inline static edict_t* getSynPlayerVehicle(edict_t* pPlayer)
 	{
 		return g_GetProps[GETPROP_SYN_PLAYER_VEHICLE].getEntity(pPlayer);
 	}
 
-	// Gets the driver of the given vehicle
+	/**
+	 * Gets the vehicle current driver
+	 * 
+	 * @param pVehicle	The vehicle to get the driver from
+	 * @return			The vehicle current driver
+	 **/
 	inline static edict_t* getSynVehicleDriver(edict_t* pVehicle)
 	{
 		return g_GetProps[GETPROP_SYN_VEHICLE_DRIVER].getEntity(pVehicle);
 	}	
+
+	/**
+	 * Gets the player HEV suit power level
+	 * 
+	 * @param pPlayer	The player to retreive the suit power from
+	 * @return			The player's current suit power level
+	 **/
+	inline static float getSynPlayerSuitPower(edict_t* pPlayer)
+	{
+		return g_GetProps[GETPROP_SYN_SUITPOWER].getFloat(pPlayer, 0.0f);
+	}
 
 private:
 	static CClassInterfaceValue g_GetProps[GET_PROPDATA_MAX];

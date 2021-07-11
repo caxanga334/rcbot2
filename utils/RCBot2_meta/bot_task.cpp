@@ -1078,8 +1078,19 @@ void CBotHL2DMUseButton :: execute (CBot *pBot,CBotSchedule *pSchedule)
 	//if ( CClassInterface::getAnimCycle(m_pCharger) == 1.0f )
 	//	complete();
 
-	pBot->setLookVector(vOrigin);
-	pBot->setLookAtTask(LOOK_VECTOR);
+	if(m_bOverrideLook)
+	{
+		pBot->setMoveLookPriority(MOVELOOK_OVERRIDE);
+		pBot->setLookVector(vOrigin);
+		pBot->setLookAtTask(LOOK_VECTOR);
+		pBot->setMoveLookPriority(MOVELOOK_TASK);
+	}
+	else
+	{
+		pBot->setLookVector(vOrigin);
+		pBot->setLookAtTask(LOOK_VECTOR);		
+	}
+
 
 	if ( pBot->distanceFrom(m_pButton) > 96 )
 	{
@@ -5432,6 +5443,72 @@ void CBotSynDisarmMineTask::execute(CBot *pBot,CBotSchedule *pSchedule)
 void CBotSynDisarmMineTask::debugString(char *string)
 {
 	sprintf(string, "CBotSynDisarmMineTask\nPos: (%0.4f,%0.4f,%0.4f)\nDistance: %.2f\nTime Set: %s", m_vMinePos.x, m_vMinePos.y, m_vMinePos.z, m_fDist, m_bTimeSet ? "true":"false");
+}
+
+void CBotSynBreakICrateTask::execute(CBot *pBot, CBotSchedule *pSchedule)
+{
+	if(m_pCrate.get() == NULL)
+	{
+		complete();
+		return;
+	}
+
+	m_vPos = CBotGlobals::entityOrigin(m_pCrate.get());
+
+	if(pBot->distanceFrom(m_vPos) >= 256.0f)
+	{
+		fail();
+		return;
+	}
+
+	if(m_pWeapon)
+	{
+		if(pBot->getCurrentWeapon() != m_pWeapon)
+		{
+			pBot->selectBotWeapon(m_pWeapon);
+		}
+	}
+
+	pBot->wantToChangeWeapon(false);
+	pBot->wantToListen(false);
+	pBot->wantToShoot(false);
+	pBot->setMoveLookPriority(MOVELOOK_OVERRIDE);
+	pBot->setLookAtTask(LOOK_VECTOR);
+	pBot->setLookVector(m_vPos);
+	pBot->setMoveLookPriority(MOVELOOK_TASK);
+
+	// Attack
+	if(pBot->getCurrentWeapon()->isGravGun())
+	{
+		if(CClassInterface::gravityGunObject(CClassInterface::getCurrentWeapon(pBot->getEdict())) != NULL)
+		{
+			pBot->primaryAttack();
+		}
+		else
+		{
+			pBot->secondaryAttack(true);
+		}
+	}
+	else
+	{
+		pBot->setMoveTo(m_vPos);
+		pBot->primaryAttack();
+
+		if(!pBot->getCurrentWeapon()->isMelee())
+		{
+			if(pBot->getCurrentWeapon()->getClip1(pBot) < 1)
+			{
+				if(pBot->getCurrentWeapon()->getAmmo(pBot) < 1)
+				{
+					m_pWeapon = pBot->getBestWeapon(m_pCrate.get());
+				}
+				else
+				{
+					pBot->tapButton(IN_RELOAD);
+				}
+			}
+		}
+	}
 }
 ///////////////////////////////////////////
 // interrupts

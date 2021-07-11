@@ -566,6 +566,7 @@ void CClassInterface:: init ()
 		// Synergy
 		DEFINE_GETPROP(GETPROP_SYN_PLAYER_VEHICLE, "CSynergyPlayer", "m_hVehicle", 0);
 		DEFINE_GETPROP(GETPROP_SYN_VEHICLE_DRIVER, "CPropVehicleDriveable", "m_hPlayer", 0);
+		DEFINE_GETPROP(GETPROP_SYN_SUITPOWER, "CSynergyPlayer", "m_flSuitPower", 0);
 
 		for ( unsigned int i = 0; i < GET_PROPDATA_MAX; i ++ )
 		{

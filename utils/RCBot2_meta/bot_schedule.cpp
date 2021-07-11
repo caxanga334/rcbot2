@@ -92,6 +92,7 @@ const char *szSchedules[SCHED_MAX+1] =
 	"SCHED_SYN_OPEN_DOOR",
 	"SCHED_SYN_DISARM_MINE",
 	"SCHED_SYN_PLANT_MINE",
+	"SCHED_SYN_BREAK_ICRATE",
 	"SCHED_MAX"
 };
 ////////////////////// unused
@@ -764,6 +765,15 @@ CSynOpenDoorSched::CSynOpenDoorSched(edict_t *pDoor)
 CSynDisarmMineSched::CSynDisarmMineSched(edict_t *pMine)
 {
 	addTask(new CBotSynDisarmMineTask(pMine));
+}
+
+CSynBreakICrateSched::CSynBreakICrateSched(edict_t* pCrate, CBotWeapon* pWeapon)
+{
+	CFindPathTask *pPathTask = new CFindPathTask(pCrate);
+	pPathTask->setRange(96.0f);
+	addTask(pPathTask);
+	addTask(new CMoveToTask(pCrate));
+	addTask(new CBotSynBreakICrateTask(pCrate, pWeapon));
 }
 
 /////////////////////////////////////////////

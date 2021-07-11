@@ -97,6 +97,7 @@ typedef enum
 	SCHED_SYN_OPEN_DOOR,
 	SCHED_SYN_DISARM_MINE,
 	SCHED_SYN_PLANT_MINE,
+	SCHED_SYN_BREAK_ICRATE,
 	SCHED_MAX
 	//SCHED_HIDE_FROM_ENEMY
 }eBotSchedule;
@@ -666,12 +667,29 @@ public:
 class CSynDisarmMineSched : public CBotSchedule
 {
 public:
-	// pDoor - The door the bot will try to open
+	// @param pMine The mine the bot will try to disarm
 	CSynDisarmMineSched( edict_t *pMine );
 
 	void init()
 	{
 		setID(SCHED_SYN_DISARM_MINE);
+	}
+};
+
+class CSynBreakICrateSched : public CBotSchedule
+{
+public:
+	/**
+	 * Schedule to break an item_item_crate entity
+	 * 
+	 * @param pCrate   The crate to break
+	 * @param pWeapon  The weapon to use
+	 **/
+	CSynBreakICrateSched(edict_t* pCrate, CBotWeapon* pWeapon);
+
+	void init()
+	{
+		setID(SCHED_SYN_BREAK_ICRATE);
 	}
 };
 
