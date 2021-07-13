@@ -757,8 +757,7 @@ void CBotDefendPointSched ::init ()
 
 CSynOpenDoorSched::CSynOpenDoorSched(edict_t *pDoor)
 {
-	addTask(new CMoveToTask(pDoor));
-	addTask(new CBotHL2DMUseButton(pDoor));
+	addTask(new CBotHL2DMUseButton(pDoor)); // The bot will already move to range with this task
 	addTask(new CBotWaitTask(3.0f));
 }
 

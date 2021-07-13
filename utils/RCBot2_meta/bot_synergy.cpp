@@ -252,7 +252,7 @@ void CBotSynergy::modThink()
 		}
 	}
 
-	if(m_pNearbyHealthKit && getHealthPercent() < 0.9f && distanceFrom(m_pNearbyHealthKit.get()) <= 400.0f)
+	if(m_pNearbyHealthKit && getHealthPercent() < 1.0f && distanceFrom(m_pNearbyHealthKit.get()) <= 400.0f)
 	{
 		if(!m_pSchedules->isCurrentSchedule(SCHED_PICKUP))
 		{
@@ -356,6 +356,50 @@ void CBotSynergy::modThink()
 			m_pSchedules->addFront(pSched);
 			debugMsg(BOT_DEBUG_THINK, "[MOD THINK] Using ammo crate");
 			m_flUseCrateTime = engine->Time() + randomFloat(45.0f, 75.0f);
+		}
+	}
+
+	if(m_pNearbyHealthCharger && getHealthPercent() < 1.0f && distanceFrom(m_pNearbyHealthCharger) <= 512.0f)
+	{
+		if(CClassInterface::getAnimCycle(m_pNearbyHealthCharger) == 1.0f)
+		{
+			m_pNearbyHealthCharger = NULL;
+		}
+		else
+		{
+			if(!m_pSchedules->isCurrentSchedule(SCHED_USE_DISPENSER))
+			{
+				m_pSchedules->removeSchedule(SCHED_USE_DISPENSER);
+				CBotSchedule *pSched = new CBotSchedule();
+				pSched->setID(SCHED_USE_DISPENSER);
+				pSched->addTask(new CFindPathTask(m_pNearbyHealthCharger));
+				pSched->addTask(new CMoveToTask(m_pNearbyHealthCharger));
+				pSched->addTask(new CBotSynUseCharger(m_pNearbyHealthCharger, CHARGER_HEALTH));
+				m_pSchedules->addFront(pSched);
+				debugMsg(BOT_DEBUG_THINK, "[MOD THINK] Using health charger");
+			}
+		}
+	}
+
+	if(m_pNearbyArmorCharger && getArmorPercent() < 1.0f && distanceFrom(m_pNearbyArmorCharger) <= 512.0f)
+	{
+		if(CClassInterface::getAnimCycle(m_pNearbyArmorCharger) == 1.0f)
+		{
+			m_pNearbyArmorCharger = NULL;
+		}
+		else
+		{
+			if(!m_pSchedules->isCurrentSchedule(SCHED_USE_DISPENSER))
+			{
+				m_pSchedules->removeSchedule(SCHED_USE_DISPENSER);
+				CBotSchedule *pSched = new CBotSchedule();
+				pSched->setID(SCHED_USE_DISPENSER);
+				pSched->addTask(new CFindPathTask(m_pNearbyArmorCharger));
+				pSched->addTask(new CMoveToTask(m_pNearbyArmorCharger));
+				pSched->addTask(new CBotSynUseCharger(m_pNearbyArmorCharger, CHARGER_ARMOR));
+				m_pSchedules->addFront(pSched);
+				debugMsg(BOT_DEBUG_THINK, "[MOD THINK] Using armor charger");
+			}
 		}
 	}
 
@@ -524,6 +568,20 @@ bool CBotSynergy::setVisible ( edict_t *pEntity, bool bVisible )
 		{
 			m_pNearbyItemCrate = pEntity;
 		}
+		else if(strncmp(szclassname, "item_healthcharger", 18) == 0 && (!m_pNearbyHealthCharger.get() || fDist < distanceFrom(m_pNearbyHealthCharger.get())))
+		{
+			if(CClassInterface::getAnimCycle(pEntity) < 1.0f)
+			{
+				m_pNearbyHealthCharger = pEntity;
+			}
+		}
+		else if(strncmp(szclassname, "item_suitcharger", 16) == 0 && (!m_pNearbyArmorCharger.get() || fDist < distanceFrom(m_pNearbyArmorCharger.get())))
+		{
+			if(CClassInterface::getAnimCycle(pEntity) < 1.0f)
+			{
+				m_pNearbyArmorCharger = pEntity;
+			}
+		}
 	}
 	else
 	{
@@ -543,6 +601,10 @@ bool CBotSynergy::setVisible ( edict_t *pEntity, bool bVisible )
 			m_pNearbyGrenade = NULL;
 		else if(pEntity == m_pNearbyItemCrate.get_old())
 			m_pNearbyItemCrate = NULL;
+		else if(pEntity == m_pNearbyHealthCharger.get_old())
+			m_pNearbyHealthCharger = NULL;
+		else if(pEntity == m_pNearbyArmorCharger.get_old())
+			m_pNearbyArmorCharger = NULL;
 	}
 
 	return bValid;
@@ -661,7 +723,7 @@ bool CBotSynergy::executeAction(eBotAction iAction)
 		CWaypoint* pWaypoint = NULL;
 		CWaypoint* pRoute = NULL;
 		CBotSchedule* pSched = new CBotSchedule();
-		m_fUtilTimes[BOT_UTIL_ATTACK_POINT] = engine->Time() + 90.0f + randomFloat(30.0f, 150.0f);
+		m_fUtilTimes[BOT_UTIL_ATTACK_POINT] = engine->Time() + randomFloat(60.0f, 180.0f);
 
 		pSched->setID(SCHED_ATTACKPOINT);
 

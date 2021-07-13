@@ -1439,6 +1439,28 @@ private:
 	Vector m_vPos;
 };
 
+class CBotSynUseCharger: public CBotTask
+{
+public:
+	CBotSynUseCharger(edict_t *pCharger, int type)
+	{
+		m_pCharger = pCharger;
+		m_vPos = Vector(0,0,0);
+		m_iType = type;
+		m_flTime = engine->Time() + randomFloat(8.0f, 10.0f);
+	}
+	void debugString(char *string)
+	{
+		sprintf(string, "Use Charger");
+	}
+	void execute ( CBot *pBot, CBotSchedule *pSchedule );
+private:
+	MyEHandle m_pCharger;
+	Vector m_vPos;
+	int m_iType;
+	float m_flTime;
+};
+
 /*
 class CAttackTask : public CBotTask
 {

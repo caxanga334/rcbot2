@@ -49,6 +49,7 @@
 #include "bot_dod_bot.h"
 #include "bot_squads.h"
 #include "bot_waypoint_visibility.h"
+#include "bot_synergy.h"
 
 
 // desx and desy must be normalized
@@ -5510,6 +5511,49 @@ void CBotSynBreakICrateTask::execute(CBot *pBot, CBotSchedule *pSchedule)
 		}
 	}
 }
+
+void CBotSynUseCharger::execute(CBot *pBot, CBotSchedule *pSchedule)
+{
+	if(m_pCharger == NULL)
+	{
+		fail();
+		return;
+	}
+
+	m_vPos = CBotGlobals::entityOrigin(m_pCharger);
+
+	if(m_flTime <= engine->Time())
+		complete();
+
+	if(CClassInterface::getAnimCycle(m_pCharger) == 1.0f)
+		complete();
+
+	if(m_iType == CHARGER_HEALTH && pBot->getHealthPercent() >= 0.99f)
+		complete();
+	else if(m_iType == CHARGER_ARMOR && ((CBotSynergy*)pBot)->getArmorPercent() >= 0.99f)
+		complete();
+
+	pBot->setMoveLookPriority(MOVELOOK_OVERRIDE);
+	pBot->setLookVector(m_vPos);
+	pBot->setLookAtTask(LOOK_VECTOR);
+	pBot->setMoveLookPriority(MOVELOOK_TASK);
+
+	if(pBot->distanceFrom(m_pCharger) > 96.0f)
+	{
+		pBot->setMoveTo(m_vPos);
+	}
+	else
+	{
+		pBot->stopMoving();
+	}
+
+	if(pBot->isFacing(m_vPos))
+	{
+		pBot->use();
+	}
+}
+
+
 ///////////////////////////////////////////
 // interrupts
 

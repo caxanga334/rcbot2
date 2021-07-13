@@ -63,6 +63,8 @@ protected:
     MyEHandle m_pNearbyGrenade; // grenades
     MyEHandle m_pNearbyMine; // combine mine
     MyEHandle m_pNearbyItemCrate; // breakable item crate
+    MyEHandle m_pNearbyHealthCharger; // Health charger
+    MyEHandle m_pNearbyArmorCharger; // Armor/Suit charger
     edict_t *m_pCurrentWeapon; // The bot current weapon
     float m_flSuitPower; // HEV suit power level, range: 100-0
     float m_flNextSprintTime; // Used to control the bot's sprinting
