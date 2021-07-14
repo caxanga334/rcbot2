@@ -69,7 +69,7 @@ protected:
     float m_flSuitPower; // HEV suit power level, range: 100-0
     float m_flNextSprintTime; // Used to control the bot's sprinting
     float m_flUseCrateTime; // Use ammo crate time delay
-    float m_flPickAmmoTime; // Pick ammo delay
+    float m_flPickUpTime; // Pick ammo delay
 };
 
 #endif

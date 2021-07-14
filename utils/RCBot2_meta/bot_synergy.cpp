@@ -81,7 +81,7 @@ void CBotSynergy::spawnInit()
 	m_flNextSprintTime = engine->Time();
 	m_flSuitPower = 0.0f;
 	m_flUseCrateTime = engine->Time();
-	m_flPickAmmoTime = engine->Time();
+	m_flPickUpTime = engine->Time();
 }
 
 void CBotSynergy::died(edict_t *pKiller, const char *pszWeapon)
@@ -252,27 +252,29 @@ void CBotSynergy::modThink()
 		}
 	}
 
-	if(m_pNearbyHealthKit && getHealthPercent() < 1.0f && distanceFrom(m_pNearbyHealthKit.get()) <= 400.0f)
+	if(m_pNearbyHealthKit && getHealthPercent() < 1.0f && distanceFrom(m_pNearbyHealthKit.get()) <= 400.0f && m_flPickUpTime <= engine->Time())
 	{
 		if(!m_pSchedules->isCurrentSchedule(SCHED_PICKUP))
 		{
 			m_pSchedules->removeSchedule(SCHED_PICKUP);
 			m_pSchedules->addFront(new CBotPickupSched(m_pNearbyHealthKit.get()));
 			debugMsg(BOT_DEBUG_THINK, "[MOD THINK] Picking up health kit");
+			m_flPickUpTime = engine->Time() + randomFloat(5.0f, 10.0f);
 		}
 	}
 
-	if(m_pNearbyBattery && getArmorPercent() < 1.0f && distanceFrom(m_pNearbyBattery.get()) <= 400.0f)
+	if(m_pNearbyBattery && getArmorPercent() < 1.0f && distanceFrom(m_pNearbyBattery.get()) <= 400.0f && m_flPickUpTime <= engine->Time())
 	{
 		if(!m_pSchedules->isCurrentSchedule(SCHED_PICKUP))
 		{
 			m_pSchedules->removeSchedule(SCHED_PICKUP);
 			m_pSchedules->addFront(new CBotPickupSched(m_pNearbyBattery.get()));
 			debugMsg(BOT_DEBUG_THINK, "[MOD THINK] Picking up armor battery");
+			m_flPickUpTime = engine->Time() + randomFloat(5.0f, 10.0f);
 		}
 	}
 
-	if(m_pNearbyWeapon && getArmorPercent() < 1.0f && distanceFrom(m_pNearbyWeapon.get()) <= 400.0f)
+	if(m_pNearbyWeapon && getArmorPercent() < 1.0f && distanceFrom(m_pNearbyWeapon.get()) <= 400.0f && m_flPickUpTime <= engine->Time())
 	{
 		edict_t *pOwner = CClassInterface::getOwner(m_pNearbyWeapon);
 
@@ -287,6 +289,7 @@ void CBotSynergy::modThink()
 				m_pSchedules->removeSchedule(SCHED_PICKUP);
 				m_pSchedules->addFront(new CBotPickupSched(m_pNearbyWeapon.get()));
 				debugMsg(BOT_DEBUG_THINK, "[MOD THINK] Picking up weapon");
+				m_flPickUpTime = engine->Time() + randomFloat(5.0f, 10.0f);
 			}
 		}
 	}
@@ -332,14 +335,14 @@ void CBotSynergy::modThink()
 		}
 	}
 
-	if(m_pNearbyAmmo && distanceFrom(m_pNearbyAmmo) <= 512.0f && m_flPickAmmoTime <= engine->Time())
+	if(m_pNearbyAmmo && distanceFrom(m_pNearbyAmmo) <= 512.0f && m_flPickUpTime <= engine->Time())
 	{
 		if(!m_pSchedules->isCurrentSchedule(SCHED_PICKUP))
 		{
 			m_pSchedules->removeSchedule(SCHED_PICKUP);
 			m_pSchedules->addFront(new CBotPickupSched(m_pNearbyAmmo));
 			debugMsg(BOT_DEBUG_THINK, "[MOD THINK] Picking up ammo");
-			m_flPickAmmoTime = engine->Time() + randomFloat(5.0f, 10.0f); // Small delay because sometimes synergy ammo bugs and cannot be picked up
+			m_flPickUpTime = engine->Time() + randomFloat(5.0f, 10.0f); // Small delay because sometimes synergy ammo bugs and cannot be picked up
 		}
 	}
 
@@ -355,11 +358,11 @@ void CBotSynergy::modThink()
 			pSched->addTask(new CBotHL2DMUseButton(m_pNearbyCrate, true));
 			m_pSchedules->addFront(pSched);
 			debugMsg(BOT_DEBUG_THINK, "[MOD THINK] Using ammo crate");
-			m_flUseCrateTime = engine->Time() + randomFloat(45.0f, 75.0f);
+			m_flUseCrateTime = engine->Time() + randomFloat(25.0f, 45.0f);
 		}
 	}
 
-	if(m_pNearbyHealthCharger && getHealthPercent() < 1.0f && distanceFrom(m_pNearbyHealthCharger) <= 512.0f)
+	if(m_pNearbyHealthCharger && getHealthPercent() < 1.0f && distanceFrom(m_pNearbyHealthCharger) <= 512.0f && m_flPickUpTime <= engine->Time())
 	{
 		if(CClassInterface::getAnimCycle(m_pNearbyHealthCharger) == 1.0f)
 		{
@@ -377,11 +380,12 @@ void CBotSynergy::modThink()
 				pSched->addTask(new CBotSynUseCharger(m_pNearbyHealthCharger, CHARGER_HEALTH));
 				m_pSchedules->addFront(pSched);
 				debugMsg(BOT_DEBUG_THINK, "[MOD THINK] Using health charger");
+				m_flPickUpTime = engine->Time() + randomFloat(5.0f, 10.0f);
 			}
 		}
 	}
 
-	if(m_pNearbyArmorCharger && getArmorPercent() < 1.0f && distanceFrom(m_pNearbyArmorCharger) <= 512.0f)
+	if(m_pNearbyArmorCharger && getArmorPercent() < 1.0f && distanceFrom(m_pNearbyArmorCharger) <= 512.0f && m_flPickUpTime <= engine->Time())
 	{
 		if(CClassInterface::getAnimCycle(m_pNearbyArmorCharger) == 1.0f)
 		{
@@ -399,6 +403,7 @@ void CBotSynergy::modThink()
 				pSched->addTask(new CBotSynUseCharger(m_pNearbyArmorCharger, CHARGER_ARMOR));
 				m_pSchedules->addFront(pSched);
 				debugMsg(BOT_DEBUG_THINK, "[MOD THINK] Using armor charger");
+				m_flPickUpTime = engine->Time() + randomFloat(5.0f, 10.0f);
 			}
 		}
 	}
