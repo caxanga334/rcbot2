@@ -45,6 +45,8 @@
 #include "bot_waypoint_locations.h"
 #include "bot_perceptron.h"
 
+#include "rcbot/logging.h"
+
 void CSynergyMod::initMod()
 {
     //Load weapons
@@ -53,7 +55,7 @@ void CSynergyMod::initMod()
 
 void CSynergyMod::mapInit()
 {
-    CBotGlobals::botMessage(NULL, 0, "CSynergyMod::mapInit called!");
+    logger->Log(LogLevel::DEBUG, "[Synergy Mod] map Init.");
 }
 
 /**
@@ -70,7 +72,7 @@ bool CSynergyMod::IsEntityLocked(edict_t *pEntity)
     if(offset == 0)
     {
         const char *szclassname = pEntity->GetClassName();
-        CBotGlobals::botMessage(NULL, 0 , "Offset 0 for entity %s!", szclassname);
+        logger->Log(LogLevel::ERROR, "Offset 0 for entity \"%s\"", szclassname);
         return false;
     }
     int value = *(int*)((char*)pBaseEntity + offset);
