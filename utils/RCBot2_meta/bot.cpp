@@ -79,6 +79,8 @@
 #include "bot_getprop.h"
 #include "bot_profiling.h"
 
+#include "rcbot/logging.h"
+
 #include <vector>
 #include <algorithm>
 
@@ -309,15 +311,15 @@ bool CBot :: createBotFromEdict(edict_t *pEdict, CBotProfile *pProfile)
 
 	m_pProfile = pProfile;
 
-	CBotGlobals::botMessage(NULL, 0, "===================================");
-	CBotGlobals::botMessage(NULL, 0, "Creating Bot: %s", m_pProfile->m_szName);
-	CBotGlobals::botMessage(NULL, 0, "AimSkill: %f", m_pProfile->m_fAimSkill);
-	CBotGlobals::botMessage(NULL, 0, "Braveness: %f", m_pProfile->m_fBraveness);
-	CBotGlobals::botMessage(NULL, 0, "PathTicks: %d", m_pProfile->m_iPathTicks);
-	CBotGlobals::botMessage(NULL, 0, "Sensitivity: %d", m_pProfile->m_iSensitivity);
-	CBotGlobals::botMessage(NULL, 0, "VisionTicks: %d", m_pProfile->m_iVisionTicks);
-	CBotGlobals::botMessage(NULL, 0, "VisionTicksClients: %d", m_pProfile->m_iVisionTicksClients);
-	CBotGlobals::botMessage(NULL, 0, "===================================");
+	logger->Log(LogLevel::TRACE, "===================================");
+	logger->Log(LogLevel::TRACE, "Creating Bot: %s", m_pProfile->m_szName);
+	logger->Log(LogLevel::TRACE, "AimSkill: %f", m_pProfile->m_fAimSkill);
+	logger->Log(LogLevel::TRACE, "Braveness: %f", m_pProfile->m_fBraveness);
+	logger->Log(LogLevel::TRACE, "PathTicks: %d", m_pProfile->m_iPathTicks);
+	logger->Log(LogLevel::TRACE, "Sensitivity: %d", m_pProfile->m_iSensitivity);
+	logger->Log(LogLevel::TRACE, "VisionTicks: %d", m_pProfile->m_iVisionTicks);
+	logger->Log(LogLevel::TRACE, "VisionTicksClients: %d", m_pProfile->m_iVisionTicksClients);
+	logger->Log(LogLevel::TRACE, "===================================");
 
 	engine->SetFakeClientConVarValue(pEdict,"cl_team","default");
 	engine->SetFakeClientConVarValue(pEdict,"cl_defaultweapon","pistol");
@@ -769,7 +771,7 @@ void CBot :: think ()
 	if ( !CBotGlobals::entityIsValid(m_pEdict) || m_pPlayerInfo == NULL )
 	{
 		m_pPlayerInfo = playerinfomanager->GetPlayerInfo(m_pEdict);
-		CBotGlobals::botMessage(NULL,0,"%s : m_pPlayerInfo = NULL; Waiting for player info...",m_szBotName);
+		logger->Log(LogLevel::INFO, "%s : m_pPlayerInfo = NULL; Waiting for player info...", m_szBotName);
 		return;
 	}
 
@@ -3041,7 +3043,7 @@ bool CBots :: controlBot ( edict_t *pEdict )
 
 	if ( pBotProfile == NULL )
 	{
-		CBotGlobals::botMessage(NULL,0,"No bot profiles are free, creating a default bot...");
+		logger->Log(LogLevel::INFO, "No bot profiles are free, creating a default bot...");
 
 		pBotProfile = CBotProfiles::getDefaultProfile();
 
@@ -3066,19 +3068,19 @@ bool CBots :: controlBot ( const char *szOldName, const char *szName, const char
 
 	if ( (pEdict = CBotGlobals::findPlayerByTruncName(szOldName)) == NULL )
 	{
-		CBotGlobals::botMessage(NULL,0,"Can't find player");
+		logger->Log(LogLevel::ERROR, "Can't find player");
 		return false;
 	}
 
 	if ( m_Bots[slotOfEdict(pEdict)]->getEdict() == pEdict )
 	{
-		CBotGlobals::botMessage(NULL,0,"already controlling player");
+		logger->Log(LogLevel::ERROR, "already controlling player");
 		return false;
 	}
 
 	if ( (m_iMaxBots != -1) && (CBotGlobals::numClients() >= m_iMaxBots) )
 	{
-		CBotGlobals::botMessage(NULL,0,"Can't create bot, max_bots reached");
+		logger->Log(LogLevel::ERROR, "Can't create bot, max_bots reached");
 		return false;
 	}
 
@@ -3088,7 +3090,7 @@ bool CBots :: controlBot ( const char *szOldName, const char *szName, const char
 
 	if ( pBotProfile == NULL )
 	{
-		CBotGlobals::botMessage(NULL,0,"No bot profiles are free, creating a default bot...");
+		logger->Log(LogLevel::INFO, "No bot profiles are free, creating a default bot...");
 
 		pBotProfile = CBotProfiles::getDefaultProfile();
 
@@ -3113,7 +3115,7 @@ bool CBots :: createBot (const char *szClass, const char *szTeam, const char *sz
 	char *szOVName = "";
 
 	if ( (m_iMaxBots != -1) && (CBotGlobals::numClients() >= m_iMaxBots) )
-		CBotGlobals::botMessage(NULL,0,"Can't create bot, max_bots reached");
+		logger->Log(LogLevel::ERROR, "Can't create bot, max_bots reached");
 
 	m_flAddKickBotTime = engine->Time() + rcbot_addbottime.GetFloat();
 
@@ -3121,7 +3123,7 @@ bool CBots :: createBot (const char *szClass, const char *szTeam, const char *sz
 
 	if ( pBotProfile == NULL )
 	{
-		CBotGlobals::botMessage(NULL,0,"No bot profiles are free, creating a default bot...");
+		logger->Log(LogLevel::WARN, "No bot profiles are free, creating a default bot...");
 
 		pBotProfile = CBotProfiles::getDefaultProfile();
 
@@ -3456,7 +3458,7 @@ void CBots :: kickRandomBot (size_t count)
 
 	if ( botList.empty() )
 	{
-		CBotGlobals::botMessage(NULL,0,"kickRandomBot() : No bots to kick");
+		logger->Log(LogLevel::DEBUG, "kickRandomBot() : No bots to kick");
 		return;
 	}
 
@@ -3489,7 +3491,7 @@ void CBots :: kickRandomBotOnTeam ( int team )
 
 	if ( botList.empty() )
 	{
-		CBotGlobals::botMessage(NULL,0,"kickRandomBotOnTeam() : No bots to kick");
+		logger->Log(LogLevel::DEBUG, "kickRandomBotOnTeam() : No bots to kick");
 		return;
 	}
 

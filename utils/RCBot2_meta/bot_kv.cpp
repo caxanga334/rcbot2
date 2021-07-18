@@ -2,6 +2,8 @@
 #include "bot_kv.h"
 #include "bot_globals.h"
 
+#include "rcbot/logging.h"
+
 void CRCBotKeyValueList :: parseFile ( FILE *fp )
 {
 	char buffer[2*(RCBOT_MAX_KV_LEN)];
@@ -69,7 +71,7 @@ void CRCBotKeyValueList :: parseFile ( FILE *fp )
 		szKey[iKi] = 0;
 		szValue[iVi] = 0;
 
-		CBotGlobals::botMessage(NULL,0,"m_KVs.push_back(%s,%s)",szKey, szValue);
+		logger->Log(LogLevel::TRACE, "m_KVs.push_back(%s,%s)", szKey, szValue);
 
 		m_KVs.push_back(new CRCBotKeyValue(szKey,szValue));
 

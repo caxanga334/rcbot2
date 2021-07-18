@@ -49,7 +49,8 @@ sourceFiles = [
   "utils/RCBot2_meta/bot_zombie.cpp",
   "utils/RCBot2_meta/bot_sigscan.cpp",
   "utils/RCBot2_meta/bot_cvars.cpp",
-  "utils/RCBot2_meta/bot_plugin_meta.cpp"
+  "utils/RCBot2_meta/bot_plugin_meta.cpp",
+  "rcbot/logging.cpp",
 ]
 
 include_paths = []

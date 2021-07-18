@@ -46,6 +46,8 @@
 #include "bot_waypoint_locations.h"
 #include "bot_perceptron.h"
 
+#include "rcbot/logging.h"
+
 std::vector<edict_wpt_pair_t> CHalfLifeDeathmatchMod::m_LiftWaypoints;
 
 void CBotMods :: parseFile ()
@@ -305,7 +307,7 @@ void CBotMods :: createFile ()
 		fclose(fp);
 	}
 	else
-		CBotGlobals::botMessage(NULL,0,"Error! Couldn't create config file %s",filename);
+		logger->Log(LogLevel::ERROR, "Couldn't create config file %s", filename);
 }
 
 void CBotMods :: readMods()
@@ -389,13 +391,13 @@ CBotMod *CBotMods :: getMod ( char *szModFolder )
 	{
 		if ( m_Mods[i]->isModFolder(szModFolder) )
 		{
-			CBotGlobals::botMessage(NULL,1,"HL2 MOD ID %d (Game Folder = %s) FOUND",m_Mods[i]->getModId(), szModFolder);
+			logger->Log(LogLevel::INFO, "HL2 MOD ID %d (Game Folder = %s) FOUND", m_Mods[i]->getModId(), szModFolder);
 
 			return m_Mods[i];
 		}
 	}
 
-	CBotGlobals::botMessage(NULL,1,"HL2 MODIFICATION \"%s\" NOT FOUND, EXITING... see bot_mods.ini in bot config folder", szModFolder);
+	logger->Log(LogLevel::FATAL, "HL2 MODIFICATION \"%s\" NOT FOUND, EXITING... see bot_mods.ini in bot config folder", szModFolder);
 
 	return NULL;
 }

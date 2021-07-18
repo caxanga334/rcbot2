@@ -50,6 +50,8 @@
 #include "bot_tf2_points.h"
 #include "bot_sigscan.h"
 
+#include "rcbot/logging.h"
+
 eTFMapType CTeamFortress2Mod :: m_MapType = TF_MAP_CTF;
 tf_tele_t CTeamFortress2Mod :: m_Teleporters[MAX_PLAYERS];
 int CTeamFortress2Mod :: m_iArea = 0;
@@ -181,7 +183,7 @@ void CTeamFortress2Mod ::modFrame ()
 			{
 				const char *classname = m_pGameRules.get()->GetClassName();
 
-				CBotGlobals::botMessage(NULL, 0, "Found gamerules %s", classname);
+				logger->Log(LogLevel::DEBUG, "Found gamerules %s", classname);
 			}
 		}*/
 	}
@@ -1174,7 +1176,7 @@ void CTeamFortress2Mod::updatePointMaster()
 			m_PointMaster = (CTeamControlPointMaster*) pMasterMembers;
 			m_PointMasterResource = pMaster;
 			
-			CBotGlobals::botMessage(NULL, 0, "Computed point master offset %d", baseEntityOffset);
+			logger->Log(LogLevel::INFO, "Computed point master offset %d", baseEntityOffset);
 
 			const int idx = m_PointMaster->m_iCurrentRoundIndex;
 			const int size = m_PointMaster->m_ControlPointRounds.Size();
@@ -1190,7 +1192,7 @@ void CTeamFortress2Mod::updatePointMaster()
 						CBaseEntity *pent = m_PointMaster->m_ControlPointRounds[r];
 						CTeamControlPointRound* pointRound = (CTeamControlPointRound*)(reinterpret_cast<uintptr_t>(pent) + baseEntityOffset);
 
-						CBotGlobals::botMessage(NULL, 0, "Control Points for Round %d", r);
+						logger->Log(LogLevel::DEBUG, "Control Points for Round %d", r);
 
 						for (int i = 0; i < pointRound->m_ControlPoints.Count(); ++i)
 						{
@@ -1203,7 +1205,7 @@ void CTeamFortress2Mod::updatePointMaster()
 								if (!edict->IsFree())
 								{
 									infoCount++;
-									CBotGlobals::botMessage(NULL, 0, "%d, %d, %d, %s", r, i, handle->GetSerialNumber(), edict->GetClassName());
+									logger->Log(LogLevel::DEBUG, "%d, %d, %d, %s", r, i, handle->GetSerialNumber(), edict->GetClassName());
 								}
 							}
 						}
@@ -1217,12 +1219,12 @@ void CTeamFortress2Mod::updatePointMaster()
 
 				if (infoCount == 0) 
 				{
-					CBotGlobals::botMessage(NULL, 0, "If you are playing cp_* maps, and you get this message, something might be wrong with your mstr_offset!");
+					logger->Log(LogLevel::WARN, "If you are playing cp_* maps, and you get this message, something might be wrong with your mstr_offset!");
 				}
 			} 
 			else 
 			{
-				CBotGlobals::botMessage(NULL, 0, "If you are playing cp_* maps, and you get this message, something might be wrong with your mstr_offset!");
+				logger->Log(LogLevel::WARN, "If you are playing cp_* maps, and you get this message, something might be wrong with your mstr_offset!");
 			}
 		}
 	}

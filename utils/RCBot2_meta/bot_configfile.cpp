@@ -33,6 +33,8 @@
 #include "bot_globals.h"
 #include "bot_configfile.h"
 
+#include "rcbot/logging.h"
+
 std::vector <char *> CBotConfigFile::m_Commands;
 unsigned int CBotConfigFile::m_iCmd = 0; // current command (time delayed)
 float CBotConfigFile::m_fNextCommandTime = 0.0f;
@@ -53,7 +55,7 @@ void CBotConfigFile :: load ()
 
 	if ( !fp )
 	{
-		CBotGlobals::botMessage(NULL,0,"config file not found");
+		logger->Log(LogLevel::WARN, "config file not found");
 		return;
 	}
 
@@ -72,10 +74,10 @@ void CBotConfigFile :: load ()
 			line[--len] = '\0';
 		}
 
-		CBotGlobals::botMessage(NULL, 0, line);
 		if(!len)
 			continue;
 
+		logger->Log(LogLevel::TRACE, "Config entry '%s' read", line);
 		m_Commands.push_back(CStrings::getString(line));
 	}
 
@@ -92,7 +94,7 @@ void CBotConfigFile :: doNextCommand ()
 		snprintf(cmd, sizeof(cmd), "%s\n", m_Commands[m_iCmd]);
 		engine->ServerCommand(cmd);
 
-		CBotGlobals::botMessage(NULL,0,"Bot Command '%s' executed",m_Commands[m_iCmd]);
+		logger->Log(LogLevel::TRACE, "Bot Command '%s' executed", m_Commands[m_iCmd]);
 		m_iCmd ++;
 		m_fNextCommandTime = engine->Time() + 0.1f;
 	}
@@ -107,7 +109,7 @@ void CBotConfigFile :: executeCommands ()
 		snprintf(cmd, sizeof(cmd), "%s\n", m_Commands[m_iCmd]);
 		engine->ServerCommand(cmd);
 
-		CBotGlobals::botMessage(NULL,0,"Bot Command '%s' executed",m_Commands[m_iCmd]);
+		logger->Log(LogLevel::TRACE, "Bot Command '%s' executed", m_Commands[m_iCmd]);
 		m_iCmd ++;
 	}
 

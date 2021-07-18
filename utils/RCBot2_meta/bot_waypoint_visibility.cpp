@@ -36,6 +36,8 @@
 #include "bot_globals.h"
 #include <cstdio>
 
+#include "rcbot/logging.h"
+
 /*unsigned char *CWaypointVisibilityTable :: m_VisTable = NULL;
 bool CWaypointVisibilityTable :: bWorkVisibility = false;
 int CWaypointVisibilityTable :: iCurFrom = 0;
@@ -66,7 +68,7 @@ void CWaypointVisibilityTable :: workVisibility ()
 
 					if ( m_iPrevPercent != percent )
 					{
-						Msg(" *** working out visibility %d percent***\n",percent);
+						logger->Log(LogLevel::INFO, "Working out visibility... %d%%", percent);
 						m_fNextShowMessageTime = engine->Time() + 2.5f;
 						m_iPrevPercent = percent;
 					}
@@ -82,7 +84,7 @@ void CWaypointVisibilityTable :: workVisibility ()
 	if ( iCurFrom == iSize )
 	{
 		// finished
-		Msg(" *** finished working out visibility ***\n");
+		logger->Log(LogLevel::INFO, "Finished working out visibility. Saving...");
 		/////////////////////////////
 		// for "concurrent" reading of 
 		// visibility throughout frames
@@ -94,10 +96,10 @@ void CWaypointVisibilityTable :: workVisibility ()
 		if ( SaveToFile() )
 		{
 			CWaypoints::save(true);
-			Msg(" *** saving waypoints with visibility information ***\n");
+			logger->Log(LogLevel::INFO, "Saved waypoints with visibility information");
 		}
 		else
-			Msg(" *** error, couldn't save waypoints with visibility information ***\n");
+			logger->Log(LogLevel::ERROR, "Couldn't save waypoints with visibility information");
 		////////////////////////////
 	}
 }
@@ -161,7 +163,7 @@ bool CWaypointVisibilityTable :: SaveToFile ( void )
 
    if ( bfp == NULL )
    {
-	   CBotGlobals::botMessage(NULL,0,"Can't open Waypoint Visibility table for writing!");
+	   logger->Log(LogLevel::ERROR, "Can't open Waypoint Visibility table for writing!");
 	   return false;
    }
 
@@ -189,7 +191,7 @@ bool CWaypointVisibilityTable :: ReadFromFile ( int numwaypoints )
 
    if ( bfp == NULL )
    {
-	   Msg(" *** Can't open Waypoint Visibility table for reading!\n");
+	   logger->Log(LogLevel::ERROR, "Can't open Waypoint Visibility table for reading!");
 	   return false;
    }
 

@@ -48,6 +48,10 @@
 
 #include "ndebugoverlay.h"
 
+// some Windows-specific include is redefining ERROR
+#undef ERROR
+#include "rcbot/logging.h"
+
 #ifndef __linux__
 #include <direct.h> // for mkdir
 #include <sys/stat.h>
@@ -200,16 +204,16 @@ void CBotGlobals::readRCBotFolder()
 		const char *szRCBotFolder = mainkv->GetString("rcbot2path");
 
 		if (szRCBotFolder && *szRCBotFolder) {
-			CBotGlobals::botMessage(NULL, 0, "RCBot Folder -> trying %s", szRCBotFolder);
+			logger->Log(LogLevel::INFO, "RCBot Folder -> trying %s", szRCBotFolder);
 
 			if (!dirExists(szRCBotFolder)) {
 				snprintf(folder, sizeof(folder), "%s/%s", CBotGlobals::modFolder(), szRCBotFolder);
 
 				szRCBotFolder = CStrings::getString(folder);
-				CBotGlobals::botMessage(NULL, 0, "RCBot Folder -> trying %s", szRCBotFolder);
+				logger->Log(LogLevel::INFO, "RCBot Folder -> trying %s", szRCBotFolder);
 
 				if (!dirExists(szRCBotFolder)) {
-					CBotGlobals::botMessage(NULL, 0, "RCBot Folder -> not found ...");
+					logger->Log(LogLevel::ERROR, "RCBot Folder -> not found ...");
 				}
 			}
 
@@ -543,7 +547,7 @@ bool CBotGlobals :: gameStart ()
 	}
 	else
 	{
-		Msg("[BOT ERROR] Mod not found. Please edit the bot_mods.ini in the bot config folder\n\ngamedir = %s\n",m_szModFolder);
+		logger->Log(LogLevel::ERROR, "Mod not found. Please edit the bot_mods.ini in the bot config folder (gamedir = %s)",m_szModFolder);
 
 		return false;
 	}
@@ -961,12 +965,12 @@ bool CBotGlobals :: makeFolders ( char *szFile )
         mkdir(szFolderName);
 #else
 		if ( mkdir(szFolderName, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0 ) {
-			botMessage(NULL,0,"Trying to create folder '%s' successful",szFolderName);
+			logger->Log(LogLevel::INFO, "Trying to create folder '%s' successful", szFolderName);
 		} else {
 			if (dirExists(szFolderName)) {
-				botMessage(NULL,0,"Folder '%s' already exists", szFolderName);
+				logger->Log(LogLevel::DEBUG, "Folder '%s' already exists", szFolderName);
 			} else {
-				botMessage(NULL,0,"Trying to create folder '%s' failed",szFolderName);
+				logger->Log(LogLevel::ERROR, "Trying to create folder '%s' failed", szFolderName);
 			}
 		}
 #endif   
@@ -1005,7 +1009,7 @@ FILE *CBotGlobals :: openFile ( char *szFile, char *szMode )
 
 	if ( fp == NULL )
 	{
-		botMessage ( NULL, 0, "file not found/opening error '%s' mode %s", szFile, szMode );
+		logger->Log(LogLevel::INFO, "file not found/opening error '%s' mode %s", szFile, szMode);
 
 		makeFolders(szFile);
 
@@ -1013,7 +1017,7 @@ FILE *CBotGlobals :: openFile ( char *szFile, char *szMode )
 		fp = fopen(szFile,szMode);
 
 		if ( fp == NULL )
-			botMessage ( NULL, 0, "failed to make folders for %s",szFile);
+			logger->Log(LogLevel::ERROR, "failed to make folders for %s", szFile);
 	}
 
 	return fp;
