@@ -101,6 +101,38 @@ const char *g_szSYNWeapons[] =
 	"weapon_bugbait"
 };
 
+const char *g_szCSWeapons[] =
+{
+	"weapon_knife", // 0
+	"weapon_usp",
+	"weapon_glock",
+	"weapon_p228",
+	"weapon_fiveseven",
+	"weapon_elite", // 5
+	"weapon_m3",
+	"weapon_xm1014",
+	"weapon_tmp",
+	"weapon_mac10",
+	"weapon_mp5navy", // 10
+	"weapon_ump45",
+	"weapon_p90",
+	"weapon_famas",
+	"weapon_galil",
+	"weapon_ak47", // 15
+	"weapon_m4a1",
+	"weapon_aug",
+	"weapon_sg552",
+	"weapon_scout",
+	"weapon_awp", // 20
+	"weapon_sg550",
+	"weapon_g3sg1",
+	"weapon_m249",
+	"weapon_hegrenade",
+	"weapon_flashbang", // 25
+	"weapon_smokegrenade",
+	"weapon_c4"
+};
+
   /*  0, 0, 1, 2, 6, 3,
     4, 5, 8, 8, 9, 8,
     7, 5, 10, 11, 12, 12,
@@ -244,6 +276,43 @@ WeaponsData_t SYNERGYWeaps[] =
 	{6,SYN_WEAPON_PHYSCANNON,		g_szSYNWeapons[14],	WEAP_FL_GRAVGUN|WEAP_FL_PRIM_ATTACK,0,768,-1,4,0},
 	{4,SYN_WEAPON_MG1,				g_szSYNWeapons[15],	WEAP_FL_PRIM_ATTACK,0,1000,-1,3,0},
 	{6,SYN_WEAPON_BUGBAIT,			g_szSYNWeapons[16],	WEAP_FL_PRIM_ATTACK|WEAP_FL_PROJECTILE,0,300,-1,3,1000.0f},
+	{ 0, 0, "\0", 0, 0, 0, 0, 0, 0 }//signal last weapon
+};
+
+WeaponsData_t CSSWeaps[] =
+{
+/*
+	slot, id , weapon name, flags, min dist, max dist, ammo index, preference, projectile speed
+*/
+	{3,CS_WEAPON_KNIFE,		g_szCSWeapons[0],	WEAP_FL_PRIM_ATTACK|WEAP_FL_SEC_ATTACK|WEAP_FL_UNDERWATER|WEAP_FL_MELEE,0,128,-1,1,0},
+	{2,CS_WEAPON_USP,		g_szCSWeapons[1],	WEAP_FL_PRIM_ATTACK,0,2048,-1,2,0},
+	{2,CS_WEAPON_GLOCK,		g_szCSWeapons[2],	WEAP_FL_PRIM_ATTACK,0,2048,-1,2,0},
+	{2,CS_WEAPON_228C,		g_szCSWeapons[3],	WEAP_FL_PRIM_ATTACK,0,2048,-1,2,0},
+	{2,CS_WEAPON_FIVESEVEN,		g_szCSWeapons[4],	WEAP_FL_PRIM_ATTACK,0,2048,-1,2,0},
+	{2,CS_WEAPON_ELITES,		g_szCSWeapons[5],	WEAP_FL_PRIM_ATTACK,0,2048,-1,2,0},
+	{2,CS_WEAPON_DEAGLE,		g_szCSWeapons[6],	WEAP_FL_PRIM_ATTACK,0,2048,-1,2,0},
+	{1,CS_WEAPON_SUPERSHOTGUN,		g_szCSWeapons[7],	WEAP_FL_PRIM_ATTACK,0,1024,-1,3,0},
+	{1,CS_WEAPON_AUTOSHOTGUN,		g_szCSWeapons[8],	WEAP_FL_PRIM_ATTACK,0,1024,-1,3,0},
+	{1,CS_WEAPON_TMP,		g_szCSWeapons[9],	WEAP_FL_PRIM_ATTACK,0,2048,-1,3,0},
+	{1,CS_WEAPON_MAC10,		g_szCSWeapons[10],	WEAP_FL_PRIM_ATTACK,0,2048,-1,3,0},
+	{1,CS_WEAPON_MP5,		g_szCSWeapons[11],	WEAP_FL_PRIM_ATTACK,0,2048,-1,3,0},
+	{1,CS_WEAPON_UMP45,		g_szCSWeapons[12],	WEAP_FL_PRIM_ATTACK,0,2048,-1,3,0},
+	{1,CS_WEAPON_P90,		g_szCSWeapons[13],	WEAP_FL_PRIM_ATTACK,0,2048,-1,3,0},
+	{1,CS_WEAPON_FAMAS,		g_szCSWeapons[14],	WEAP_FL_PRIM_ATTACK,0,4096,-1,3,0},
+	{1,CS_WEAPON_GALIL,		g_szCSWeapons[15],	WEAP_FL_PRIM_ATTACK,0,4096,-1,3,0},
+	{1,CS_WEAPON_AK47,		g_szCSWeapons[16],	WEAP_FL_PRIM_ATTACK,0,4096,-1,3,0},
+	{1,CS_WEAPON_M4A1,		g_szCSWeapons[17],	WEAP_FL_PRIM_ATTACK,0,4096,-1,3,0},
+	{1,CS_WEAPON_AUG,		g_szCSWeapons[18],	WEAP_FL_PRIM_ATTACK|WEAP_FL_SCOPE|WEAP_FL_ZOOMABLE,0,4096,-1,3,0},
+	{1,CS_WEAPON_SG552,		g_szCSWeapons[19],	WEAP_FL_PRIM_ATTACK|WEAP_FL_SCOPE|WEAP_FL_ZOOMABLE,0,4096,-1,3,0},
+	{1,CS_WEAPON_SCOUT,		g_szCSWeapons[20],	WEAP_FL_PRIM_ATTACK|WEAP_FL_SCOPE|WEAP_FL_ZOOMABLE,512,4096,-1,3,0},
+	{1,CS_WEAPON_AWP,		g_szCSWeapons[21],	WEAP_FL_PRIM_ATTACK|WEAP_FL_SCOPE|WEAP_FL_ZOOMABLE,512,4096,-1,3,0},
+	{1,CS_WEAPON_SG550,		g_szCSWeapons[22],	WEAP_FL_PRIM_ATTACK|WEAP_FL_SCOPE|WEAP_FL_ZOOMABLE,512,4096,-1,3,0},
+	{1,CS_WEAPON_G3SG1,		g_szCSWeapons[23],	WEAP_FL_PRIM_ATTACK|WEAP_FL_SCOPE|WEAP_FL_ZOOMABLE,512,4096,-1,3,0},
+	{1,CS_WEAPON_M249,		g_szCSWeapons[24],	WEAP_FL_PRIM_ATTACK,0,2048,-1,3,0},
+	{1,CS_WEAPON_HE_GRENADE,		g_szCSWeapons[25],	WEAP_FL_PRIM_ATTACK|WEAP_FL_PROJECTILE|WEAP_FL_EXPLOSIVE|WEAP_FL_GRENADE,0,2048,-1,1,0},
+	{1,CS_WEAPON_FLASH_GRENADE,		g_szCSWeapons[26],	WEAP_FL_PRIM_ATTACK|WEAP_FL_PROJECTILE|WEAP_FL_GRENADE,0,2048,-1,1,0},
+	{1,CS_WEAPON_SMOKE_GRENADE,		g_szCSWeapons[27],	WEAP_FL_PRIM_ATTACK|WEAP_FL_PROJECTILE|WEAP_FL_GRENADE,0,2048,-1,1,0},
+	{1,CS_WEAPON_C4,		g_szCSWeapons[28],	WEAP_FL_PRIM_ATTACK|WEAP_FL_SPECIAL|WEAP_FL_HOLDATTACK,0,1024,-1,1,0},
 	{ 0, 0, "\0", 0, 0, 0, 0, 0, 0 }//signal last weapon
 };
 

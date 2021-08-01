@@ -619,12 +619,22 @@ protected:
 class CCounterStrikeSourceMod : public CBotMod
 {
 public:
+	static const int CS_TEAM_UNASSIGNED = 0;
+	static const int CS_TEAM_SPECTATOR = 1;
+	static const int CS_TEAM_TERRORIST = 2;
+	static const int CS_TEAM_COUNTERTERRORIST = 3;
+
 	CCounterStrikeSourceMod()
 	{
 		setup("cstrike", MOD_CSS, BOTTYPE_CSS, "CSS");
 	}
 
-	//void initMod ();
+	const char *getPlayerClass () override
+	{
+		return "CCSPlayer";
+	}
+
+	void initMod();
 
 	//void mapInit ();
 

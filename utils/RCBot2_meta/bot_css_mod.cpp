@@ -28,27 +28,27 @@
  *    version.
  *
  */
-#ifndef __CSS_RCBOT_H__
-#define __CSS_RCBOT_H__
+#include "server_class.h"
 
-// bot for CS Source
-class CCSSBot : public CBot
+#include "bot.h"
+
+#include "in_buttons.h"
+
+#include "bot_mods.h"
+#include "bot_globals.h"
+#include "bot_weapons.h"
+#include "bot_configfile.h"
+#include "bot_getprop.h"
+#include "bot_css_bot.h"
+#include "bot_navigator.h"
+#include "bot_waypoint.h"
+#include "bot_waypoint_locations.h"
+#include "bot_perceptron.h"
+
+#include "rcbot/logging.h"
+
+void CCounterStrikeSourceMod::initMod()
 {
-public:
-
-	bool isCSS() override{ return true; }
-    void init(bool bVarInit=false) override;
-    void spawnInit() override;
-	void died(edict_t *pKiller, const char *pszWeapon) override;
-	void setup();
-	void selectTeam();
-	void selectModel();
-	bool startGame() override;
-	bool isAlive();
-	bool isEnemy(edict_t *pEdict,bool bCheckWeapons = true) override;
-	unsigned int maxEntityIndex() override { return gpGlobals->maxEntities; }
-private:
-	// blah blah
-};
-
-#endif
+    CWeapons::loadWeapons((m_szWeaponListName == NULL) ? "CSSWEAPONS" : m_szWeaponListName, CSSWeaps); // Load weapon list
+    logger->Log(LogLevel::TRACE, "CCounterStrikeSourceMod::initMod()");
+}
