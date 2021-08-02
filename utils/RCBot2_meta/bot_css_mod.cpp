@@ -49,6 +49,6 @@
 
 void CCounterStrikeSourceMod::initMod()
 {
-    CWeapons::loadWeapons((m_szWeaponListName == NULL) ? "CSSWEAPONS" : m_szWeaponListName, CSSWeaps); // Load weapon list
+    CWeapons::loadWeapons((m_szWeaponListName == NULL) ? "CSS" : m_szWeaponListName, CSSWeaps); // Load weapon list
     logger->Log(LogLevel::TRACE, "CCounterStrikeSourceMod::initMod()");
 }

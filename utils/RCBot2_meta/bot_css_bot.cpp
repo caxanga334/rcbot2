@@ -52,6 +52,8 @@
 #include "bot_plugin_meta.h"
 #include "bot_waypoint_visibility.h"
 
+#include "rcbot/logging.h"
+
 void CCSSBot::init(bool bVarInit)
 {
 	CBot::init();// require this
@@ -89,11 +91,11 @@ bool CCSSBot::isEnemy(edict_t *pEdict,bool bCheckWeapons)
  
 	IPlayerInfo *p = playerinfomanager->GetPlayerInfo(pEdict);
 
-	if ( p == NULL )
+	if (p == NULL)
 		return false;
-	if ( m_pEdict == pEdict )
+	if (m_pEdict == pEdict)
 		return false;
-	if ( !CBotGlobals::entityIsAlive ( pEdict ) )
+	if (!CBotGlobals::entityIsAlive(pEdict))
 		return false;
 
 	return (p->GetTeamIndex() != getTeam());
@@ -109,6 +111,7 @@ bool CCSSBot::startGame()
 		selectModel();
 	}
 
+	logger->Log(LogLevel::TRACE, "CSSBot::startGame()");
 	return true;
 }
 
@@ -121,9 +124,10 @@ void CCSSBot::spawnInit()
 {
 	CBot::spawnInit();
 
-	if ( m_pSchedules )
+	if(m_pSchedules)
 		m_pSchedules->add(new CBotSchedule(new CAutoBuy()));
 	m_fCheckStuckTime = engine->Time() + 6.0;
+	logger->Log(LogLevel::TRACE, "CSSBot::spawnInit()");
 }
 
 void CCSSBot::selectTeam()
@@ -138,4 +142,53 @@ void CCSSBot::selectModel()
 	const char* cmd;
 	cmd = "joinclass 0";
 	helpers->ClientCommand(m_pEdict,cmd);
+}
+
+void CCSSBot::handleWeapons()
+{
+	//
+	// Handle attacking at this point
+	//
+	if (m_pEnemy && !hasSomeConditions(CONDITION_ENEMY_DEAD) && 
+		hasSomeConditions(CONDITION_SEE_CUR_ENEMY) && wantToShoot() && 
+		isVisible(m_pEnemy) && isEnemy(m_pEnemy))
+	{
+		CBotWeapon *pWeapon;
+
+		pWeapon = getBestWeapon(m_pEnemy);
+
+		if(m_bWantToChangeWeapon && (pWeapon != NULL) && (pWeapon != getCurrentWeapon()) && pWeapon->getWeaponIndex())
+		{
+			selectWeapon(pWeapon->getWeaponIndex());
+		}
+
+		setLookAtTask(LOOK_ENEMY);
+
+		if(!handleAttack(pWeapon, m_pEnemy))
+		{
+			m_pEnemy = NULL;
+			m_pOldEnemy = NULL;
+			wantToShoot(false);
+		}
+	}
+}
+
+bool CCSSBot::handleAttack(CBotWeapon *pWeapon, edict_t *pEnemy)
+{
+	if (pWeapon)
+	{
+		clearFailedWeaponSelect();
+
+		if (pWeapon->isMelee())
+			setMoveTo(CBotGlobals::entityOrigin(pEnemy));
+
+		if (pWeapon->mustHoldAttack())
+			primaryAttack(true);
+		else
+			primaryAttack();
+	}
+	else
+		primaryAttack();
+
+	return true;
 }

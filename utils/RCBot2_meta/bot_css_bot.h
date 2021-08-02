@@ -36,16 +36,18 @@ class CCSSBot : public CBot
 {
 public:
 
-	bool isCSS() override{ return true; }
+	bool isCSS() override { return true; }
     void init(bool bVarInit=false) override;
     void spawnInit() override;
 	void died(edict_t *pKiller, const char *pszWeapon) override;
-	void setup();
+	void setup() override;
 	void selectTeam();
 	void selectModel();
 	bool startGame() override;
-	bool isAlive();
+	bool isAlive() override;
 	bool isEnemy(edict_t *pEdict,bool bCheckWeapons = true) override;
+    void handleWeapons() override;
+    bool handleAttack(CBotWeapon *pWeapon, edict_t *pEnemy) override;
 	unsigned int maxEntityIndex() override { return gpGlobals->maxEntities; }
 private:
 	// blah blah

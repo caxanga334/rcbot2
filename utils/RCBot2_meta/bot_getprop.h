@@ -153,6 +153,13 @@ typedef enum
 	GETPROP_SYN_PLAYER_VEHICLE,
 	GETPROP_SYN_VEHICLE_DRIVER,
 	GETPROP_SYN_SUITPOWER,
+	GETPROP_CSS_MONEY,
+	GETPROP_CSS_INBUYZONE,
+	GETPROP_CSS_INBOMBZONE,
+	GETPROP_CSS_INHOSTAGERESCUEZONE,
+	GETPROP_CSS_ARMOR,
+	GETPROP_CSS_HASDEFUSER,
+	GETPROP_CSS_HASHELMET,
 	GET_PROPDATA_MAX
 }getpropdata_id;
 
@@ -712,6 +719,85 @@ public:
 	inline static float getSynPlayerSuitPower(edict_t* pPlayer)
 	{
 		return g_GetProps[GETPROP_SYN_SUITPOWER].getFloat(pPlayer, 0.0f);
+	}
+
+	// Counter-Strike: Source
+
+	/**
+	 * Gets the amount of money the player has
+	 * 
+	 * @param pPlayer	The player's pointer
+	 * @return			The player's current money value
+	 **/
+	inline static int getCSPlayerMoney(edict_t* pPlayer)
+	{
+		return g_GetProps[GETPROP_CSS_MONEY].getInt(pPlayer, 0);
+	}
+
+	/**
+	 * Checks if the player is inside a buy zone
+	 * 
+	 * @param pPlayer	The player's pointer
+	 * @return			TRUE if the player is inside a buy zone
+	 **/
+	inline static bool isCSPlayerInBuyZone(edict_t* pPlayer)
+	{
+		return g_GetProps[GETPROP_CSS_INBUYZONE].getBool(pPlayer, false);
+	}
+
+	/**
+	 * Checks if the player is inside a bomb zone
+	 * 
+	 * @param pPlayer	The player's pointer
+	 * @return			TRUE if the player is inside a bomb zone
+	 **/
+	inline static bool isCSPlayerInBuyZone(edict_t* pPlayer)
+	{
+		return g_GetProps[GETPROP_CSS_INBOMBZONE].getBool(pPlayer, false);
+	}
+
+	/**
+	 * Checks if the player is inside a hostage rescue zone
+	 * 
+	 * @param pPlayer	The player's pointer
+	 * @return			TRUE if the player is inside a hostage rescue zone
+	 **/
+	inline static bool isCSPlayerInHostageRescueZone(edict_t* pPlayer)
+	{
+		return g_GetProps[GETPROP_CSS_INHOSTAGERESCUEZONE].getBool(pPlayer, false);
+	}
+
+	/**
+	 * Gets the amount of armor a player has
+	 * 
+	 * @param pPlayer	The player's pointer
+	 * @return			The player's current armor value
+	 **/
+	inline static int getCSPlayerArmor(edict_t* pPlayer)
+	{
+		return g_GetProps[GETPROP_CSS_ARMOR].getInt(pPlayer, 0);
+	}
+
+	/**
+	 * Checks if the player has a defuse kit
+	 * 
+	 * @param pPlayer	The player's pointer
+	 * @return			TRUE if the player has a defuse kit
+	 **/
+	inline static bool isCSPlayerHasDefuser(edict_t* pPlayer)
+	{
+		return g_GetProps[GETPROP_CSS_HASHELMET].getBool(pPlayer, false);
+	}
+
+	/**
+	 * Checks if the player has helmet armor
+	 * 
+	 * @param pPlayer	The player's pointer
+	 * @return			TRUE if the player has helmet armor
+	 **/
+	inline static bool isCSPlayerHasHelmet(edict_t* pPlayer)
+	{
+		return g_GetProps[GETPROP_CSS_HASHELMET].getBool(pPlayer, false);
 	}
 
 private:

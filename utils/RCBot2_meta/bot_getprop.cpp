@@ -568,6 +568,15 @@ void CClassInterface:: init ()
 		DEFINE_GETPROP(GETPROP_SYN_VEHICLE_DRIVER, "CPropVehicleDriveable", "m_hPlayer", 0);
 		DEFINE_GETPROP(GETPROP_SYN_SUITPOWER, "CSynergyPlayer", "m_flSuitPower", 0);
 
+		// Counter-Strike: Source
+		DEFINE_GETPROP(GETPROP_CSS_MONEY, "CCSPlayer", "m_iAccount", 0);
+		DEFINE_GETPROP(GETPROP_CSS_INBUYZONE, "CCSPlayer", "m_bInBuyZone", 0);
+		DEFINE_GETPROP(GETPROP_CSS_INBOMBZONE, "CCSPlayer", "m_bInBombZone", 0);
+		DEFINE_GETPROP(GETPROP_CSS_INHOSTAGERESCUEZONE, "CCSPlayer", "m_bInHostageRescueZone", 0);
+		DEFINE_GETPROP(GETPROP_CSS_ARMOR, "CCSPlayer", "m_ArmorValue", 0);
+		DEFINE_GETPROP(GETPROP_CSS_HASDEFUSER, "CCSPlayer", "m_bHasDefuser", 0);
+		DEFINE_GETPROP(GETPROP_CSS_HASHELMET, "CCSPlayer", "m_bHasHelmet", 0);
+
 		for ( unsigned int i = 0; i < GET_PROPDATA_MAX; i ++ )
 		{
 			//if ( g_GetProps[i]
