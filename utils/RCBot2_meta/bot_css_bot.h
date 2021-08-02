@@ -49,6 +49,8 @@ public:
     void handleWeapons() override;
     bool handleAttack(CBotWeapon *pWeapon, edict_t *pEnemy) override;
 	unsigned int maxEntityIndex() override { return gpGlobals->maxEntities; }
+	void getTasks (unsigned int iIgnore=0) override;
+	virtual bool executeAction(eBotAction iAction);
 private:
 	// blah blah
 };

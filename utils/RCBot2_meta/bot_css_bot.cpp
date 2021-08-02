@@ -192,3 +192,94 @@ bool CCSSBot::handleAttack(CBotWeapon *pWeapon, edict_t *pEnemy)
 
 	return true;
 }
+
+void CCSSBot::getTasks (unsigned int iIgnore)
+{
+    static CBotUtilities utils;
+    static CBotUtility* next;
+    static bool bCheckCurrent;
+
+	if (!hasSomeConditions(CONDITION_CHANGED) && !m_pSchedules->isEmpty())
+		return;
+
+    removeCondition(CONDITION_CHANGED);
+    bCheckCurrent = true; // important for checking current schedule
+
+	// Utilities
+	ADD_UTILITY(BOT_UTIL_ROAM, true, 0.0001f); // Roam around
+
+	utils.execute();
+
+	while ((next = utils.nextBest()) != NULL)
+	{
+		if (!m_pSchedules->isEmpty() && bCheckCurrent)
+		{
+			if (m_CurrentUtil != next->getId())
+				m_pSchedules->freeMemory();
+			else
+				break;
+		}
+
+		bCheckCurrent = false;
+
+		if (executeAction(next->getId()))
+		{
+			m_CurrentUtil = next->getId();
+
+			if (m_fUtilTimes[next->getId()] < engine->Time())
+				m_fUtilTimes[next->getId()] = engine->Time() + randomFloat(0.1f, 2.0f); // saves problems with consistent failing
+
+			if (CClients::clientsDebugging(BOT_DEBUG_UTIL))
+			{
+				CClients::clientDebugMsg(BOT_DEBUG_UTIL, g_szUtils[next->getId()], this);
+			}
+			break;
+		}
+	}
+
+	utils.freeMemory();
+}
+
+bool CCSSBot::executeAction(eBotAction iAction)
+{
+    switch (iAction)
+    {
+    case BOT_UTIL_ROAM:
+    {
+		// roam
+		CWaypoint* pWaypoint = NULL;
+		CWaypoint* pRoute = NULL;
+		CBotSchedule* pSched = new CBotSchedule();
+
+		pSched->setID(SCHED_GOTO_ORIGIN);
+        pWaypoint = CWaypoints::randomWaypointGoal(-1);
+
+		if (pWaypoint)
+		{
+			pRoute = CWaypoints::randomRouteWaypoint(this, getOrigin(), pWaypoint->getOrigin(), 0, 0);
+			if ((m_fUseRouteTime <= engine->Time()))
+			{
+				if (pRoute)
+				{
+					int iRoute = CWaypoints::getWaypointIndex(pRoute); // Route waypoint
+					pSched->addTask(new CFindPathTask(iRoute, LOOK_WAYPOINT));
+					pSched->addTask(new CMoveToTask(pRoute->getOrigin()));
+					m_pSchedules->add(pSched);
+					m_fUseRouteTime = engine->Time() + 30.0f;
+				}
+			}
+
+			int iWaypoint = CWaypoints::getWaypointIndex(pWaypoint);
+			pSched->addTask(new CFindPathTask(iWaypoint, LOOK_WAYPOINT));
+			pSched->addTask(new CMoveToTask(pWaypoint->getOrigin()));
+			m_pSchedules->add(pSched);
+
+			return true;
+		}
+
+		break;
+    }
+    }
+
+    return false;
+}
