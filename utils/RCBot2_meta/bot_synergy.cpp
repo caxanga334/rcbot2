@@ -65,7 +65,7 @@ void CBotSynergy::spawnInit()
 {
     CBot::spawnInit();
 
-	if ( m_pWeapons ) // reset weapons
+	if (m_pWeapons) // reset weapons
 		m_pWeapons->clearWeapons();
 
     m_CurrentUtil = BOT_UTIL_MAX;

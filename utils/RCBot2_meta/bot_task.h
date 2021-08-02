@@ -1192,6 +1192,19 @@ private:
 	float m_fTime;
 	bool m_bTimeset;
 };
+
+class CCSSPerformBuyTask : public CBotTask
+{
+public:
+	void init();
+	void execute(CBot *pBot,CBotSchedule *pSchedule);
+	void debugString(char *string)
+	{
+		sprintf(string,"CSS Perform Buy");
+	}
+private:
+	float m_fDelay;
+};
 //////////////////////
 class CTF2_TauntTask : public CBotTask
 {

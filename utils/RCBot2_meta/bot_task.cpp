@@ -44,6 +44,7 @@
 #include "bot_weapons.h"
 #include "bot_hldm_bot.h"
 #include "bot_fortress.h"
+#include "bot_css_bot.h"
 #include "bot_profiling.h"
 #include "bot_getprop.h"
 #include "bot_dod_bot.h"
@@ -3923,6 +3924,34 @@ void CAutoBuy :: execute (CBot *pBot,CBotSchedule *pSchedule)
 		//helpers->ClientCommand(pBot->getEdict(),"setinfo cl_autobuy \"m4a1 ak47 famas galil p90 mp5 primammo secammo defuser vesthelm vest\"\n");
 		helpers->ClientCommand(pBot->getEdict(),"autobuy\n");	
 		complete();
+	}
+}
+
+void CCSSPerformBuyTask::init()
+{
+	m_fDelay = engine->Time() + randomFloat(2.0,5.0);
+}
+
+void CCSSPerformBuyTask::execute(CBot *pBot,CBotSchedule *pSchedule)
+{
+	if(m_fDelay <= engine->Time())
+	{
+		if(!CClassInterface::isCSPlayerInBuyZone(pBot->getEdict()))
+		{
+			fail(); // outside buy zone
+			return;
+		}
+		CCSSBot *pCSSBot = ((CCSSBot*)pBot);
+		pCSSBot->executeBuy();
+		complete();
+	}
+	else
+	{
+		pBot->stopMoving();
+		pBot->wantToShoot(false);
+		pBot->setMoveLookPriority(MOVELOOK_OVERRIDE);
+		pBot->setLookAtTask(LOOK_AROUND);
+		pBot->setMoveLookPriority(MOVELOOK_TASK);
 	}
 }
 

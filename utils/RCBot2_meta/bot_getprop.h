@@ -751,7 +751,7 @@ public:
 	 * @param pPlayer	The player's pointer
 	 * @return			TRUE if the player is inside a bomb zone
 	 **/
-	inline static bool isCSPlayerInBuyZone(edict_t* pPlayer)
+	inline static bool isCSPlayerInBombZone(edict_t* pPlayer)
 	{
 		return g_GetProps[GETPROP_CSS_INBOMBZONE].getBool(pPlayer, false);
 	}
@@ -784,7 +784,7 @@ public:
 	 * @param pPlayer	The player's pointer
 	 * @return			TRUE if the player has a defuse kit
 	 **/
-	inline static bool isCSPlayerHasDefuser(edict_t* pPlayer)
+	inline static bool CSPlayerHasDefuser(edict_t* pPlayer)
 	{
 		return g_GetProps[GETPROP_CSS_HASHELMET].getBool(pPlayer, false);
 	}
@@ -795,7 +795,7 @@ public:
 	 * @param pPlayer	The player's pointer
 	 * @return			TRUE if the player has helmet armor
 	 **/
-	inline static bool isCSPlayerHasHelmet(edict_t* pPlayer)
+	inline static bool CSPlayerHasHelmet(edict_t* pPlayer)
 	{
 		return g_GetProps[GETPROP_CSS_HASHELMET].getBool(pPlayer, false);
 	}

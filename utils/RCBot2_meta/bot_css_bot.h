@@ -35,7 +35,6 @@
 class CCSSBot : public CBot
 {
 public:
-
 	bool isCSS() override { return true; }
     void init(bool bVarInit=false) override;
     void spawnInit() override;
@@ -51,8 +50,13 @@ public:
 	unsigned int maxEntityIndex() override { return gpGlobals->maxEntities; }
 	void getTasks (unsigned int iIgnore=0) override;
 	virtual bool executeAction(eBotAction iAction);
+	virtual void buy(const char *item);
+	virtual void executeBuy();
+	virtual void processBuyList(const int list);
+	virtual void say(const char *message);
+	virtual void sayteam(const char *message);
 private:
-	// blah blah
+	bool m_bDidBuy; // Did the bot buy on this round?
 };
 
 #endif
