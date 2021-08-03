@@ -72,6 +72,21 @@ void CCSSBot::setup()
 	engine->SetFakeClientConVarValue(m_pEdict,"cl_autohelp","0");
 }
 
+void CCSSBot::modThink()
+{
+	m_pCurrentWeapon = CClassInterface::getCurrentWeapon(m_pEdict);
+
+	if(m_pCurrentWeapon)
+	{
+		CBotWeapon *weapon = m_pWeapons->getWeapon(CWeapons::getWeapon(m_pCurrentWeapon->GetClassName()));
+		if(weapon && weapon->getClip1(this) == 0)
+		{
+			letGoOfButton(IN_ATTACK);
+			tapButton(IN_RELOAD);
+		}
+	}
+}
+
 bool CCSSBot::isAlive()
 {
 	if (!CBot::isAlive())
@@ -127,6 +142,8 @@ void CCSSBot::spawnInit()
 		m_pWeapons->clearWeapons();
 
 	m_bDidBuy = false;
+	m_pCurrentWeapon = NULL;
+	m_fNextAttackTime = engine->Time();
 	m_fCheckStuckTime = engine->Time() + 6.0;
 	updateCondition(CONDITION_CHANGED); // Re-execute the utility system
 	logger->Log(LogLevel::TRACE, "CSSBot::spawnInit() --> %s", m_pPlayerInfo->GetName());
@@ -206,7 +223,6 @@ void CCSSBot::executeBuy()
 	const int team = getTeam();
 	int cost = 0; // Computed buy cost
 	int remaining = 0; // Remaining money (money - cost)
-	int tobuy = 0; // Things the bot should buy
 	CBotWeapon *primary = m_pWeapons->getCurrentWeaponInSlot(1);
 	CBotWeapon *secondary = m_pWeapons->getCurrentWeaponInSlot(2);
 
@@ -228,6 +244,7 @@ void CCSSBot::executeBuy()
 	bool hashelmet = CClassInterface::CSPlayerHasHelmet(m_pEdict);
 	if(CClassInterface::getCSPlayerArmor(m_pEdict) <= 70 || !hashelmet)
 	{
+		buy("vesthelm");
 		if(!hashelmet)
 		{
 			cost += 1000;
@@ -238,9 +255,10 @@ void CCSSBot::executeBuy()
 		}
 	}
 
-	if(team == CCounterStrikeSourceMod::CS_TEAM_COUNTERTERRORIST && !CClassInterface::CSPlayerHasDefuser(m_pEdict)) // To-do: filter for bomb maps
+	if(team == CCounterStrikeSourceMod::CS_TEAM_COUNTERTERRORIST && !CClassInterface::CSPlayerHasDefuser(m_pEdict) && CCounterStrikeSourceMod::IsMapType(CS_MAP_BOMBDEFUSAL))
 	{
 		cost += 200;
+		buy("defuser");
 	}
 
 	remaining = money - cost;
@@ -252,17 +270,43 @@ void CCSSBot::executeBuy()
 	{ // To-do: Buy selection logic
 		if(remaining >= 1500)
 		{
+			cost += 1500;
 			buy("mp5navy");
 		}
 	}
 
 	logger->Log(LogLevel::TRACE, "CSS --- Running buy logic for bot \"%s\"", m_pPlayerInfo->GetName());
-	logger->Log(LogLevel::TRACE, "Team = %i --- Money = %i --- Cost = %i --- Buy Bits = %i", team, money, cost, tobuy);
+	logger->Log(LogLevel::TRACE, "Team = %i --- Money = %i --- Cost = %i", team, money, cost);
 	logger->Log(LogLevel::TRACE, "Primary Weapon = %s", primary ? primary->getWeaponInfo()->getWeaponName() : "No Primary");
 	logger->Log(LogLevel::TRACE, "Secondary Weapon = %s", secondary ? secondary->getWeaponInfo()->getWeaponName() : "No Secondary");
-	processBuyList(tobuy);
 	m_bDidBuy = true;
 	updateCondition(CONDITION_CHANGED); // Buy done, update conditions
+}
+
+/**
+ * Custom primary attack function for Counter-Strike: Source bots
+ * 
+ * @param hold		Hold the attack button? (full-auto)
+ * @return			No return
+ **/
+void CCSSBot::primaryattackCS(bool hold)
+{
+	if(hold)
+	{
+		primaryAttack(hold);
+	}
+	else
+	{
+		if(m_fNextAttackTime <= engine->Time())
+		{
+			tapButton(IN_ATTACK);
+			m_fNextAttackTime = engine->Time() + 0.050f; // 50 ms delay between shots
+		}
+		else
+		{
+			letGoOfButton(IN_ATTACK);
+		}
+	}
 }
 
 void CCSSBot::handleWeapons()
@@ -303,11 +347,11 @@ bool CCSSBot::handleAttack(CBotWeapon *pWeapon, edict_t *pEnemy)
 		if(pWeapon->isMelee())
 			setMoveTo(CBotGlobals::entityOrigin(pEnemy));
 
-		m_pButtons->holdButton(IN_ATTACK, 0.0f, 0.15f, 0.0f);
+		primaryattackCS(false);
 	}
 	else
 	{
-		m_pButtons->holdButton(IN_ATTACK, 0.0f, 0.15f, 0.0f);
+		primaryattackCS(false);
 	}
 		
 

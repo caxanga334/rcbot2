@@ -47,16 +47,19 @@ public:
 	bool isEnemy(edict_t *pEdict,bool bCheckWeapons = true) override;
     void handleWeapons() override;
     bool handleAttack(CBotWeapon *pWeapon, edict_t *pEnemy) override;
+	void modThink() override;
 	unsigned int maxEntityIndex() override { return gpGlobals->maxEntities; }
 	void getTasks (unsigned int iIgnore=0) override;
 	virtual bool executeAction(eBotAction iAction);
 	virtual void buy(const char *item);
 	virtual void executeBuy();
-	virtual void processBuyList(const int list);
 	virtual void say(const char *message);
 	virtual void sayteam(const char *message);
+	virtual void primaryattackCS(bool hold = false);
 private:
+	edict_t *m_pCurrentWeapon; // The bot current weapon
 	bool m_bDidBuy; // Did the bot buy on this round?
+	float m_fNextAttackTime; // Control timer for bot primary attack
 };
 
 #endif

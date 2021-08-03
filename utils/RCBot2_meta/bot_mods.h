@@ -616,6 +616,14 @@ protected:
 	static float fAttackProbLookUp[MAX_DOD_FLAGS+1][MAX_DOD_FLAGS+1];
 };
 
+typedef enum
+{
+	CS_MAP_DEATHMATCH = 0, // Generic Maps
+	CS_MAP_BOMBDEFUSAL, // Bomb Defusal maps
+	CS_MAP_HOSTAGERESCUE, // Hostage Rescue maps
+	CS_MAP_MAX
+}eCSSMapType;
+
 class CCounterStrikeSourceMod : public CBotMod
 {
 public:
@@ -634,16 +642,12 @@ public:
 		return "CCSPlayer";
 	}
 
-	void initMod();
-
-	//void mapInit ();
-
+	void initMod() override;
+	void mapInit() override;
+	static inline bool IsMapType(eCSSMapType MapType) { return MapType == m_MapType; }
 	//void entitySpawn ( edict_t *pEntity );
-protected:
-	// storing mod specific info
-	std::vector<edict_t*> m_pHostages;
-	std::vector<edict_t*> m_pBombPoints;
-	std::vector<edict_t*> m_pRescuePoints;
+private:
+	static eCSSMapType m_MapType; // Map Type
 };
 
 class CTimCoopMod : public CBotMod

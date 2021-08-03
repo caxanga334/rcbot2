@@ -47,8 +47,34 @@
 
 #include "rcbot/logging.h"
 
+// For debug messages
+const char *szMapTypes[CS_MAP_MAX+1] =
+{
+    "DEATHMATCH",
+    "BOMB DEFUSAL",
+    "HOSTAGE RESCUE",
+    "MAP TYPE MAX"
+};
+
+eCSSMapType CCounterStrikeSourceMod::m_MapType = CS_MAP_DEATHMATCH;
+
 void CCounterStrikeSourceMod::initMod()
 {
     CWeapons::loadWeapons((m_szWeaponListName == NULL) ? "CSS" : m_szWeaponListName, CSSWeaps); // Load weapon list
     logger->Log(LogLevel::TRACE, "CCounterStrikeSourceMod::initMod()");
+}
+
+void CCounterStrikeSourceMod::mapInit()
+{
+	const string_t mapname = gpGlobals->mapname;
+	const char *szmapname = mapname.ToCStr();
+
+    if(strncmp(szmapname, "de_", 3) == 0)
+        m_MapType = CS_MAP_BOMBDEFUSAL;
+    else if(strncmp(szmapname, "cs_", 3) == 0)
+        m_MapType = CS_MAP_HOSTAGERESCUE;
+    else
+        m_MapType = CS_MAP_DEATHMATCH;
+
+    logger->Log(LogLevel::TRACE, "CCounterStrikeSourceMod::mapInit()\nMap Type: %s", szMapTypes[m_MapType]);
 }
