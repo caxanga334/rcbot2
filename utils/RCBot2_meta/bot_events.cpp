@@ -237,6 +237,9 @@ private:
 void CRoundStartEvent :: execute ( IBotEventInterface *pEvent )
 {
 	CBots::roundStart();
+	#if SOURCE_ENGINE == SE_CSS
+	CCounterStrikeSourceMod::OnRoundStart();
+	#endif
 }
 
 void CPlayerHurtEvent :: execute ( IBotEventInterface *pEvent )

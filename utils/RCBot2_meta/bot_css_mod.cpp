@@ -78,3 +78,12 @@ void CCounterStrikeSourceMod::mapInit()
 
     logger->Log(LogLevel::TRACE, "CCounterStrikeSourceMod::mapInit()\nMap Type: %s", szMapTypes[m_MapType]);
 }
+
+/**
+ * Called when a new round starts
+ **/
+void CCounterStrikeSourceMod::OnRoundStart()
+{
+    // Empty for now, reset round based logic
+    logger->Log(LogLevel::TRACE, "CCounterStrikeSourceMod::OnRoundStart()");
+}

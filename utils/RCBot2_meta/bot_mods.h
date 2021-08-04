@@ -644,6 +644,7 @@ public:
 
 	void initMod() override;
 	void mapInit() override;
+	static void OnRoundStart();
 	static inline bool IsMapType(eCSSMapType MapType) { return MapType == m_MapType; }
 	//void entitySpawn ( edict_t *pEntity );
 private:

@@ -1003,6 +1003,63 @@ Vector CBotGlobals:: getVelocity ( edict_t *pPlayer )
 	return Vector(0,0,0);
 }
 
+/**
+ * Clone of CCollisionProperty::OBBCenter( ) --- see game/shared/collisionproperty.h
+ * 
+ * @param pEntity		Entity to get OBB center
+ **/
+Vector CBotGlobals::getOBBCenter( edict_t *pEntity )
+{
+	Vector result = Vector(0,0,0);
+	VectorLerp(pEntity->GetCollideable()->OBBMins(), pEntity->GetCollideable()->OBBMaxs(), 0.5f, result);
+	return result;
+}
+
+Vector CBotGlobals::collisionToWorldSpace( const Vector &in, edict_t *pEntity )
+{
+	Vector result = Vector(0,0,0);
+
+	if(!isBoundsDefinedInEntitySpace(pEntity) || pEntity->GetCollideable()->GetCollisionAngles() == vec3_angle)
+	{
+		VectorAdd(in, pEntity->GetCollideable()->GetCollisionOrigin(), result);
+	}
+	else
+	{
+		VectorTransform(in, pEntity->GetCollideable()->CollisionToWorldTransform(), result);
+	}
+
+	return result;
+}
+
+/**
+ * Gets the entity world center. Clone of WorldSpaceCenter()
+ * @param pEntity	The entity to get the center from
+ * @return			Center vector
+ **/
+Vector CBotGlobals::worldCenter( edict_t *pEntity )
+{
+	Vector result = getOBBCenter(pEntity);
+	result = collisionToWorldSpace(result, pEntity);
+	return result;
+}
+
+/**
+ * Checks if a point is within a trigger
+ * 
+ * @param pEntity	The trigger entity
+ * @param vPoint	The point to be tested
+ * @return			True if the given point is within pEntity
+ **/
+bool CBotGlobals::pointIsWithin( edict_t *pEntity, const Vector &vPoint )
+{
+	Ray_t ray;
+	trace_t tr;
+	ICollideable *pCollide = pEntity->GetCollideable();
+	ray.Init(vPoint, vPoint);
+	enginetrace->ClipRayToCollideable(ray, MASK_ALL, pCollide, &tr);
+	return (tr.startsolid);
+}
+
 FILE *CBotGlobals :: openFile ( char *szFile, char *szMode )
 {
 	FILE *fp = fopen(szFile,szMode);
