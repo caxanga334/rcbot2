@@ -79,6 +79,11 @@ void CCounterStrikeSourceMod::mapInit()
     logger->Log(LogLevel::TRACE, "CCounterStrikeSourceMod::mapInit()\nMap Type: %s", szMapTypes[m_MapType]);
 }
 
+bool CCounterStrikeSourceMod::checkWaypointForTeam(CWaypoint *pWpt, int iTeam)
+{
+    return (!pWpt->hasFlag(CWaypointTypes::W_FL_NOCOUNTERTR)||(iTeam!=CS_TEAM_COUNTERTERRORIST))&&(!pWpt->hasFlag(CWaypointTypes::W_FL_NOTERRORIST)||(iTeam!=CS_TEAM_TERRORIST));
+}
+
 /**
  * Called when a new round starts
  **/
@@ -86,4 +91,12 @@ void CCounterStrikeSourceMod::OnRoundStart()
 {
     // Empty for now, reset round based logic
     logger->Log(LogLevel::TRACE, "CCounterStrikeSourceMod::OnRoundStart()");
+}
+
+/**
+ * Called when the bomb is planted
+ **/
+void CCounterStrikeSourceMod::OnBombPlanted()
+{
+    logger->Log(LogLevel::TRACE, "CCounterStrikeSourceMod::OnBombPlanted()");
 }

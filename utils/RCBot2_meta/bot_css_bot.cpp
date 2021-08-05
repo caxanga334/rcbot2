@@ -120,7 +120,7 @@ bool CCSSBot::startGame()
 {
 	const int team = m_pPlayerInfo->GetTeamIndex();
 
-	if(team <= CCounterStrikeSourceMod::CS_TEAM_SPECTATOR)
+	if(team <= CS_TEAM_SPECTATOR)
 	{
 		selectTeam();
 		selectModel();
@@ -255,7 +255,7 @@ void CCSSBot::executeBuy()
 		}
 	}
 
-	if(team == CCounterStrikeSourceMod::CS_TEAM_COUNTERTERRORIST && !CClassInterface::CSPlayerHasDefuser(m_pEdict) && CCounterStrikeSourceMod::IsMapType(CS_MAP_BOMBDEFUSAL))
+	if(team == CS_TEAM_COUNTERTERRORIST && !CClassInterface::CSPlayerHasDefuser(m_pEdict) && CCounterStrikeSourceMod::IsMapType(CS_MAP_BOMBDEFUSAL))
 	{
 		cost += 200;
 		buy("defuser");

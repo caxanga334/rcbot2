@@ -627,11 +627,6 @@ typedef enum
 class CCounterStrikeSourceMod : public CBotMod
 {
 public:
-	static const int CS_TEAM_UNASSIGNED = 0;
-	static const int CS_TEAM_SPECTATOR = 1;
-	static const int CS_TEAM_TERRORIST = 2;
-	static const int CS_TEAM_COUNTERTERRORIST = 3;
-
 	CCounterStrikeSourceMod()
 	{
 		setup("cstrike", MOD_CSS, BOTTYPE_CSS, "CSS");
@@ -644,7 +639,9 @@ public:
 
 	void initMod() override;
 	void mapInit() override;
+	bool checkWaypointForTeam(CWaypoint *pWpt, int iTeam) override;
 	static void OnRoundStart();
+	static void OnBombPlanted();
 	static inline bool IsMapType(eCSSMapType MapType) { return MapType == m_MapType; }
 	//void entitySpawn ( edict_t *pEntity );
 private:

@@ -31,6 +31,11 @@
 #ifndef __CSS_RCBOT_H__
 #define __CSS_RCBOT_H__
 
+#define CS_TEAM_UNASSIGNED 0
+#define CS_TEAM_SPECTATOR 1
+#define CS_TEAM_TERRORIST 2
+#define CS_TEAM_COUNTERTERRORIST 3
+
 // bot for CS Source
 class CCSSBot : public CBot
 {

@@ -403,6 +403,11 @@ void CBombDroppedEvent :: execute ( IBotEventInterface *pEvent )
 {
 }
 
+void CCSSBombPlantedEvent :: execute ( IBotEventInterface *pEvent )
+{
+	CCounterStrikeSourceMod::OnBombPlanted();
+}
+
 void CWeaponFireEvent :: execute ( IBotEventInterface *pEvent )
 {
 }

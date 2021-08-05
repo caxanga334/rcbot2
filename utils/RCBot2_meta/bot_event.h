@@ -162,6 +162,18 @@ public:
 	void execute ( IBotEventInterface *pEvent );
 };
 
+class CCSSBombPlantedEvent : public CBotEvent
+{
+public:
+	CCSSBombPlantedEvent()
+	{
+		setType("bomb_planted");
+		setMod(MOD_CSS);
+	}
+
+	void execute ( IBotEventInterface *pEvent );
+};
+
 class CPlayerFootstepEvent : public CBotEvent
 {
 public:
