@@ -138,9 +138,6 @@ void CCSSBot::spawnInit()
 {
 	CBot::spawnInit();
 
-	if (m_pWeapons) // reset weapons
-		m_pWeapons->clearWeapons();
-
 	m_bDidBuy = false;
 	m_pCurrentWeapon = NULL;
 	m_fNextAttackTime = engine->Time();
@@ -223,8 +220,8 @@ void CCSSBot::executeBuy()
 	const int team = getTeam();
 	int cost = 0; // Computed buy cost
 	int remaining = 0; // Remaining money (money - cost)
-	CBotWeapon *primary = m_pWeapons->getCurrentWeaponInSlot(1);
-	CBotWeapon *secondary = m_pWeapons->getCurrentWeaponInSlot(2);
+	CBotWeapon *primary = m_pWeapons->getCurrentWeaponInSlot(CS_WEAPON_SLOT_PRIMARY);
+	CBotWeapon *secondary = m_pWeapons->getCurrentWeaponInSlot(CS_WEAPON_SLOT_SECONDARY);
 
 	if(money <= rcbot_css_economy_eco_limit.GetInt())
 	{
@@ -363,6 +360,7 @@ void CCSSBot::getTasks(unsigned int iIgnore)
     static CBotUtilities utils;
     static CBotUtility* next;
     static bool bCheckCurrent;
+	static int team = getTeam();
 
 	if(!hasSomeConditions(CONDITION_CHANGED) && !m_pSchedules->isEmpty())
 		return;
@@ -370,7 +368,28 @@ void CCSSBot::getTasks(unsigned int iIgnore)
     removeCondition(CONDITION_CHANGED);
     bCheckCurrent = true; // important for checking current schedule
 
+	//logger->Log(LogLevel::TRACE, "Bot %s team %i has C4 \"%s\"", m_pPlayerInfo->GetName(), team, CCounterStrikeSourceMod::IsBombCarrier(this) ? "Yes" : "No");
+
 	// Utilities
+
+	switch (team)
+	{
+		case CS_TEAM_COUNTERTERRORIST: // CT specific utilities
+		{
+
+			break;
+		}
+		case CS_TEAM_TERRORIST: // TR specific utilities
+		{
+			if(CCounterStrikeSourceMod::IsMapType(CS_MAP_BOMBDEFUSAL))
+			{
+				ADD_UTILITY(BOT_UTIL_PLANT_BOMB, CCounterStrikeSourceMod::IsBombCarrier(this), 0.95f);
+			}
+			break;
+		}
+	}
+
+	// Generic Utilities
 	ADD_UTILITY(BOT_UTIL_BUY, !m_bDidBuy, 1.0f); // Buy weapons
 	ADD_UTILITY(BOT_UTIL_ROAM, true, 0.0001f); // Roam around
 
@@ -416,6 +435,24 @@ bool CCSSBot::executeAction(eBotAction iAction)
 			pSched->setID(SCHED_BUY);
 			pSched->addTask(new CCSSPerformBuyTask());
 			m_pSchedules->add(pSched);
+			return true;
+			break;
+		}
+		case BOT_UTIL_PLANT_BOMB:
+		{
+			CWaypoint* pWaypoint = NULL;
+			CWaypoint* pRoute = NULL;
+			pWaypoint = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_GOAL);
+
+			if(pWaypoint)
+			{
+				if((m_fUseRouteTime <= engine->Time()))
+				{
+					pRoute = CWaypoints::randomRouteWaypoint(this, getOrigin(), pWaypoint->getOrigin(), getTeam(), 0);
+				}
+				m_pSchedules->add(new CCSSPlantBombSched(pWaypoint, pRoute));
+				return true;
+			}
 			break;
 		}
 		case BOT_UTIL_ROAM:

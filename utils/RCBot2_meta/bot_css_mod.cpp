@@ -89,6 +89,17 @@ bool CCounterStrikeSourceMod::checkWaypointForTeam(CWaypoint *pWpt, int iTeam)
 }
 
 /**
+ * Checks if the given bot is a bomb carrier (has C4)
+ * 
+ * @param pBot      The bot to check
+ * @return          TRUE if the bot is a bomb carrier
+ **/
+bool CCounterStrikeSourceMod::IsBombCarrier(CBot *pBot)
+{
+    return pBot->getWeapons()->hasWeapon(CS_WEAPON_C4);
+}
+
+/**
  * Called when a new round starts
  **/
 void CCounterStrikeSourceMod::OnRoundStart()
@@ -105,6 +116,15 @@ void CCounterStrikeSourceMod::OnFreezeTimeEnd()
 {
     logger->Log(LogLevel::TRACE, "CCounterStrikeSourceMod::OnFreezeTimeEnd()");
     m_fRoundStartTime = engine->Time();
+/**	for(short int i = 0; i < MAX_PLAYERS; i++)
+	{
+        CBot *pBot = CBots::get(i);
+
+		if(pBot && pBot->inUse())
+        {
+            pBot->updateCondition(CONDITION_CHANGED); // re-execute the bot utilities on freeze time end
+        }
+	}**/
 }
 
 /**

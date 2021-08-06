@@ -645,6 +645,7 @@ public:
 	static void OnFreezeTimeEnd();
 	static void OnBombPlanted();
 	static inline bool IsMapType(eCSSMapType MapType) { return MapType == m_MapType; }
+	static bool IsBombCarrier(CBot *pBot);
 	static inline float getRemainingRoundTime()
 	{
 		return ((m_fRoundStartTime + (mp_roundtime->GetFloat() * 60.0f)) - engine->Time());

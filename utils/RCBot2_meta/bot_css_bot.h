@@ -36,6 +36,12 @@
 #define CS_TEAM_TERRORIST 2
 #define CS_TEAM_COUNTERTERRORIST 3
 
+#define CS_WEAPON_SLOT_PRIMARY 0
+#define CS_WEAPON_SLOT_SECONDARY 1
+#define CS_WEAPON_SLOT_MELEE 2
+#define CS_WEAPON_SLOT_GRENADE 3
+#define CS_WEAPON_SLOT_C4 4
+
 // bot for CS Source
 class CCSSBot : public CBot
 {

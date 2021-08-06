@@ -99,6 +99,7 @@ typedef enum
 	SCHED_SYN_PLANT_MINE,
 	SCHED_SYN_BREAK_ICRATE,
 	SCHED_BUY,
+	SCHED_PLANT_BOMB,
 	SCHED_MAX
 	//SCHED_HIDE_FROM_ENEMY
 }eBotSchedule;
@@ -691,6 +692,27 @@ public:
 	void init()
 	{
 		setID(SCHED_SYN_BREAK_ICRATE);
+	}
+};
+
+/********************************
+ *    Counter-Strike: Source    *
+ ********************************/
+
+class CCSSPlantBombSched : public CBotSchedule
+{
+public:
+	/**
+	 * Schedule for the bot to plant the C4 in CSS
+	 * 
+	 * @param pWaypoint		The waypoint where the c4 will be planted
+	 * @param pRoute		Route waypoint to use
+	 **/
+	CCSSPlantBombSched(CWaypoint *pWaypoint, CWaypoint *pRoute = NULL);
+
+	void init()
+	{
+		setID(SCHED_PLANT_BOMB);
 	}
 };
 

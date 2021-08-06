@@ -94,6 +94,7 @@ const char *szSchedules[SCHED_MAX+1] =
 	"SCHED_SYN_PLANT_MINE",
 	"SCHED_SYN_BREAK_ICRATE",
 	"SCHED_BUY",
+	"SCHED_PLANT_BOMB",
 	"SCHED_MAX"
 };
 ////////////////////// unused
@@ -774,6 +775,21 @@ CSynBreakICrateSched::CSynBreakICrateSched(edict_t* pCrate, CBotWeapon* pWeapon)
 	addTask(pPathTask);
 	addTask(new CMoveToTask(pCrate));
 	addTask(new CBotSynBreakICrateTask(pCrate, pWeapon));
+}
+
+/********************************
+ *    Counter-Strike: Source    *
+ ********************************/
+CCSSPlantBombSched::CCSSPlantBombSched(CWaypoint *pWaypoint, CWaypoint *pRoute)
+{
+	if(pRoute)
+	{
+		addTask(new CFindPathTask(CWaypoints::getWaypointIndex(pRoute)));
+	}
+
+	addTask(new CFindPathTask(CWaypoints::getWaypointIndex(pWaypoint)));
+	addTask(new CMoveToTask(pWaypoint->getOrigin()));
+	addTask(new CCSSPlantTheBombTask());
 }
 
 /////////////////////////////////////////////

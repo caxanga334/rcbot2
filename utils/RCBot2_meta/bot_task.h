@@ -1205,6 +1205,21 @@ public:
 private:
 	float m_fDelay;
 };
+
+class CCSSPlantTheBombTask : public CBotTask
+{
+public:
+	void init()
+	{
+		setFailInterrupt(CONDITION_SEE_CUR_ENEMY);
+	}
+	void execute(CBot *pBot,CBotSchedule *pSchedule);
+	void debugString(char *string)
+	{
+		sprintf(string,"CSS Plant C4");
+	}
+};
+
 //////////////////////
 class CTF2_TauntTask : public CBotTask
 {

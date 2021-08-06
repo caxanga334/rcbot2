@@ -3955,6 +3955,39 @@ void CCSSPerformBuyTask::execute(CBot *pBot,CBotSchedule *pSchedule)
 	}
 }
 
+void CCSSPlantTheBombTask::execute(CBot *pBot,CBotSchedule *pSchedule)
+{
+	pBot->stopMoving();
+	pBot->wantToShoot(false);
+	pBot->wantToChangeWeapon(false);
+	pBot->setMoveLookPriority(MOVELOOK_OVERRIDE);
+	pBot->setLookAtTask(LOOK_AROUND);
+	pBot->setMoveLookPriority(MOVELOOK_TASK);
+
+	if(!CCounterStrikeSourceMod::IsBombCarrier(pBot))
+	{
+		complete();
+		return;
+	}
+
+	if(CClassInterface::isCSPlayerInBombZone(pBot->getEdict()))
+	{
+		if(!(pBot->getCurrentWeapon() == pBot->getWeapons()->getWeapon(CWeapons::getWeapon(CS_WEAPON_C4))))
+		{
+			pBot->selectBotWeapon(pBot->getWeapons()->getWeapon(CWeapons::getWeapon(CS_WEAPON_C4)));
+		}
+		else
+		{
+			pBot->primaryAttack(true);
+		}
+	}
+	else
+	{
+		fail();
+		pBot->debugMsg(BOT_DEBUG_TASK, "[CSS] Failed to plant the bomb! Outside bomb size.");
+	}
+}
+
 CFindLastEnemy::CFindLastEnemy (Vector vLast,Vector vVelocity)
 {
 	setCompleteInterrupt(CONDITION_SEE_CUR_ENEMY);
