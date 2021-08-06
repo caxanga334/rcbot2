@@ -39,6 +39,7 @@
 #include "bot_dod_bot.h"
 #include "bot_waypoint.h"
 #include "bot_tf2_points.h"
+#include "bot_cvars.h"
 
 #define MAX_CAP_POINTS 32
 
@@ -641,11 +642,27 @@ public:
 	void mapInit() override;
 	bool checkWaypointForTeam(CWaypoint *pWpt, int iTeam) override;
 	static void OnRoundStart();
+	static void OnFreezeTimeEnd();
 	static void OnBombPlanted();
 	static inline bool IsMapType(eCSSMapType MapType) { return MapType == m_MapType; }
+	static inline float getRemainingRoundTime()
+	{
+		return ((m_fRoundStartTime + (mp_roundtime->GetFloat() * 60.0f)) - engine->Time());
+	}
+	static inline float getRemainingBombTime()
+	{
+		return ((m_fRoundStartTime + mp_c4timer->GetFloat()) - engine->Time());
+	}
+	static inline bool isBombPlanted()
+	{
+		return m_bIsBombPlanted;
+	}
 	//void entitySpawn ( edict_t *pEntity );
 private:
 	static eCSSMapType m_MapType; // Map Type
+	static float m_fRoundStartTime; // The time when the round started
+	static float m_fBombPlantedTime; // The time when the bomb was planted
+	static bool m_bIsBombPlanted;
 };
 
 class CTimCoopMod : public CBotMod

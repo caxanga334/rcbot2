@@ -57,6 +57,10 @@ const char *szMapTypes[CS_MAP_MAX+1] =
 };
 
 eCSSMapType CCounterStrikeSourceMod::m_MapType = CS_MAP_DEATHMATCH;
+float CCounterStrikeSourceMod::m_fRoundStartTime = 0.0f;
+float CCounterStrikeSourceMod::m_fBombPlantedTime = 0.0f;
+bool CCounterStrikeSourceMod::m_bIsBombPlanted = false;
+
 
 void CCounterStrikeSourceMod::initMod()
 {
@@ -91,6 +95,16 @@ void CCounterStrikeSourceMod::OnRoundStart()
 {
     // Empty for now, reset round based logic
     logger->Log(LogLevel::TRACE, "CCounterStrikeSourceMod::OnRoundStart()");
+    m_bIsBombPlanted = false;
+}
+
+/**
+ * Called when the freeze time ends. Note: This is always called even if freeze time is disabled.
+ **/
+void CCounterStrikeSourceMod::OnFreezeTimeEnd()
+{
+    logger->Log(LogLevel::TRACE, "CCounterStrikeSourceMod::OnFreezeTimeEnd()");
+    m_fRoundStartTime = engine->Time();
 }
 
 /**
@@ -99,4 +113,6 @@ void CCounterStrikeSourceMod::OnRoundStart()
 void CCounterStrikeSourceMod::OnBombPlanted()
 {
     logger->Log(LogLevel::TRACE, "CCounterStrikeSourceMod::OnBombPlanted()");
+    m_bIsBombPlanted = true;
+    m_fBombPlantedTime = engine->Time();
 }

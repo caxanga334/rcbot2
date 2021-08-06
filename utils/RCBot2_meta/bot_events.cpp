@@ -242,6 +242,11 @@ void CRoundStartEvent :: execute ( IBotEventInterface *pEvent )
 	#endif
 }
 
+void CRoundFreezeEndEvent :: execute ( IBotEventInterface *pEvent )
+{
+	CCounterStrikeSourceMod::OnFreezeTimeEnd();
+}
+
 void CPlayerHurtEvent :: execute ( IBotEventInterface *pEvent )
 {
 	CBot *pBot = CBots::getBotPointer(m_pActivator);
@@ -1193,9 +1198,11 @@ void CBotEvents :: setupEvents ()
 	addEvent(new CTF2MVMWaveCompleteEvent());
 	addEvent(new CTF2MVMWaveFailedEvent());
 	addEvent(new CRoundStartEvent());
+	addEvent(new CRoundFreezeEndEvent());
 	addEvent(new CPlayerHurtEvent());
 	addEvent(new CPlayerDeathEvent());
 	addEvent(new CBombPickupEvent());
+	addEvent(new CCSSBombPlantedEvent());
 	addEvent(new CPlayerFootstepEvent());
 	addEvent(new CBombDroppedEvent());
 	addEvent(new CWeaponFireEvent());

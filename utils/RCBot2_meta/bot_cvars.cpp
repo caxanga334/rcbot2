@@ -111,6 +111,10 @@ ConVar *mp_friendlyfire = NULL;
 ConVar *mp_stalemate_enable = NULL;
 ConVar *mp_stalemate_meleeonly = NULL;
 
+// For CS:S
+ConVar *mp_roundtime = NULL;
+ConVar *mp_c4timer = NULL;
+
 void RCBOT2_Cvar_setup (ICvar *cvar)
 {
 	mp_stalemate_enable = cvar->FindVar("mp_stalemate_enable");
@@ -119,6 +123,8 @@ void RCBOT2_Cvar_setup (ICvar *cvar)
 	mp_friendlyfire = cvar->FindVar("mp_friendlyfire");
 	sv_tags = cvar->FindVar("sv_tags");
 	mp_teamplay = cvar->FindVar("mp_teamplay");
+	mp_roundtime = cvar->FindVar("mp_roundtime");
+	mp_c4timer = cvar->FindVar("mp_c4timer");
 
 	if ( sv_tags != NULL )
 	{

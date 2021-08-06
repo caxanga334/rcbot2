@@ -104,6 +104,19 @@ public:
 
 	void execute ( IBotEventInterface *pEvent );
 };
+
+class CRoundFreezeEndEvent : public CBotEvent
+{
+public:
+	CRoundFreezeEndEvent()
+	{
+		setType("round_freeze_end");
+		setMod(MOD_CSS);
+	}
+
+	void execute ( IBotEventInterface *pEvent );
+};
+
 class CPostInventoryApplicationTF2 : public CBotEvent
 {
 public:
