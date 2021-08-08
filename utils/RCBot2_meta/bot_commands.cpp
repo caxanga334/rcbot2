@@ -94,6 +94,11 @@ CBotCommandInline AddBotCommand("addbot", CMD_ACCESS_BOT | CMD_ACCESS_DEDICATED,
 	if ( pClient )
 		pEntity = pClient->getPlayer();
 
+	if (rcbot_bot_quota_interval.GetFloat() > 0) {
+		CBotGlobals::botMessage(pEntity, 0, "error: cannot manually add bot while rcbot_bot_quota_interval is active");
+		return COMMAND_ACCESSED;
+	}
+
 	//if ( !bot_sv_cheat_warning.GetBool() || bot_sv_cheats_auto.GetBool() || (!sv_cheats || sv_cheats->GetBool()) )
 	//{
 		//if ( !pcmd || !*pcmd )
