@@ -822,6 +822,12 @@ void CBotWaitTask::execute ( CBot *pBot, CBotSchedule *pSchedule )
 {
 	pBot->stopMoving();
 
+	if(m_bAimSet)
+	{
+		pBot->setLookVector(m_vAim);
+		pBot->setLookAtTask(LOOK_VECTOR);
+	}
+
 	if(engine->Time() >= m_ftime)
 	{
 		complete();
@@ -3964,7 +3970,7 @@ void CCSSPlantTheBombTask::execute(CBot *pBot,CBotSchedule *pSchedule)
 	pBot->setLookAtTask(LOOK_AROUND);
 	pBot->setMoveLookPriority(MOVELOOK_TASK);
 
-	if(!CCounterStrikeSourceMod::IsBombCarrier(pBot))
+	if(!CCounterStrikeSourceMod::isBombCarrier(pBot))
 	{
 		complete();
 		return;
@@ -3986,6 +3992,55 @@ void CCSSPlantTheBombTask::execute(CBot *pBot,CBotSchedule *pSchedule)
 		fail();
 		pBot->debugMsg(BOT_DEBUG_TASK, "[CSS] Failed to plant the bomb! Outside bomb size.");
 	}
+}
+
+void CCSSEngageEnemyTask::execute(CBot *pBot, CBotSchedule *pSchedule)
+{
+	edict_t *pEnemy = engine->PEntityOfEntIndex(m_hEnemy.GetEntryIndex());
+	edict_t *pWeapon = CClassInterface::getCurrentWeapon(pBot->getEdict());
+
+	if(pEnemy)
+	{
+		if(pWeapon)
+		{
+			CBotWeapon *weapon = pBot->getWeapons()->getWeapon(CWeapons::getWeaponByShortName(pWeapon->GetClassName()));
+			if(weapon)
+			{
+				if(weapon->isMelee())
+				{
+					pBot->setMoveTo(CBotGlobals::entityOrigin(pEnemy));
+				}
+				else
+				{
+					pBot->stopMoving();
+				}
+			}
+		}
+		else
+		{
+			pBot->stopMoving();
+		}
+
+		if(!CBotGlobals::entityIsAlive(pEnemy))
+		{
+			pBot->debugMsg(BOT_DEBUG_THINK, "CCSSEngageEnemyTask:: Task Complete! Enemy is DEAD");
+			complete();
+		}
+
+		pBot->setLookAtTask(LOOK_ENEMY);
+	}
+	else
+	{
+		pBot->debugMsg(BOT_DEBUG_THINK, "CCSSEngageEnemyTask:: Task Complete! Enemy is NULL");
+		complete();
+		return;
+	}
+}
+
+void CCSSEngageEnemyTask::debugString(char *string)
+{
+	edict_t *pEnemy = engine->PEntityOfEntIndex(m_hEnemy.GetEntryIndex());
+	sprintf(string,"CSS Engage Enemy\n%s", pEnemy ? pEnemy->GetClassName() : "null");
 }
 
 CFindLastEnemy::CFindLastEnemy (Vector vLast,Vector vVelocity)

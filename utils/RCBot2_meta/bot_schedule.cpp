@@ -95,6 +95,8 @@ const char *szSchedules[SCHED_MAX+1] =
 	"SCHED_SYN_BREAK_ICRATE",
 	"SCHED_BUY",
 	"SCHED_PLANT_BOMB",
+	"SCHED_WAIT",
+	"SCHED_WAIT_FOR_ENEMY",
 	"SCHED_MAX"
 };
 ////////////////////// unused
@@ -784,10 +786,14 @@ CCSSPlantBombSched::CCSSPlantBombSched(CWaypoint *pWaypoint, CWaypoint *pRoute)
 {
 	if(pRoute)
 	{
-		addTask(new CFindPathTask(CWaypoints::getWaypointIndex(pRoute)));
+		CBotTask *pRouteTask = new CFindPathTask(CWaypoints::getWaypointIndex(pRoute));
+		pRouteTask->setFailInterrupt(CONDITION_SEE_CUR_ENEMY);
+		addTask(pRouteTask);
 	}
 
-	addTask(new CFindPathTask(CWaypoints::getWaypointIndex(pWaypoint)));
+	CBotTask *pTask = new CFindPathTask(CWaypoints::getWaypointIndex(pWaypoint));
+	pTask->setFailInterrupt(CONDITION_SEE_CUR_ENEMY);
+	addTask(pTask);
 	addTask(new CMoveToTask(pWaypoint->getOrigin()));
 	addTask(new CCSSPlantTheBombTask());
 }

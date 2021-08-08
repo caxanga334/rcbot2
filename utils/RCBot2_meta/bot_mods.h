@@ -641,11 +641,11 @@ public:
 	void initMod() override;
 	void mapInit() override;
 	bool checkWaypointForTeam(CWaypoint *pWpt, int iTeam) override;
-	static void OnRoundStart();
-	static void OnFreezeTimeEnd();
-	static void OnBombPlanted();
-	static inline bool IsMapType(eCSSMapType MapType) { return MapType == m_MapType; }
-	static bool IsBombCarrier(CBot *pBot);
+	static void onRoundStart();
+	static void onFreezeTimeEnd();
+	static void onBombPlanted();
+	static inline bool isMapType(eCSSMapType MapType) { return MapType == m_MapType; }
+	static bool isBombCarrier(CBot *pBot);
 	static inline float getRemainingRoundTime()
 	{
 		return ((m_fRoundStartTime + (mp_roundtime->GetFloat() * 60.0f)) - engine->Time());
@@ -658,12 +658,18 @@ public:
 	{
 		return m_bIsBombPlanted;
 	}
+	static inline edict_t *getBomb()
+	{
+		return engine->PEntityOfEntIndex(m_hBomb.GetEntryIndex());
+	}
+	static bool isBombDropped();
 	//void entitySpawn ( edict_t *pEntity );
 private:
 	static eCSSMapType m_MapType; // Map Type
 	static float m_fRoundStartTime; // The time when the round started
 	static float m_fBombPlantedTime; // The time when the bomb was planted
 	static bool m_bIsBombPlanted;
+	static CBaseHandle m_hBomb; // The bomb. Experimental CBaseHandle instead of MyEHandle
 };
 
 class CTimCoopMod : public CBotMod

@@ -67,9 +67,15 @@ public:
 	virtual void say(const char *message);
 	virtual void sayteam(const char *message);
 	virtual void primaryattackCS(bool hold = false);
+	inline bool shouldWaitForEnemy()
+	{
+		return m_pLastEnemy.get() != NULL && (m_fCombatTime + 5.0f > engine->Time());
+	}
 private:
 	edict_t *m_pCurrentWeapon; // The bot current weapon
 	bool m_bDidBuy; // Did the bot buy on this round?
+	bool m_bInCombat; // Is the bot doing combat related activities
+	float m_fCombatTime; // When did the bot enter combat mode
 	float m_fNextAttackTime; // Control timer for bot primary attack
 };
 

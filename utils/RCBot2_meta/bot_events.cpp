@@ -238,13 +238,13 @@ void CRoundStartEvent :: execute ( IBotEventInterface *pEvent )
 {
 	CBots::roundStart();
 	#if SOURCE_ENGINE == SE_CSS
-	CCounterStrikeSourceMod::OnRoundStart();
+	CCounterStrikeSourceMod::onRoundStart();
 	#endif
 }
 
 void CRoundFreezeEndEvent :: execute ( IBotEventInterface *pEvent )
 {
-	CCounterStrikeSourceMod::OnFreezeTimeEnd();
+	CCounterStrikeSourceMod::onFreezeTimeEnd();
 }
 
 void CPlayerHurtEvent :: execute ( IBotEventInterface *pEvent )
@@ -410,7 +410,7 @@ void CBombDroppedEvent :: execute ( IBotEventInterface *pEvent )
 
 void CCSSBombPlantedEvent :: execute ( IBotEventInterface *pEvent )
 {
-	CCounterStrikeSourceMod::OnBombPlanted();
+	CCounterStrikeSourceMod::onBombPlanted();
 }
 
 void CWeaponFireEvent :: execute ( IBotEventInterface *pEvent )

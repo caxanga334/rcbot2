@@ -1220,6 +1220,24 @@ public:
 	}
 };
 
+class CCSSEngageEnemyTask : public CBotTask
+{
+public:
+	CCSSEngageEnemyTask( edict_t *pEnemy )
+	{
+		m_hEnemy.Init(engine->IndexOfEdict(pEnemy), pEnemy->m_NetworkSerialNumber);
+	}
+	void init()
+	{
+		setFailInterrupt(CONDITION_ENEMY_OBSCURED);
+		setCompleteInterrupt(CONDITION_ENEMY_DEAD);
+	}	
+	void execute(CBot *pBot,CBotSchedule *pSchedule);
+	void debugString(char *string);
+private:
+	CBaseHandle m_hEnemy;
+};
+
 //////////////////////
 class CTF2_TauntTask : public CBotTask
 {
@@ -1423,10 +1441,18 @@ public:
 	{
 		m_ftime = engine->Time() + waittime;
 	}
+	CBotWaitTask(float waittime, Vector vAim)
+	{
+		m_ftime = engine->Time() + waittime;
+		m_vAim = vAim;
+		m_bAimSet = true;
+	}
 	void execute ( CBot *pBot, CBotSchedule *pSchedule );
 	void debugString (char *string);
 private:
 	float m_ftime;
+	bool m_bAimSet;
+	Vector m_vAim;
 };
 
 class CBotSynDisarmMineTask : public CBotTask

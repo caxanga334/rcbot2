@@ -72,21 +72,6 @@ void CCSSBot::setup()
 	engine->SetFakeClientConVarValue(m_pEdict,"cl_autohelp","0");
 }
 
-void CCSSBot::modThink()
-{
-	m_pCurrentWeapon = CClassInterface::getCurrentWeapon(m_pEdict);
-
-	if(m_pCurrentWeapon)
-	{
-		CBotWeapon *weapon = m_pWeapons->getWeapon(CWeapons::getWeapon(m_pCurrentWeapon->GetClassName()));
-		if(weapon && weapon->getClip1(this) == 0)
-		{
-			letGoOfButton(IN_ATTACK);
-			tapButton(IN_RELOAD);
-		}
-	}
-}
-
 bool CCSSBot::isAlive()
 {
 	if (!CBot::isAlive())
@@ -96,21 +81,25 @@ bool CCSSBot::isAlive()
 
 bool CCSSBot::isEnemy(edict_t *pEdict,bool bCheckWeapons)
 {
-	if (ENTINDEX(pEdict) > CBotGlobals::maxClients())
-		return false;
-	if (pEdict->IsFree())
+	if(rcbot_notarget.GetBool())
 		return false;
 
-	if (!CBotGlobals::isNetworkable(pEdict))
+	if(ENTINDEX(pEdict) > CBotGlobals::maxClients())
+		return false;
+
+	if(pEdict->IsFree())
+		return false;
+
+	if(!CBotGlobals::isNetworkable(pEdict))
 		return false;
  
 	IPlayerInfo *p = playerinfomanager->GetPlayerInfo(pEdict);
 
-	if (p == NULL)
+	if(p == NULL)
 		return false;
-	if (m_pEdict == pEdict)
+	if(m_pEdict == pEdict)
 		return false;
-	if (!CBotGlobals::entityIsAlive(pEdict))
+	if(!CBotGlobals::entityIsAlive(pEdict))
 		return false;
 
 	return (p->GetTeamIndex() != getTeam());
@@ -139,6 +128,8 @@ void CCSSBot::spawnInit()
 	CBot::spawnInit();
 
 	m_bDidBuy = false;
+	m_bInCombat = false;
+	m_fCombatTime = 0.0f;
 	m_pCurrentWeapon = NULL;
 	m_fNextAttackTime = engine->Time();
 	m_fCheckStuckTime = engine->Time() + 6.0;
@@ -252,7 +243,7 @@ void CCSSBot::executeBuy()
 		}
 	}
 
-	if(team == CS_TEAM_COUNTERTERRORIST && !CClassInterface::CSPlayerHasDefuser(m_pEdict) && CCounterStrikeSourceMod::IsMapType(CS_MAP_BOMBDEFUSAL))
+	if(team == CS_TEAM_COUNTERTERRORIST && !CClassInterface::CSPlayerHasDefuser(m_pEdict) && CCounterStrikeSourceMod::isMapType(CS_MAP_BOMBDEFUSAL))
 	{
 		cost += 200;
 		buy("defuser");
@@ -355,6 +346,39 @@ bool CCSSBot::handleAttack(CBotWeapon *pWeapon, edict_t *pEnemy)
 	return true;
 }
 
+void CCSSBot::modThink()
+{
+	m_pCurrentWeapon = CClassInterface::getCurrentWeapon(m_pEdict);
+
+	if(m_pCurrentWeapon)
+	{
+		CBotWeapon *weapon = m_pWeapons->getWeapon(CWeapons::getWeapon(m_pCurrentWeapon->GetClassName()));
+		if(weapon && weapon->getClip1(this) == 0 && !weapon->isMelee() && weapon->getID() != CS_WEAPON_C4)
+		{
+			letGoOfButton(IN_ATTACK);
+			tapButton(IN_RELOAD);
+			updateCondition(CONDITION_OUT_OF_AMMO);
+		}
+		else
+		{
+			removeCondition(CONDITION_OUT_OF_AMMO);
+		}
+	}
+
+	// Just saw my enemy?
+	if(hasSomeConditions(CONDITION_SEE_CUR_ENEMY) && !m_bInCombat)
+	{
+		logger->Log(LogLevel::DEBUG, "Bot \"%s\" Entering combat mode at %.4f", m_pPlayerInfo->GetName(), engine->Time());
+		m_fCombatTime = engine->Time();
+		m_bInCombat = true;
+		updateCondition(CONDITION_CHANGED); // Re-execute utility to enter into combat mode
+	}
+	else if(hasSomeConditions(CONDITION_ENEMY_DEAD) || (hasSomeConditions(CONDITION_ENEMY_OBSCURED) && m_fCombatTime + 12.0f <= engine->Time()))
+	{
+		m_bInCombat = false;
+	}
+}
+
 void CCSSBot::getTasks(unsigned int iIgnore)
 {
     static CBotUtilities utils;
@@ -381,13 +405,19 @@ void CCSSBot::getTasks(unsigned int iIgnore)
 		}
 		case CS_TEAM_TERRORIST: // TR specific utilities
 		{
-			if(CCounterStrikeSourceMod::IsMapType(CS_MAP_BOMBDEFUSAL))
+			if(CCounterStrikeSourceMod::isMapType(CS_MAP_BOMBDEFUSAL))
 			{
-				ADD_UTILITY(BOT_UTIL_PLANT_BOMB, CCounterStrikeSourceMod::IsBombCarrier(this), 0.95f);
+				ADD_UTILITY(BOT_UTIL_PLANT_BOMB, CCounterStrikeSourceMod::isBombCarrier(this), 0.90f);
+				ADD_UTILITY(BOT_UTIL_PICKUP_BOMB, CCounterStrikeSourceMod::isBombDropped(), 0.90f);
 			}
 			break;
 		}
 	}
+
+	// Combat Utilities
+	ADD_UTILITY(BOT_UTIL_ENGAGE_ENEMY, hasSomeConditions(CONDITION_SEE_CUR_ENEMY) && !hasSomeConditions(CONDITION_OUT_OF_AMMO), 0.98f);
+	ADD_UTILITY(BOT_UTIL_WAIT_LAST_ENEMY, shouldWaitForEnemy(), 0.95f);
+	ADD_UTILITY(BOT_UTIL_HIDE_FROM_ENEMY, hasSomeConditions(CONDITION_SEE_CUR_ENEMY) && hasSomeConditions(CONDITION_OUT_OF_AMMO), 0.98f);
 
 	// Generic Utilities
 	ADD_UTILITY(BOT_UTIL_BUY, !m_bDidBuy, 1.0f); // Buy weapons
@@ -416,7 +446,9 @@ void CCSSBot::getTasks(unsigned int iIgnore)
 
 			if(CClients::clientsDebugging(BOT_DEBUG_UTIL))
 			{
-				CClients::clientDebugMsg(BOT_DEBUG_UTIL, g_szUtils[next->getId()], this);
+				char buffer[128];
+				sprintf(buffer, "(%.4f) %s", engine->Time(), g_szUtils[next->getId()]);
+				CClients::clientDebugMsg(BOT_DEBUG_UTIL, buffer, this);
 			}
 			break;
 		}
@@ -429,6 +461,42 @@ bool CCSSBot::executeAction(eBotAction iAction)
 {
     switch (iAction)
     {
+		case BOT_UTIL_ENGAGE_ENEMY:
+		{
+			CBotSchedule* pSched = new CBotSchedule();
+			pSched->setID(SCHED_ATTACK);
+			pSched->addTask(new CCSSEngageEnemyTask(m_pEnemy.get()));
+			m_pSchedules->add(pSched);
+			return true;
+			break;
+		}
+		case BOT_UTIL_WAIT_LAST_ENEMY:
+		{
+			CBotSchedule* pSched = new CBotSchedule();
+			CBotTask* pTask = new CBotWaitTask(randomFloat(5.0f, 10.0f), m_vLastSeeEnemy);
+			pTask->setCompleteInterrupt(CONDITION_ENEMY_DEAD);
+			pTask->setFailInterrupt(CONDITION_SEE_CUR_ENEMY);
+			pSched->setID(SCHED_WAIT_FOR_ENEMY);
+			pSched->addTask(pTask);
+			m_pSchedules->add(pSched);
+			return true;
+			break;
+		}
+		case BOT_UTIL_HIDE_FROM_ENEMY:
+		{
+			CBotSchedule *pSched = new CBotSchedule();
+			pSched->setID(SCHED_RUN_FOR_COVER);
+			int cover = CWaypointLocations::GetCoverWaypoint(getOrigin(), CBotGlobals::entityOrigin(m_pEnemy.get()), NULL, NULL, 0, 300.0f, 1024.0f);
+			if(cover != -1)
+			{
+				CBotTask *pTask = new CFindPathTask(cover);
+				pTask->setCompleteInterrupt(CONDITION_ENEMY_DEAD, CONDITION_OUT_OF_AMMO);
+				pSched->addTask(pTask);
+				m_pSchedules->add(pSched);
+				return true;
+			}
+			break;			
+		}
 		case BOT_UTIL_BUY:
 		{
 			CBotSchedule* pSched = new CBotSchedule();
@@ -451,6 +519,16 @@ bool CCSSBot::executeAction(eBotAction iAction)
 					pRoute = CWaypoints::randomRouteWaypoint(this, getOrigin(), pWaypoint->getOrigin(), getTeam(), 0);
 				}
 				m_pSchedules->add(new CCSSPlantBombSched(pWaypoint, pRoute));
+				return true;
+			}
+			break;
+		}
+		case BOT_UTIL_PICKUP_BOMB:
+		{
+			edict_t *pBomb = CCounterStrikeSourceMod::getBomb();
+			if(pBomb)
+			{
+				m_pSchedules->add(new CBotPickupSched(pBomb));
 				return true;
 			}
 			break;
