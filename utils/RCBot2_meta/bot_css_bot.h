@@ -58,7 +58,9 @@ public:
 	bool isEnemy(edict_t *pEdict,bool bCheckWeapons = true) override;
     void handleWeapons() override;
     bool handleAttack(CBotWeapon *pWeapon, edict_t *pEnemy) override;
+	void modAim(edict_t *pEntity, Vector &v_origin, Vector *v_desired_offset, Vector &v_size, float fDist, float fDist2D) override;
 	void modThink() override;
+	virtual void modThinkSlow();
 	unsigned int maxEntityIndex() override { return gpGlobals->maxEntities; }
 	void getTasks (unsigned int iIgnore=0) override;
 	virtual bool executeAction(eBotAction iAction);
@@ -71,12 +73,15 @@ public:
 	{
 		return m_pLastEnemy.get() != NULL && (m_fCombatTime + 5.0f > engine->Time());
 	}
+	virtual float getNextAttackDelay();
+	virtual CBotWeapon *getPrimaryWeapon();
 private:
 	edict_t *m_pCurrentWeapon; // The bot current weapon
 	bool m_bDidBuy; // Did the bot buy on this round?
 	bool m_bInCombat; // Is the bot doing combat related activities
 	float m_fCombatTime; // When did the bot enter combat mode
 	float m_fNextAttackTime; // Control timer for bot primary attack
+	float m_fNextThinkSlow; // Control timer for slow think
 };
 
 #endif

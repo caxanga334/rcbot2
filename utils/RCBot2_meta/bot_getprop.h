@@ -161,6 +161,7 @@ typedef enum
 	GETPROP_CSS_HASDEFUSER,
 	GETPROP_CSS_HASHELMET,
 	GETPROP_CSS_BOMBTICKING,
+	GETPROP_PLAYER_FOV,
 	GET_PROPDATA_MAX
 }getpropdata_id;
 
@@ -687,6 +688,17 @@ public:
 		return g_GetProps[GETPROP_SENTRYGUN_PLACING].getBool(pSentry,false);
 	}
 
+	/**
+	 * Gets the player FOV
+	 * 
+	 * @param pPlayer	The player to retreive FOV from
+	 * @return			The player's FOV
+	 **/
+	inline static int getPlayerFOV(edict_t *pPlayer)
+	{
+		return g_GetProps[GETPROP_PLAYER_FOV].getInt(pPlayer, 0);
+	}
+
 	// Synergy
 
 	/**
@@ -787,7 +799,7 @@ public:
 	 **/
 	inline static bool CSPlayerHasDefuser(edict_t* pPlayer)
 	{
-		return g_GetProps[GETPROP_CSS_HASHELMET].getBool(pPlayer, false);
+		return g_GetProps[GETPROP_CSS_HASDEFUSER].getBool(pPlayer, false);
 	}
 
 	/**

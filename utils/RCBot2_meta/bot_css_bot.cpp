@@ -132,7 +132,8 @@ void CCSSBot::spawnInit()
 	m_fCombatTime = 0.0f;
 	m_pCurrentWeapon = NULL;
 	m_fNextAttackTime = engine->Time();
-	m_fCheckStuckTime = engine->Time() + 6.0;
+	m_fCheckStuckTime = engine->Time() + 6.0f;
+	m_fNextThinkSlow = engine->Time() + 1.0f;
 	updateCondition(CONDITION_CHANGED); // Re-execute the utility system
 	logger->Log(LogLevel::TRACE, "CSSBot::spawnInit() --> %s", m_pPlayerInfo->GetName());
 }
@@ -207,12 +208,19 @@ void CCSSBot::buy(const char *item)
  **/
 void CCSSBot::executeBuy()
 {
-	const int money = CClassInterface::getCSPlayerMoney(m_pEdict);
-	const int team = getTeam();
-	int cost = 0; // Computed buy cost
-	int remaining = 0; // Remaining money (money - cost)
-	CBotWeapon *primary = m_pWeapons->getCurrentWeaponInSlot(CS_WEAPON_SLOT_PRIMARY);
-	CBotWeapon *secondary = m_pWeapons->getCurrentWeaponInSlot(CS_WEAPON_SLOT_SECONDARY);
+	static int money;
+	static int team;
+	static int cost; // Computed buy cost
+	static int remaining; // Remaining money (money - cost)
+	static CBotWeapon *primary;
+	static CBotWeapon *secondary;
+
+	money = CClassInterface::getCSPlayerMoney(m_pEdict);
+	team = getTeam();
+	cost = 0;
+	remaining = 0;
+	primary = m_pWeapons->getCurrentWeaponInSlot(CS_WEAPON_SLOT_PRIMARY);
+	secondary = m_pWeapons->getCurrentWeaponInSlot(CS_WEAPON_SLOT_SECONDARY);
 
 	if(money <= rcbot_css_economy_eco_limit.GetInt())
 	{
@@ -272,6 +280,25 @@ void CCSSBot::executeBuy()
 }
 
 /**
+ * Gets the bot primary weapon (will fallback to secondary)
+ **/
+CBotWeapon *CCSSBot::getPrimaryWeapon()
+{
+	static CBotWeapon *primary;
+	static CBotWeapon *secondary;
+	primary = m_pWeapons->getCurrentWeaponInSlot(CS_WEAPON_SLOT_PRIMARY);
+	secondary = m_pWeapons->getCurrentWeaponInSlot(CS_WEAPON_SLOT_SECONDARY);
+
+	if(primary)
+		return primary;
+
+	if(secondary)
+		return secondary;
+
+	return NULL;
+}
+
+/**
  * Custom primary attack function for Counter-Strike: Source bots
  * 
  * @param hold		Hold the attack button? (full-auto)
@@ -288,10 +315,12 @@ void CCSSBot::primaryattackCS(bool hold)
 		if(m_fNextAttackTime <= engine->Time())
 		{
 			tapButton(IN_ATTACK);
-			m_fNextAttackTime = engine->Time() + 0.050f; // 50 ms delay between shots
+			CClients::clientDebugMsg(this, BOT_DEBUG_AIM, "[CSS-ATTACK] Primary Fire!");
+			m_fNextAttackTime = engine->Time() + getNextAttackDelay(); // 50 ms delay between shots
 		}
 		else
 		{
+			CClients::clientDebugMsg(this, BOT_DEBUG_AIM, "[CSS-ATTACK] Wait!");
 			letGoOfButton(IN_ATTACK);
 		}
 	}
@@ -335,15 +364,47 @@ bool CCSSBot::handleAttack(CBotWeapon *pWeapon, edict_t *pEnemy)
 		if(pWeapon->isMelee())
 			setMoveTo(CBotGlobals::entityOrigin(pEnemy));
 
+		if(pWeapon->isZoomable() && !CCounterStrikeSourceMod::isScoped(this))
+			secondaryAttack(false);
+
 		primaryattackCS(false);
 	}
 	else
 	{
 		primaryattackCS(false);
 	}
-		
 
 	return true;
+}
+
+float CCSSBot::getNextAttackDelay()
+{
+	static const float max = 4096.0f;
+	static float dist;
+	static float delay;
+	delay = 0.050f; // Base delay
+
+	dist = distanceFrom(getEnemy());
+	delay = dist/max;
+	clamp(delay, 0.050f, 0.300f);
+
+	CClients::clientDebugMsg(this, BOT_DEBUG_AIM, "[CSS-ATTACK] Next Attack Delay: %2.4f", delay);
+
+	return delay;
+}
+
+void CCSSBot::modAim(edict_t *pEntity, Vector &v_origin, Vector *v_desired_offset, Vector &v_size, float fDist, float fDist2D)
+{
+	CBot::modAim(pEntity,v_origin,v_desired_offset,v_size,fDist,fDist2D);
+
+	if(hasSomeConditions(CONDITION_SEE_ENEMY_HEAD))
+	{
+		v_desired_offset->z = v_desired_offset->z + (v_size.z-2);
+	}
+	else
+	{
+		v_desired_offset->z = v_desired_offset->z + (v_size.z-8);
+	}
 }
 
 void CCSSBot::modThink()
@@ -394,6 +455,28 @@ void CCSSBot::modThink()
 	{
 		m_bInCombat = false;
 	}
+
+	if(m_fNextThinkSlow <= engine->Time())
+	{
+		modThinkSlow();
+	}
+}
+
+void CCSSBot::modThinkSlow()
+{
+	static Vector velocity;
+	static float fvelocity;
+
+	m_fNextThinkSlow = engine->Time() + 1.0f;
+
+	velocity = Vector(0,0,0);
+	CClassInterface::getVelocity(getEdict(), &velocity);
+	fvelocity = velocity.Length();
+
+	if(fvelocity >= 16.0f && CCounterStrikeSourceMod::isScoped(this))
+	{
+		secondaryAttack(false);
+	}
 }
 
 void CCSSBot::getTasks(unsigned int iIgnore)
@@ -409,6 +492,7 @@ void CCSSBot::getTasks(unsigned int iIgnore)
     removeCondition(CONDITION_CHANGED);
     bCheckCurrent = true; // important for checking current schedule
 	team = getTeam();
+	setMoveSpeed(CClassInterface::getMaxSpeed(m_pEdict)); // Some tasks changes the bot move speed, reset it back.
 
 	// Utilities
 
@@ -417,9 +501,10 @@ void CCSSBot::getTasks(unsigned int iIgnore)
 		case CS_TEAM_COUNTERTERRORIST: // CT specific utilities
 		{
 			if(CCounterStrikeSourceMod::isMapType(CS_MAP_BOMBDEFUSAL))
-			{			
-				ADD_UTILITY(BOT_UTIL_SEARCH_FOR_BOMB, !CCounterStrikeSourceMod::wasBombFound() && CCounterStrikeSourceMod::isBombPlanted(), 0.80f);
-				ADD_UTILITY(BOT_UTIL_DEFUSE_BOMB, CCounterStrikeSourceMod::wasBombFound(), 0.81f);
+			{
+				ADD_UTILITY(BOT_UTIL_DEFEND_BOMB, !CCounterStrikeSourceMod::isBombPlanted(), 0.80f);
+				ADD_UTILITY(BOT_UTIL_SEARCH_FOR_BOMB, !CCounterStrikeSourceMod::wasBombFound() && CCounterStrikeSourceMod::isBombPlanted(), 0.81f);
+				ADD_UTILITY(BOT_UTIL_DEFUSE_BOMB, CCounterStrikeSourceMod::wasBombFound(), 0.82f);
 			}
 			break;
 		}
@@ -496,7 +581,7 @@ bool CCSSBot::executeAction(eBotAction iAction)
 		case BOT_UTIL_WAIT_LAST_ENEMY:
 		{
 			CBotSchedule* pSched = new CBotSchedule();
-			CBotTask* pTask = new CBotWaitTask(randomFloat(5.0f, 10.0f), m_vLastSeeEnemy);
+			CBotTask* pTask = new CBotWaitTask(randomFloat(3.0f, 6.0f), m_vLastSeeEnemy);
 			pTask->setCompleteInterrupt(CONDITION_ENEMY_DEAD);
 			pTask->setFailInterrupt(CONDITION_SEE_CUR_ENEMY);
 			pSched->setID(SCHED_WAIT_FOR_ENEMY);
@@ -564,18 +649,30 @@ bool CCSSBot::executeAction(eBotAction iAction)
 			Vector vBomb = CBotGlobals::entityOrigin(pBomb);
 			if(pBomb)
 			{
-				logger->Log(LogLevel::DEBUG, "[BOT_UTIL_DEFEND_NEAREST_BOMB] Bomb Vector (%0.4f,%0.4f,%0.4f,)", vBomb.x, vBomb.y, vBomb.z);
 				CWaypoint *pDefend = CWaypoints::randomWaypointGoalNearestArea(CWaypointTypes::W_FL_DEFEND, getTeam(), 0, false, this, false, &vBomb);
 				if(pDefend)
 				{
-					logger->Log(LogLevel::DEBUG, "[BOT_UTIL_DEFEND_NEAREST_BOMB] Defend Waypoint: %i", CWaypoints::getWaypointIndex(pDefend));
 					pSched->addTask(new CFindPathTask(CWaypoints::getWaypointIndex(pDefend)));
-					pSched->addTask(new CCSSGuardTask(getBestWeapon(m_pEnemy, false, true, false, false), pDefend->getOrigin(), pDefend->getAimYaw(), false, 0.0f, pDefend->getFlags()));
+					pSched->addTask(new CCSSGuardTask(getPrimaryWeapon(), pDefend->getOrigin(), pDefend->getAimYaw(), false, 0.0f, pDefend->getFlags()));
 					m_pSchedules->add(pSched);
 				}
 				return true;
 			}
 			break;
+		}
+		case BOT_UTIL_DEFEND_BOMB:
+		{
+			CBotSchedule* pSched = new CBotSchedule();
+			pSched->setID(SCHED_DEFENDPOINT);
+			CWaypoint *pDefend = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_DEFEND, getTeam());
+			if(pDefend)
+			{
+				pSched->addTask(new CFindPathTask(CWaypoints::getWaypointIndex(pDefend)));
+				pSched->addTask(new CCSSGuardTask(getPrimaryWeapon(), pDefend->getOrigin(), pDefend->getAimYaw(), false, 0.0f, pDefend->getFlags()));
+				m_pSchedules->add(pSched);
+				return true;
+			}
+			break;		
 		}
 		case BOT_UTIL_DEFUSE_BOMB:
 		{

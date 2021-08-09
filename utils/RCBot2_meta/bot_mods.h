@@ -673,6 +673,7 @@ public:
 		m_bBombWasFound = set;
 	}
 	static bool canHearPlantedBomb(CBot *pBot);
+	static bool isScoped(CBot *pBot);
 	//void entitySpawn ( edict_t *pEntity );
 private:
 	static eCSSMapType m_MapType; // Map Type

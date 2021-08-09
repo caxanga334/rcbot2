@@ -153,6 +153,18 @@ bool CCounterStrikeSourceMod::canHearPlantedBomb(CBot *pBot)
 }
 
 /**
+ * Checks if the given bot is scoped
+ * 
+ * @param pBot      The bot to check
+ * @return          TRUE if the bot is scoped
+ **/
+bool CCounterStrikeSourceMod::isScoped(CBot *pBot)
+{
+    const int fov = CClassInterface::getPlayerFOV(pBot->getEdict());
+    return fov != 0 && fov != 90; // For bots, FOVs are 0 or 90 when not scoped.
+}
+
+/**
  * Called when a new round starts
  **/
 void CCounterStrikeSourceMod::onRoundStart()
@@ -206,4 +218,17 @@ void CCounterStrikeSourceMod::onBombPlanted()
         m_hBomb.Init(engine->IndexOfEdict(pPlantedC4), pPlantedC4->m_NetworkSerialNumber);
         logger->Log(LogLevel::DEBUG, "CSS C4: %i %i %s", m_hBomb.GetEntryIndex(), m_hBomb.GetSerialNumber(), m_hBomb.IsValid() ? "Valid" : "Invalid");
     }
+
+	for(short int i = 0; i < MAX_PLAYERS; i++)
+	{
+        CBot *pBot = CBots::get(i);
+
+		if(pBot && pBot->inUse())
+        {
+            if(pBot->distanceFrom(getBomb()) >= 512.0f)
+            {
+                pBot->updateCondition(CONDITION_CHANGED);
+            }
+        }
+	}
 }

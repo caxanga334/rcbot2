@@ -4031,15 +4031,14 @@ void CCSSEngageEnemyTask::execute(CBot *pBot, CBotSchedule *pSchedule)
 
 		if(!CBotGlobals::entityIsAlive(pEnemy))
 		{
-			pBot->debugMsg(BOT_DEBUG_THINK, "CCSSEngageEnemyTask:: Task Complete! Enemy is DEAD");
 			complete();
 		}
 
 		pBot->setLookAtTask(LOOK_ENEMY);
+		//pBot->handleAttack(pBot->getCurrentWeapon(), pBot->getEnemy());
 	}
 	else
 	{
-		pBot->debugMsg(BOT_DEBUG_THINK, "CCSSEngageEnemyTask:: Task Complete! Enemy is NULL");
 		complete();
 		return;
 	}
@@ -4077,10 +4076,7 @@ void CCSSGuardTask::execute(CBot *pBot, CBotSchedule *pScheddule)
 	static CBotWeapon *pCurrentWeapon;
 	static CWeapon *pWeapon;
 
-	static bool bDeployedOrZoomed;
 	static float fDist;
-
-	bDeployedOrZoomed = false;
 
 	pBot->wantToShoot(false);
 	pBot->wantToListen(false);
@@ -4108,12 +4104,9 @@ void CCSSGuardTask::execute(CBot *pBot, CBotSchedule *pScheddule)
 		return;
 	}
 
-	// refrain from proning
-	pBot->updateCondition(CONDITION_RUN);
-
 	if ( m_pWeaponToUse && pCurrentWeapon != m_pWeaponToUse )
 	{
-		if ( !pBot->select_CWeapon(CWeapons::getWeapon(m_pWeaponToUse->getID())) )
+		if ( !pBot->selectBotWeapon(m_pWeaponToUse) )
 		{
 			fail();
 		}
@@ -4145,13 +4138,10 @@ void CCSSGuardTask::execute(CBot *pBot, CBotSchedule *pScheddule)
 
 	fDist = (m_vOrigin - pBot->getOrigin()).Length2D();
 
-	if ( fDist > 16 )
+	if ( fDist > 32 )
 	{
 		pBot->setMoveTo(m_vOrigin);
-		pBot->setMoveSpeed(CClassInterface::getMaxSpeed(pBot->getEdict())/8);
-
-		//if ( ( fDist < 48 ) && ((CDODBot*)pBot)->withinTeammate() )
-		//	fail();
+		pBot->setMoveSpeed(CClassInterface::getMaxSpeed(pBot->getEdict())/2);
 	}
 	else
 	{
@@ -4163,10 +4153,12 @@ void CCSSGuardTask::execute(CBot *pBot, CBotSchedule *pScheddule)
 		// no enemy for a while
 		if ( (m_fEnemyTime + m_fTime) < engine->Time() )
 		{
-			//if ( bDeployedOrZoomed )
-			//	pBot->secondaryAttack();
-
 			complete();
+		}
+
+		if( pCurrentWeapon->isZoomable() && !CCounterStrikeSourceMod::isScoped(pBot) )
+		{
+			pBot->secondaryAttack(false);
 		}
 	}
 
