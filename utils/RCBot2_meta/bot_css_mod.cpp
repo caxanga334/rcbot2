@@ -60,6 +60,7 @@ eCSSMapType CCounterStrikeSourceMod::m_MapType = CS_MAP_DEATHMATCH;
 float CCounterStrikeSourceMod::m_fRoundStartTime = 0.0f;
 float CCounterStrikeSourceMod::m_fBombPlantedTime = 0.0f;
 bool CCounterStrikeSourceMod::m_bIsBombPlanted = false;
+bool CCounterStrikeSourceMod::m_bBombWasFound = false;
 CBaseHandle CCounterStrikeSourceMod::m_hBomb = NULL;
 
 
@@ -121,6 +122,37 @@ bool CCounterStrikeSourceMod::isBombDropped()
 }
 
 /**
+ * Checks if the C4 was defused
+ * 
+ * @return      TRUE if defused
+ **/
+bool CCounterStrikeSourceMod::isBombDefused()
+{
+    return !(CClassInterface::isCSBombTicking(INDEXENT(m_hBomb.GetEntryIndex())));
+}
+
+/**
+ * Checks if the given bot can hear the planted c4 ticking
+ * 
+ * @param pBot      The bot to check
+ * @return          TRUE if the bot can hear
+ **/
+bool CCounterStrikeSourceMod::canHearPlantedBomb(CBot *pBot)
+{
+    if(!isBombPlanted())
+        return false;
+
+    edict_t *pBomb = getBomb();
+
+    if(pBomb)
+    {
+        return (pBot->distanceFrom(pBomb) <= 2048.0f);
+    }
+
+    return false;
+}
+
+/**
  * Called when a new round starts
  **/
 void CCounterStrikeSourceMod::onRoundStart()
@@ -128,6 +160,7 @@ void CCounterStrikeSourceMod::onRoundStart()
     // Empty for now, reset round based logic
     logger->Log(LogLevel::TRACE, "CCounterStrikeSourceMod::OnRoundStart()");
     m_bIsBombPlanted = false;
+    setBombFound(false);
     m_hBomb.Term();
 }
 

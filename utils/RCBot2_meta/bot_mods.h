@@ -644,31 +644,42 @@ public:
 	static void onRoundStart();
 	static void onFreezeTimeEnd();
 	static void onBombPlanted();
-	static inline bool isMapType(eCSSMapType MapType) { return MapType == m_MapType; }
+	inline static bool isMapType(eCSSMapType MapType) { return MapType == m_MapType; }
 	static bool isBombCarrier(CBot *pBot);
-	static inline float getRemainingRoundTime()
+	inline static float getRemainingRoundTime()
 	{
 		return ((m_fRoundStartTime + (mp_roundtime->GetFloat() * 60.0f)) - engine->Time());
 	}
-	static inline float getRemainingBombTime()
+	inline static float getRemainingBombTime()
 	{
 		return ((m_fRoundStartTime + mp_c4timer->GetFloat()) - engine->Time());
 	}
-	static inline bool isBombPlanted()
+	inline static bool isBombPlanted()
 	{
 		return m_bIsBombPlanted;
 	}
-	static inline edict_t *getBomb()
+	inline static edict_t *getBomb()
 	{
 		return engine->PEntityOfEntIndex(m_hBomb.GetEntryIndex());
 	}
 	static bool isBombDropped();
+	static bool isBombDefused();
+	inline static bool wasBombFound()
+	{
+		return m_bBombWasFound;
+	}
+	inline static void setBombFound(bool set)
+	{
+		m_bBombWasFound = set;
+	}
+	static bool canHearPlantedBomb(CBot *pBot);
 	//void entitySpawn ( edict_t *pEntity );
 private:
 	static eCSSMapType m_MapType; // Map Type
 	static float m_fRoundStartTime; // The time when the round started
 	static float m_fBombPlantedTime; // The time when the bomb was planted
-	static bool m_bIsBombPlanted;
+	static bool m_bIsBombPlanted; // Is the bomb planted?
+	static bool m_bBombWasFound; // Did the CTs locate the bomb?
 	static CBaseHandle m_hBomb; // The bomb. Experimental CBaseHandle instead of MyEHandle
 };
 

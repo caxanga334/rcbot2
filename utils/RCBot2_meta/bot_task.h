@@ -1238,6 +1238,61 @@ private:
 	CBaseHandle m_hEnemy;
 };
 
+class CCSSDefuseTheBombTask : public CBotTask
+{
+public:
+	CCSSDefuseTheBombTask(Vector &vBomb)
+	{
+		m_vBomb = vBomb;
+	}
+	void init()
+	{
+		setFailInterrupt(CONDITION_SEE_CUR_ENEMY);
+	}
+	void execute(CBot *pBot,CBotSchedule *pSchedule);
+	void debugString(char *string)
+	{
+		sprintf(string,"CSS Defuse C4\nBomb Vector (%0.4f,%0.4f,%0.4f)", m_vBomb.x, m_vBomb.y, m_vBomb.z);
+	}
+private:
+	Vector m_vBomb;
+};
+
+class CCSSGuardTask : public CBotTask
+{
+public:
+	CCSSGuardTask( CBotWeapon *pWeaponToUse, Vector vOrigin, float fYaw, bool bUseZ, float z, int iWaypointType )
+	{
+		QAngle angle;
+		m_fEnemyTime = 0.0f;
+		m_fTime = 0.0f;
+		angle = QAngle(0,fYaw,0);
+		AngleVectors(angle,&m_vAim);
+		m_vAim = vOrigin + (m_vAim*1024);
+		m_vOrigin = vOrigin;
+		m_pWeaponToUse = pWeaponToUse;
+		m_fScopeTime = 0;
+		m_bUseZ = bUseZ;
+		m_z = z; // z = ground level
+		m_iWaypointType = iWaypointType;
+	}
+	void execute(CBot *pBot,CBotSchedule *pSchedule);
+	void debugString(char *string)
+	{
+		sprintf(string,"CSS Defend Planted C4");
+	}
+private:
+	float m_fTime;
+	float m_fEnemyTime;
+	float m_fScopeTime;
+	Vector m_vAim;
+	Vector m_vOrigin;
+	CBotWeapon *m_pWeaponToUse;
+	bool m_bUseZ;
+	float m_z; // z = ground level
+	int m_iWaypointType;
+};
+
 //////////////////////
 class CTF2_TauntTask : public CBotTask
 {

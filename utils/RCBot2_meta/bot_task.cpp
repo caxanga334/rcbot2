@@ -3973,6 +3973,7 @@ void CCSSPlantTheBombTask::execute(CBot *pBot,CBotSchedule *pSchedule)
 	if(!CCounterStrikeSourceMod::isBombCarrier(pBot))
 	{
 		complete();
+		pBot->letGoOfButton(IN_ATTACK);
 		return;
 	}
 
@@ -3989,8 +3990,10 @@ void CCSSPlantTheBombTask::execute(CBot *pBot,CBotSchedule *pSchedule)
 	}
 	else
 	{
-		fail();
-		pBot->debugMsg(BOT_DEBUG_TASK, "[CSS] Failed to plant the bomb! Outside bomb size.");
+		if(CClassInterface::getGroundEntity(pBot->getEdict()) != NULL)
+		{ // Must be on ground to fail since you can't plant while in the air and the bot might have to jump to reach some plant spots
+			fail();
+		}
 	}
 }
 
@@ -3998,6 +4001,11 @@ void CCSSEngageEnemyTask::execute(CBot *pBot, CBotSchedule *pSchedule)
 {
 	edict_t *pEnemy = engine->PEntityOfEntIndex(m_hEnemy.GetEntryIndex());
 	edict_t *pWeapon = CClassInterface::getCurrentWeapon(pBot->getEdict());
+
+	if(pBot->hasSomeConditions(CONDITION_OUT_OF_AMMO))
+	{
+		fail();
+	}
 
 	if(pEnemy)
 	{
@@ -4041,6 +4049,137 @@ void CCSSEngageEnemyTask::debugString(char *string)
 {
 	edict_t *pEnemy = engine->PEntityOfEntIndex(m_hEnemy.GetEntryIndex());
 	sprintf(string,"CSS Engage Enemy\n%s", pEnemy ? pEnemy->GetClassName() : "null");
+}
+
+void CCSSDefuseTheBombTask::execute(CBot *pBot, CBotSchedule *pSchedule)
+{
+	pBot->stopMoving();
+	pBot->setMoveLookPriority(MOVELOOK_OVERRIDE);
+	pBot->setLookVector(m_vBomb);
+	pBot->setLookAtTask(LOOK_VECTOR);
+	pBot->setMoveLookPriority(MOVELOOK_TASK);
+
+	if(pBot->distanceFrom(m_vBomb) >= 75.0f)
+	{
+		fail();
+	}
+
+	pBot->use();
+
+	if(CCounterStrikeSourceMod::isBombDefused())
+	{
+		complete();
+	}
+}
+
+void CCSSGuardTask::execute(CBot *pBot, CBotSchedule *pScheddule)
+{
+	static CBotWeapon *pCurrentWeapon;
+	static CWeapon *pWeapon;
+
+	static bool bDeployedOrZoomed;
+	static float fDist;
+
+	bDeployedOrZoomed = false;
+
+	pBot->wantToShoot(false);
+	pBot->wantToListen(false);
+
+	if ( m_fTime == 0.0f )
+	{
+		m_fEnemyTime = engine->Time();
+		m_fTime = m_fEnemyTime + randomFloat(20.0f,40.0f);
+		pBot->resetLookAroundTime();
+	}
+
+	pCurrentWeapon = pBot->getCurrentWeapon();
+
+	if ( !pCurrentWeapon )
+	{
+		fail();
+		return;
+	}
+
+	pWeapon = pCurrentWeapon->getWeaponInfo();
+
+	if (pWeapon == NULL)
+	{
+		fail();
+		return;
+	}
+
+	// refrain from proning
+	pBot->updateCondition(CONDITION_RUN);
+
+	if ( m_pWeaponToUse && pCurrentWeapon != m_pWeaponToUse )
+	{
+		if ( !pBot->select_CWeapon(CWeapons::getWeapon(m_pWeaponToUse->getID())) )
+		{
+			fail();
+		}
+
+		return;
+	}
+
+	if ( pCurrentWeapon->getAmmo(pBot) < 1 )
+	{
+		complete();
+	}
+	else if ( pBot->distanceFrom(m_vOrigin) > 200 ) // too far from sniper point
+	{
+		// too far away
+		fail();
+	}
+
+	if ( m_bUseZ )
+	{
+		Vector vAim = Vector(m_vAim.x,m_vAim.y,m_z);
+		pBot->setLookAtTask(LOOK_VECTOR);
+		pBot->setLookVector(pBot->snipe(vAim));
+	}
+	else
+	{
+		pBot->setLookAtTask(LOOK_SNIPE);
+		pBot->setLookVector(pBot->snipe(m_vAim));
+	}
+
+	fDist = (m_vOrigin - pBot->getOrigin()).Length2D();
+
+	if ( fDist > 16 )
+	{
+		pBot->setMoveTo(m_vOrigin);
+		pBot->setMoveSpeed(CClassInterface::getMaxSpeed(pBot->getEdict())/8);
+
+		//if ( ( fDist < 48 ) && ((CDODBot*)pBot)->withinTeammate() )
+		//	fail();
+	}
+	else
+	{
+		pBot->stopMoving();
+
+		if ( m_iWaypointType & CWaypointTypes::W_FL_CROUCH )
+			pBot->duck();
+
+		// no enemy for a while
+		if ( (m_fEnemyTime + m_fTime) < engine->Time() )
+		{
+			//if ( bDeployedOrZoomed )
+			//	pBot->secondaryAttack();
+
+			complete();
+		}
+	}
+
+	if ( pBot->hasEnemy() )
+	{
+		pBot->setMoveLookPriority(MOVELOOK_ATTACK);
+		pBot->setLookAtTask(LOOK_ENEMY);
+		pBot->handleAttack(pCurrentWeapon,pBot->getEnemy());
+		pBot->setMoveLookPriority(MOVELOOK_TASK);
+
+		// havin' fun
+		m_fEnemyTime = engine->Time();
+	}
 }
 
 CFindLastEnemy::CFindLastEnemy (Vector vLast,Vector vVelocity)

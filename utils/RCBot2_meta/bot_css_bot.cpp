@@ -349,6 +349,8 @@ bool CCSSBot::handleAttack(CBotWeapon *pWeapon, edict_t *pEnemy)
 void CCSSBot::modThink()
 {
 	m_pCurrentWeapon = CClassInterface::getCurrentWeapon(m_pEdict);
+	static int team;
+	team = getTeam();
 
 	if(m_pCurrentWeapon)
 	{
@@ -362,6 +364,21 @@ void CCSSBot::modThink()
 		else
 		{
 			removeCondition(CONDITION_OUT_OF_AMMO);
+		}
+	}
+
+	// Team Specific thinking
+	switch (team)
+	{
+		case CS_TEAM_COUNTERTERRORIST:
+		{
+			if(!CCounterStrikeSourceMod::wasBombFound() && CCounterStrikeSourceMod::canHearPlantedBomb(this))
+			{
+				CCounterStrikeSourceMod::setBombFound(true);
+				updateCondition(CONDITION_CHANGED);
+				debugMsg(BOT_DEBUG_THINK, "[CSS-BOT] Found bomb!");
+			}
+			break;
 		}
 	}
 
@@ -384,15 +401,14 @@ void CCSSBot::getTasks(unsigned int iIgnore)
     static CBotUtilities utils;
     static CBotUtility* next;
     static bool bCheckCurrent;
-	static int team = getTeam();
+	static int team;
 
 	if(!hasSomeConditions(CONDITION_CHANGED) && !m_pSchedules->isEmpty())
 		return;
 
     removeCondition(CONDITION_CHANGED);
     bCheckCurrent = true; // important for checking current schedule
-
-	//logger->Log(LogLevel::TRACE, "Bot %s team %i has C4 \"%s\"", m_pPlayerInfo->GetName(), team, CCounterStrikeSourceMod::IsBombCarrier(this) ? "Yes" : "No");
+	team = getTeam();
 
 	// Utilities
 
@@ -400,15 +416,20 @@ void CCSSBot::getTasks(unsigned int iIgnore)
 	{
 		case CS_TEAM_COUNTERTERRORIST: // CT specific utilities
 		{
-
+			if(CCounterStrikeSourceMod::isMapType(CS_MAP_BOMBDEFUSAL))
+			{			
+				ADD_UTILITY(BOT_UTIL_SEARCH_FOR_BOMB, !CCounterStrikeSourceMod::wasBombFound() && CCounterStrikeSourceMod::isBombPlanted(), 0.80f);
+				ADD_UTILITY(BOT_UTIL_DEFUSE_BOMB, CCounterStrikeSourceMod::wasBombFound(), 0.81f);
+			}
 			break;
 		}
 		case CS_TEAM_TERRORIST: // TR specific utilities
 		{
 			if(CCounterStrikeSourceMod::isMapType(CS_MAP_BOMBDEFUSAL))
 			{
-				ADD_UTILITY(BOT_UTIL_PLANT_BOMB, CCounterStrikeSourceMod::isBombCarrier(this), 0.90f);
-				ADD_UTILITY(BOT_UTIL_PICKUP_BOMB, CCounterStrikeSourceMod::isBombDropped(), 0.90f);
+				ADD_UTILITY(BOT_UTIL_PLANT_BOMB, CCounterStrikeSourceMod::isBombCarrier(this), 0.80f);
+				ADD_UTILITY(BOT_UTIL_PICKUP_BOMB, CCounterStrikeSourceMod::isBombDropped(), 0.80f);
+				ADD_UTILITY(BOT_UTIL_DEFEND_NEAREST_BOMB, CCounterStrikeSourceMod::isBombPlanted(), 0.80f);
 			}
 			break;
 		}
@@ -447,7 +468,9 @@ void CCSSBot::getTasks(unsigned int iIgnore)
 			if(CClients::clientsDebugging(BOT_DEBUG_UTIL))
 			{
 				char buffer[128];
-				sprintf(buffer, "(%.4f) %s", engine->Time(), g_szUtils[next->getId()]);
+				sprintf(buffer, "(%.4f) %s\nTeam: %i\nBomb Carrier: %s\nBomb Dropped: %s\nBomb Planted: %s", engine->Time(), g_szUtils[next->getId()], team, 
+				CCounterStrikeSourceMod::isBombCarrier(this) ? "Yes" : "No", CCounterStrikeSourceMod::isBombDropped() ? "Yes" : "No", 
+				CCounterStrikeSourceMod::isBombPlanted() ? "Yes" : "No");
 				CClients::clientDebugMsg(BOT_DEBUG_UTIL, buffer, this);
 			}
 			break;
@@ -486,7 +509,7 @@ bool CCSSBot::executeAction(eBotAction iAction)
 		{
 			CBotSchedule *pSched = new CBotSchedule();
 			pSched->setID(SCHED_RUN_FOR_COVER);
-			int cover = CWaypointLocations::GetCoverWaypoint(getOrigin(), CBotGlobals::entityOrigin(m_pEnemy.get()), NULL, NULL, 0, 300.0f, 1024.0f);
+			int cover = CWaypointLocations::GetCoverWaypoint(getOrigin(), CBotGlobals::entityOrigin(m_pEnemy.get()), NULL, NULL, 0, 8.0f, 1024.0f);
 			if(cover != -1)
 			{
 				CBotTask *pTask = new CFindPathTask(cover);
@@ -529,6 +552,80 @@ bool CCSSBot::executeAction(eBotAction iAction)
 			if(pBomb)
 			{
 				m_pSchedules->add(new CBotPickupSched(pBomb));
+				return true;
+			}
+			break;
+		}
+		case BOT_UTIL_DEFEND_NEAREST_BOMB:
+		{
+			CBotSchedule* pSched = new CBotSchedule();
+			pSched->setID(SCHED_DEFENDPOINT);
+			edict_t *pBomb = CCounterStrikeSourceMod::getBomb();
+			Vector vBomb = CBotGlobals::entityOrigin(pBomb);
+			if(pBomb)
+			{
+				logger->Log(LogLevel::DEBUG, "[BOT_UTIL_DEFEND_NEAREST_BOMB] Bomb Vector (%0.4f,%0.4f,%0.4f,)", vBomb.x, vBomb.y, vBomb.z);
+				CWaypoint *pDefend = CWaypoints::randomWaypointGoalNearestArea(CWaypointTypes::W_FL_DEFEND, getTeam(), 0, false, this, false, &vBomb);
+				if(pDefend)
+				{
+					logger->Log(LogLevel::DEBUG, "[BOT_UTIL_DEFEND_NEAREST_BOMB] Defend Waypoint: %i", CWaypoints::getWaypointIndex(pDefend));
+					pSched->addTask(new CFindPathTask(CWaypoints::getWaypointIndex(pDefend)));
+					pSched->addTask(new CCSSGuardTask(getBestWeapon(m_pEnemy, false, true, false, false), pDefend->getOrigin(), pDefend->getAimYaw(), false, 0.0f, pDefend->getFlags()));
+					m_pSchedules->add(pSched);
+				}
+				return true;
+			}
+			break;
+		}
+		case BOT_UTIL_DEFUSE_BOMB:
+		{
+			edict_t *pBomb = CCounterStrikeSourceMod::getBomb();
+			if(pBomb)
+			{
+				CBotSchedule *pSched = new CBotSchedule();
+				CBotTask *pFindPath = new CFindPathTask(pBomb);
+				CBotTask *pMoveTask = new CMoveToTask(pBomb);
+				pFindPath->setFailInterrupt(CONDITION_SEE_CUR_ENEMY);
+				pMoveTask->setFailInterrupt(CONDITION_SEE_CUR_ENEMY);
+				pSched->setID(SCHED_BOMB);
+				pSched->addTask(pFindPath);
+				pSched->addTask(pMoveTask);
+				pSched->addTask(new CCSSDefuseTheBombTask(CBotGlobals::entityOrigin(pBomb)));
+				m_pSchedules->add(pSched);
+				return true;
+			}
+			break;
+		}
+		case BOT_UTIL_SEARCH_FOR_BOMB:
+		{
+			// Go to a random bomb plant spot
+			CWaypoint* pWaypoint = NULL;
+			CWaypoint* pRoute = NULL;
+			CBotSchedule* pSched = new CBotSchedule();
+
+			pSched->setID(SCHED_GOTO_ORIGIN);
+			pWaypoint = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_GOAL);
+
+			if(pWaypoint)
+			{
+				pRoute = CWaypoints::randomRouteWaypoint(this, getOrigin(), pWaypoint->getOrigin(), 0, 0);
+				if((m_fUseRouteTime <= engine->Time()))
+				{
+					if(pRoute)
+					{
+						int iRoute = CWaypoints::getWaypointIndex(pRoute); // Route waypoint
+						pSched->addTask(new CFindPathTask(iRoute, LOOK_WAYPOINT));
+						pSched->addTask(new CMoveToTask(pRoute->getOrigin()));
+						m_pSchedules->add(pSched);
+						m_fUseRouteTime = engine->Time() + 30.0f;
+					}
+				}
+
+				int iWaypoint = CWaypoints::getWaypointIndex(pWaypoint);
+				pSched->addTask(new CFindPathTask(iWaypoint, LOOK_WAYPOINT));
+				pSched->addTask(new CMoveToTask(pWaypoint->getOrigin()));
+				m_pSchedules->add(pSched);
+
 				return true;
 			}
 			break;

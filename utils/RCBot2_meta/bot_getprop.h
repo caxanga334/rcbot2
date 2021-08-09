@@ -160,6 +160,7 @@ typedef enum
 	GETPROP_CSS_ARMOR,
 	GETPROP_CSS_HASDEFUSER,
 	GETPROP_CSS_HASHELMET,
+	GETPROP_CSS_BOMBTICKING,
 	GET_PROPDATA_MAX
 }getpropdata_id;
 
@@ -798,6 +799,17 @@ public:
 	inline static bool CSPlayerHasHelmet(edict_t* pPlayer)
 	{
 		return g_GetProps[GETPROP_CSS_HASHELMET].getBool(pPlayer, false);
+	}
+
+	/**
+	 * Checks if the bomb is ticking
+	 * 
+	 * @param pBomb		The planted bomb entity
+	 * @return			TRUE if the bomb is ticking (returns FALSE is the bomb was defused)
+	 **/
+	inline static bool isCSBombTicking(edict_t* pBomb)
+	{
+		return g_GetProps[GETPROP_CSS_BOMBTICKING].getBool(pBomb, false);
 	}
 
 private:
