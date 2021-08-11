@@ -4084,7 +4084,7 @@ void CCSSGuardTask::execute(CBot *pBot, CBotSchedule *pScheddule)
 	if ( m_fTime == 0.0f )
 	{
 		m_fEnemyTime = engine->Time();
-		m_fTime = m_fEnemyTime + randomFloat(20.0f,40.0f);
+		m_fTime = randomFloat(15.0f,30.0f);
 		pBot->resetLookAroundTime();
 	}
 

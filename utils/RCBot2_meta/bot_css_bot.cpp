@@ -72,10 +72,32 @@ void CCSSBot::setup()
 	engine->SetFakeClientConVarValue(m_pEdict,"cl_autohelp","0");
 }
 
+void CCSSBot::updateConditions()
+{
+	CBot::updateConditions();
+
+	if(m_pEnemy.get() != NULL)
+	{
+		if(engine->IndexOfEdict(m_pEnemy.get()) <= gpGlobals->maxClients)
+		{
+			// CSS Hack: Dead players are always "Alive" with 1 health.
+			if(CClassInterface::getPlayerLifeState(m_pEnemy.get()) == LIFE_DEAD || CClassInterface::getPlayerLifeState(m_pEnemy.get()) == LIFE_DYING)
+			{
+				updateCondition(CONDITION_ENEMY_DEAD);
+				m_pEnemy = NULL;
+			}
+		}
+	}
+}
+
 bool CCSSBot::isAlive()
 {
 	if (!CBot::isAlive())
 		return false;
+
+	if(CClassInterface::getPlayerLifeState(getEdict()) == LIFE_DEAD || CClassInterface::getPlayerLifeState(getEdict()) == LIFE_DYING)
+		return false;
+
 	return (getOrigin() != Vector(0,0,0));
 }
 
@@ -97,9 +119,14 @@ bool CCSSBot::isEnemy(edict_t *pEdict,bool bCheckWeapons)
 
 	if(p == NULL)
 		return false;
+
 	if(m_pEdict == pEdict)
 		return false;
+
 	if(!CBotGlobals::entityIsAlive(pEdict))
+		return false;
+
+	if(CClassInterface::getPlayerLifeState(pEdict) == LIFE_DEAD || CClassInterface::getPlayerLifeState(pEdict) == LIFE_DYING)
 		return false;
 
 	return (p->GetTeamIndex() != getTeam());
@@ -136,6 +163,103 @@ void CCSSBot::spawnInit()
 	m_fNextThinkSlow = engine->Time() + 1.0f;
 	updateCondition(CONDITION_CHANGED); // Re-execute the utility system
 	logger->Log(LogLevel::TRACE, "CSSBot::spawnInit() --> %s", m_pPlayerInfo->GetName());
+}
+
+void CCSSBot::listenForPlayers()
+{
+	edict_t *pListenNearest = NULL;
+	CClient *pClient;
+	edict_t *pPlayer;
+	CBotCmd cmd;
+	IPlayerInfo *p;
+	float fFactor = 0;
+	float fMaxFactor = 0;
+	//float fMinDist = 1024.0f;
+	float fDist;
+	float fVelocity;
+	Vector vVelocity;
+	bool bIsNearestAttacking = false;
+
+	if(m_bListenPositionValid && (m_fListenTime > engine->Time())) // already listening to something ?
+	{
+		setLookAtTask(LOOK_NOISE);
+		return;
+	}
+
+	m_bListenPositionValid = false;
+
+	for(short int i = 1; i <= gpGlobals->maxClients; i ++)
+	{
+		pPlayer = INDEXENT(i);
+
+		if(pPlayer == m_pEdict)
+			continue; // don't listen to self
+
+		if(pPlayer->IsFree())
+			continue;
+
+		pClient = CClients::get(pPlayer);
+
+		if(!pClient->isUsed())
+			continue;
+
+		p = playerinfomanager->GetPlayerInfo(pPlayer);
+
+		// 05/07/09 fix crash bug
+		if(!p || !p->IsConnected() || p->IsDead() || p->IsObserver() || !p->IsPlayer())
+			continue;
+
+		if(CClassInterface::getPlayerLifeState(pPlayer) == LIFE_DEAD || CClassInterface::getPlayerLifeState(pPlayer) == LIFE_DYING)
+			continue;
+
+		// Ignore teammates
+		if(p->GetTeamIndex() == getTeam())
+			continue;
+
+		fDist = distanceFrom(pPlayer);
+
+		if(fDist > rcbot_listen_dist.GetFloat())
+			continue;
+		
+		fFactor = 0.0f;
+
+		cmd = p->GetLastUserCommand();
+
+		if((cmd.buttons & IN_ATTACK))
+		{
+			if(wantToListenToPlayerAttack(pPlayer))
+				fFactor += 1000.0f;
+		}
+		
+		// can't see this player and I'm on my own
+		if(wantToListenToPlayerFootsteps(pPlayer) && !isVisible(pPlayer) && ( m_bStatsCanUse && ((m_StatsCanUse.stats.m_iTeamMatesVisible==0))))
+		{
+			CClassInterface::getVelocity(pPlayer,&vVelocity);
+		
+			fVelocity = vVelocity.Length();
+
+			if(fVelocity > rcbot_footstep_speed.GetFloat())
+				fFactor += vVelocity.Length();
+		}
+
+		if(fFactor == 0.0f)
+			continue;
+
+		// add inverted distance to the factor (i.e. closer = better)
+		fFactor += (rcbot_listen_dist.GetFloat() - fDist);
+
+		if(fFactor > fMaxFactor)
+		{
+			fMaxFactor = fFactor;
+			pListenNearest = pPlayer;
+			bIsNearestAttacking = (cmd.buttons & IN_ATTACK);
+		}
+	}
+
+	if(pListenNearest != NULL)
+	{
+		listenToPlayer(pListenNearest,false,bIsNearestAttacking);
+	}
 }
 
 void CCSSBot::selectTeam()
@@ -264,10 +388,26 @@ void CCSSBot::executeBuy()
 	}
 	else
 	{ // To-do: Buy selection logic
-		if(remaining >= 1500)
+		if(remaining >= 7500)
+		{
+			cost += 4750;
+			buy("awp");
+		}
+		else if(remaining >= 5000)
+		{
+			cost += 3200;
+			buy("m4a1");
+			buy("ak47");
+		}
+		else if(remaining >= 1500)
 		{
 			cost += 1500;
 			buy("mp5navy");
+		}
+		else if(remaining >= 750)
+		{
+			cost += 750;
+			buy("deagle");
 		}
 	}
 
@@ -395,15 +535,72 @@ float CCSSBot::getNextAttackDelay()
 
 void CCSSBot::modAim(edict_t *pEntity, Vector &v_origin, Vector *v_desired_offset, Vector &v_size, float fDist, float fDist2D)
 {
+	static bool aimforhead;
+	static CBotWeapon *pWp;
+	static Vector vel;
+	static Vector myvel;
+	static Vector enemyvel;
+	static float fDistFactor;
+	static float fVelFactor;
+
 	CBot::modAim(pEntity,v_origin,v_desired_offset,v_size,fDist,fDist2D);
 
-	if(hasSomeConditions(CONDITION_SEE_ENEMY_HEAD))
+	aimforhead = true;
+	fVelFactor = 0.003125f;
+	pWp = getCurrentWeapon();
+
+	switch (pWp->getID())
 	{
-		v_desired_offset->z = v_desired_offset->z + (v_size.z-2);
+		case CS_WEAPON_AWP:
+		case CS_WEAPON_SUPERSHOTGUN:
+		case CS_WEAPON_AUTOSHOTGUN:
+		{
+			aimforhead = false;
+			break;
+		}
+	}
+
+	if ( pWp && pWp->isMelee() )
+	{
+		fDistFactor = 0;
+		fVelFactor = 0;
 	}
 	else
 	{
-		v_desired_offset->z = v_desired_offset->z + (v_size.z-8);
+		if ( fDist < 160 )
+			fVelFactor = 0.001f;
+
+		fDistFactor = (1.0f - m_pProfile->m_fAimSkill) + (fDist*0.000125f)*(m_fFov/90.0f);
+	}
+
+	myvel = Vector(0,0,0);
+	enemyvel = Vector(0,0,0);
+
+	// change in velocity
+	if ( CClassInterface::getVelocity(pEntity,&enemyvel) && CClassInterface::getVelocity(m_pEdict,&myvel) )
+	{
+		vel = (enemyvel - myvel); // relative velocity
+
+		vel = vel * fVelFactor;//0.003125f;
+
+		//fVelocityFactor = exp(-1.0f + ((vel.Length() * 0.003125f)*2)); // divide by max speed
+	}
+	else
+	{
+		vel = Vector(0.5f,0.5f,0.5f);
+		//fVelocityFactor = 1.0f;
+	}
+
+	v_desired_offset->x = randomFloat(-vel.x,vel.x)*fDistFactor*v_size.x;
+	v_desired_offset->y = randomFloat(-vel.y,vel.y)*fDistFactor*v_size.y;
+
+	if(hasSomeConditions(CONDITION_SEE_ENEMY_HEAD) && aimforhead)
+	{
+		v_desired_offset->z = v_desired_offset->z + (v_size.z-1);
+	}
+	else
+	{
+		v_desired_offset->z = v_desired_offset->z + (v_size.z-16);
 	}
 }
 
@@ -454,6 +651,7 @@ void CCSSBot::modThink()
 	else if(hasSomeConditions(CONDITION_ENEMY_DEAD) || (hasSomeConditions(CONDITION_ENEMY_OBSCURED) && m_fCombatTime + 12.0f <= engine->Time()))
 	{
 		m_bInCombat = false;
+		m_pEnemy = NULL; // Bots are tracking enemies through walls
 	}
 
 	if(m_fNextThinkSlow <= engine->Time())
@@ -502,7 +700,7 @@ void CCSSBot::getTasks(unsigned int iIgnore)
 		{
 			if(CCounterStrikeSourceMod::isMapType(CS_MAP_BOMBDEFUSAL))
 			{
-				ADD_UTILITY(BOT_UTIL_DEFEND_BOMB, !CCounterStrikeSourceMod::isBombPlanted(), 0.80f);
+				ADD_UTILITY(BOT_UTIL_DEFEND_BOMB, !CCounterStrikeSourceMod::isBombPlanted() && bot_defrate.GetFloat() <= randomFloat(0.0f, 1.0f), 0.80f);
 				ADD_UTILITY(BOT_UTIL_SEARCH_FOR_BOMB, !CCounterStrikeSourceMod::wasBombFound() && CCounterStrikeSourceMod::isBombPlanted(), 0.81f);
 				ADD_UTILITY(BOT_UTIL_DEFUSE_BOMB, CCounterStrikeSourceMod::wasBombFound(), 0.82f);
 			}
@@ -624,7 +822,7 @@ bool CCSSBot::executeAction(eBotAction iAction)
 			{
 				if((m_fUseRouteTime <= engine->Time()))
 				{
-					pRoute = CWaypoints::randomRouteWaypoint(this, getOrigin(), pWaypoint->getOrigin(), getTeam(), 0);
+					pRoute = CWaypoints::randomRouteWaypoint(this, getOrigin(), pWaypoint->getOrigin(), getTeam(), pWaypoint->getArea());
 				}
 				m_pSchedules->add(new CCSSPlantBombSched(pWaypoint, pRoute));
 				return true;
@@ -641,7 +839,7 @@ bool CCSSBot::executeAction(eBotAction iAction)
 			}
 			break;
 		}
-		case BOT_UTIL_DEFEND_NEAREST_BOMB:
+		case BOT_UTIL_DEFEND_NEAREST_BOMB: /** T: Defend planted bomb **/
 		{
 			CBotSchedule* pSched = new CBotSchedule();
 			pSched->setID(SCHED_DEFENDPOINT);
@@ -649,28 +847,39 @@ bool CCSSBot::executeAction(eBotAction iAction)
 			Vector vBomb = CBotGlobals::entityOrigin(pBomb);
 			if(pBomb)
 			{
-				CWaypoint *pDefend = CWaypoints::randomWaypointGoalNearestArea(CWaypointTypes::W_FL_DEFEND, getTeam(), 0, false, this, false, &vBomb);
+				// Find the nearest bomb waypoint to retreive the area from
+				CWaypoint *pBombWpt = CWaypoints::getWaypoint(CWaypoints::nearestWaypointGoal(CWaypointTypes::W_FL_GOAL, vBomb, 256.0f, 0));
+				if(pBombWpt)
+				{
+					CWaypoint *pDefend = CWaypoints::randomWaypointGoalNearestArea(CWaypointTypes::W_FL_DEFEND, getTeam(), pBombWpt->getArea(), true, this, false, &vBomb);
+					if(pDefend)
+					{
+						pSched->addTask(new CFindPathTask(CWaypoints::getWaypointIndex(pDefend)));
+						pSched->addTask(new CCSSGuardTask(getPrimaryWeapon(), pDefend->getOrigin(), pDefend->getAimYaw(), false, 0.0f, pDefend->getFlags()));
+						m_pSchedules->add(pSched);
+						CClients::clientDebugMsg(this, BOT_DEBUG_UTIL, "[BOT_UTIL_DEFEND_NEAREST_BOMB] Bomb Waypoint (%i) Defend Waypoint (%i)", 
+						CWaypoints::getWaypointIndex(pBombWpt), CWaypoints::getWaypointIndex(pDefend));
+						return true;
+					}
+				}
+			}
+			break;
+		}
+		case BOT_UTIL_DEFEND_BOMB: /** CT: Defend bomb site **/
+		{
+			CBotSchedule* pSched = new CBotSchedule();
+			pSched->setID(SCHED_DEFENDPOINT);
+			CWaypoint *pGoal = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_GOAL, getTeam());
+			if(pGoal)
+			{
+				CWaypoint *pDefend = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_DEFEND, getTeam(), pGoal->getArea(), true, this);
 				if(pDefend)
 				{
 					pSched->addTask(new CFindPathTask(CWaypoints::getWaypointIndex(pDefend)));
 					pSched->addTask(new CCSSGuardTask(getPrimaryWeapon(), pDefend->getOrigin(), pDefend->getAimYaw(), false, 0.0f, pDefend->getFlags()));
 					m_pSchedules->add(pSched);
+					return true;
 				}
-				return true;
-			}
-			break;
-		}
-		case BOT_UTIL_DEFEND_BOMB:
-		{
-			CBotSchedule* pSched = new CBotSchedule();
-			pSched->setID(SCHED_DEFENDPOINT);
-			CWaypoint *pDefend = CWaypoints::randomWaypointGoal(CWaypointTypes::W_FL_DEFEND, getTeam());
-			if(pDefend)
-			{
-				pSched->addTask(new CFindPathTask(CWaypoints::getWaypointIndex(pDefend)));
-				pSched->addTask(new CCSSGuardTask(getPrimaryWeapon(), pDefend->getOrigin(), pDefend->getAimYaw(), false, 0.0f, pDefend->getFlags()));
-				m_pSchedules->add(pSched);
-				return true;
 			}
 			break;		
 		}
@@ -705,7 +914,7 @@ bool CCSSBot::executeAction(eBotAction iAction)
 
 			if(pWaypoint)
 			{
-				pRoute = CWaypoints::randomRouteWaypoint(this, getOrigin(), pWaypoint->getOrigin(), 0, 0);
+				pRoute = CWaypoints::randomRouteWaypoint(this, getOrigin(), pWaypoint->getOrigin(), getTeam(), pWaypoint->getArea());
 				if((m_fUseRouteTime <= engine->Time()))
 				{
 					if(pRoute)
@@ -731,7 +940,6 @@ bool CCSSBot::executeAction(eBotAction iAction)
 		{
 			// roam
 			CWaypoint* pWaypoint = NULL;
-			CWaypoint* pRoute = NULL;
 			CBotSchedule* pSched = new CBotSchedule();
 
 			pSched->setID(SCHED_GOTO_ORIGIN);
@@ -739,19 +947,6 @@ bool CCSSBot::executeAction(eBotAction iAction)
 
 			if(pWaypoint)
 			{
-				pRoute = CWaypoints::randomRouteWaypoint(this, getOrigin(), pWaypoint->getOrigin(), 0, 0);
-				if((m_fUseRouteTime <= engine->Time()))
-				{
-					if(pRoute)
-					{
-						int iRoute = CWaypoints::getWaypointIndex(pRoute); // Route waypoint
-						pSched->addTask(new CFindPathTask(iRoute, LOOK_WAYPOINT));
-						pSched->addTask(new CMoveToTask(pRoute->getOrigin()));
-						m_pSchedules->add(pSched);
-						m_fUseRouteTime = engine->Time() + 30.0f;
-					}
-				}
-
 				int iWaypoint = CWaypoints::getWaypointIndex(pWaypoint);
 				pSched->addTask(new CFindPathTask(iWaypoint, LOOK_WAYPOINT));
 				pSched->addTask(new CMoveToTask(pWaypoint->getOrigin()));

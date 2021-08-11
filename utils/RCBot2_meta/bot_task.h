@@ -1279,7 +1279,7 @@ public:
 	void execute(CBot *pBot,CBotSchedule *pSchedule);
 	void debugString(char *string)
 	{
-		sprintf(string,"CSS Defend Planted C4");
+		sprintf(string,"CSS Guard Task\nm_fEnemyTime = %.1f\nm_fTime = %.1f", m_fEnemyTime, m_fTime);
 	}
 private:
 	float m_fTime;

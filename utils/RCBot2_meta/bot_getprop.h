@@ -162,6 +162,7 @@ typedef enum
 	GETPROP_CSS_HASHELMET,
 	GETPROP_CSS_BOMBTICKING,
 	GETPROP_PLAYER_FOV,
+	GETPROP_PLAYER_LIFESTATE,
 	GET_PROPDATA_MAX
 }getpropdata_id;
 
@@ -697,6 +698,17 @@ public:
 	inline static int getPlayerFOV(edict_t *pPlayer)
 	{
 		return g_GetProps[GETPROP_PLAYER_FOV].getInt(pPlayer, 0);
+	}
+
+	/**
+	 * Gets the player life state
+	 * 
+	 * @param pPlayer	The player to retreive life state from
+	 * @return			The player's life state
+	 **/
+	inline static int getPlayerLifeState(edict_t *pPlayer)
+	{
+		return g_GetProps[GETPROP_PLAYER_LIFESTATE].getInt(pPlayer, 0);
 	}
 
 	// Synergy

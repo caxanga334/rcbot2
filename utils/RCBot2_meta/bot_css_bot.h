@@ -59,7 +59,9 @@ public:
     void handleWeapons() override;
     bool handleAttack(CBotWeapon *pWeapon, edict_t *pEnemy) override;
 	void modAim(edict_t *pEntity, Vector &v_origin, Vector *v_desired_offset, Vector &v_size, float fDist, float fDist2D) override;
+	void updateConditions() override;
 	void modThink() override;
+	void listenForPlayers() override;
 	virtual void modThinkSlow();
 	unsigned int maxEntityIndex() override { return gpGlobals->maxEntities; }
 	void getTasks (unsigned int iIgnore=0) override;
