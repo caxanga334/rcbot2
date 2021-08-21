@@ -77,9 +77,9 @@ public:
 	//static float getAvoidAngle(edict_t *pEdict,Vector origin);
 
 	// make folders for a file if they don't exist
-	static bool makeFolders ( char *szFile );
+	static bool makeFolders (const char *szFile);
 	// just open file but also make folders if possible
-	static FILE *openFile ( char *szFile, char *szMode );
+	static FILE *openFile (const char *szFile, const char *szMode);
 	// get the proper location
 	static void buildFileName ( char *szOutput, const char *szFile, const char *szFolder = NULL, const char *szExtension = NULL, bool bModDependent = false );
 	// add a directory delimiter to the string like '/' (linux) or '\\' (windows) or

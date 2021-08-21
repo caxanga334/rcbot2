@@ -930,7 +930,7 @@ void CBotGlobals :: botMessage ( edict_t *pEntity, int iErr, const char *fmt, ..
 	}
 }
 
-bool CBotGlobals :: makeFolders ( char *szFile )
+bool CBotGlobals :: makeFolders (const char *szFile)
 {
 #ifndef __linux__
 	char *delimiter = "\\";
@@ -1060,7 +1060,7 @@ bool CBotGlobals::pointIsWithin( edict_t *pEntity, const Vector &vPoint )
 	return (tr.startsolid);
 }
 
-FILE *CBotGlobals :: openFile ( char *szFile, char *szMode )
+FILE *CBotGlobals :: openFile (const char *szFile, const char *szMode)
 {
 	FILE *fp = fopen(szFile,szMode);
 
