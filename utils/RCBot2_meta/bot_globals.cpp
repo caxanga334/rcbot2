@@ -1068,7 +1068,7 @@ FILE *CBotGlobals :: openFile (const char *szFile, const char *szMode)
 		}
 		else
 		{
-			logger->Log(LogLevel::INFO, "Opened file '%s' mode %d", szFile, szMode);
+			logger->Log(LogLevel::INFO, "Opened file '%s' mode %s", szFile, szMode);
 		}	
 	}
 
