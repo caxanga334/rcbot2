@@ -54,6 +54,8 @@ public:
     virtual bool needHealth();
     virtual bool needAmmo();
     virtual bool filterAmmo(edict_t *pAmmo, const char *szclassname);
+    virtual bool wantsToChangeCourseOfAction();
+    inline float getInterruptionTimer() { return m_flInterruptTime; }
 protected:
     MyEHandle m_pNearbyWeapon; // weapons
     MyEHandle m_pNearbyHealthKit; // Healthkit
@@ -70,6 +72,7 @@ protected:
     float m_flNextSprintTime; // Used to control the bot's sprinting
     float m_flUseCrateTime; // Use ammo crate time delay
     float m_flPickUpTime; // Pick ammo delay
+    float m_flInterruptTime; // Time delay for general interruptions
 };
 
 #endif

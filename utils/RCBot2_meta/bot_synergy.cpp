@@ -196,27 +196,6 @@ void CBotSynergy::modThink()
 		setMoveLookPriority(MOVELOOK_MODTHINK);
 	}
 
-	if(m_pEnemy)
-	{
-		if(getHealthPercent() <= 0.35f && hasSomeConditions(CONDITION_SEE_CUR_ENEMY))
-		{
-			if(!m_pSchedules->isCurrentSchedule(SCHED_RUN_FOR_COVER))
-			{
-				updateCondition(CONDITION_RUN);
-				int iCoverWpt = CWaypointLocations::GetCoverWaypoint(getOrigin(), CBotGlobals::entityOrigin(m_pEnemy), NULL);
-				if(iCoverWpt != -1)
-				{
-					CBotSchedule *pSched = new CBotSchedule();
-					pSched->setID(SCHED_RUN_FOR_COVER);
-					pSched->addTask(new CFindPathTask(iCoverWpt, LOOK_WAYPOINT));
-					m_pSchedules->freeMemory();
-					m_pSchedules->add(pSched);
-					m_pNavigator->belief(getOrigin(), CBotGlobals::entityOrigin(m_pEnemy), bot_beliefmulti.GetFloat(), distanceFrom(m_pEnemy), BELIEF_DANGER);
-				}
-			}
-		}
-	}
-
 	if(m_pNearbyGrenade && distanceFrom(m_pNearbyGrenade.get()) <= 200.0f) // Nearby grenade, RUN for cover!
 	{
 		updateCondition(CONDITION_RUN);
@@ -252,29 +231,8 @@ void CBotSynergy::modThink()
 		}
 	}
 
-	if(m_pNearbyHealthKit && getHealthPercent() < 1.0f && distanceFrom(m_pNearbyHealthKit.get()) <= 400.0f && m_flPickUpTime <= engine->Time())
-	{
-		if(!m_pSchedules->isCurrentSchedule(SCHED_PICKUP))
-		{
-			m_pSchedules->removeSchedule(SCHED_PICKUP);
-			m_pSchedules->addFront(new CBotPickupSched(m_pNearbyHealthKit.get()));
-			debugMsg(BOT_DEBUG_THINK, "[MOD THINK] Picking up health kit");
-			m_flPickUpTime = engine->Time() + randomFloat(5.0f, 10.0f);
-		}
-	}
-
-	if(m_pNearbyBattery && getArmorPercent() < 1.0f && distanceFrom(m_pNearbyBattery.get()) <= 400.0f && m_flPickUpTime <= engine->Time())
-	{
-		if(!m_pSchedules->isCurrentSchedule(SCHED_PICKUP))
-		{
-			m_pSchedules->removeSchedule(SCHED_PICKUP);
-			m_pSchedules->addFront(new CBotPickupSched(m_pNearbyBattery.get()));
-			debugMsg(BOT_DEBUG_THINK, "[MOD THINK] Picking up armor battery");
-			m_flPickUpTime = engine->Time() + randomFloat(5.0f, 10.0f);
-		}
-	}
-
-	if(m_pNearbyWeapon && getArmorPercent() < 1.0f && distanceFrom(m_pNearbyWeapon.get()) <= 400.0f && m_flPickUpTime <= engine->Time())
+	// Pick nearby weapons that the bot doesn't already have
+	if(m_pNearbyWeapon && distanceFrom(m_pNearbyWeapon.get()) <= 400.0f && m_flPickUpTime <= engine->Time())
 	{
 		edict_t *pOwner = CClassInterface::getOwner(m_pNearbyWeapon);
 
@@ -294,7 +252,8 @@ void CBotSynergy::modThink()
 		}
 	}
 
-	if(m_pNearbyItemCrate && distanceFrom(m_pNearbyItemCrate.get()) <= 400.0f)
+	// Checks for nearby item boxes and try to break them
+	if(m_pNearbyItemCrate && distanceFrom(m_pNearbyItemCrate.get()) <= 400.0f && m_flPickUpTime <= engine->Time())
 	{
 		if(!m_pSchedules->isCurrentSchedule(SCHED_SYN_BREAK_ICRATE))
 		{
@@ -332,82 +291,13 @@ void CBotSynergy::modThink()
 			m_pSchedules->removeSchedule(SCHED_SYN_BREAK_ICRATE);
 			m_pSchedules->addFront(new CSynBreakICrateSched(m_pNearbyItemCrate.get(), pWeapon));
 			debugMsg(BOT_DEBUG_THINK, "[MOD THINK] Breaking item crate");
+			m_flPickUpTime = engine->Time() + randomFloat(5.0f, 10.0f);
 		}
 	}
 
-	if(m_pNearbyAmmo && distanceFrom(m_pNearbyAmmo) <= 512.0f && m_flPickUpTime <= engine->Time())
-	{
-		if(!m_pSchedules->isCurrentSchedule(SCHED_PICKUP))
-		{
-			m_pSchedules->removeSchedule(SCHED_PICKUP);
-			m_pSchedules->addFront(new CBotPickupSched(m_pNearbyAmmo));
-			debugMsg(BOT_DEBUG_THINK, "[MOD THINK] Picking up ammo");
-			m_flPickUpTime = engine->Time() + randomFloat(5.0f, 10.0f); // Small delay because sometimes synergy ammo bugs and cannot be picked up
-		}
-	}
-
-	if(m_pNearbyCrate && distanceFrom(m_pNearbyCrate) <= 512.0f && m_flUseCrateTime <= engine->Time())
-	{
-		if(!m_pSchedules->isCurrentSchedule(SCHED_PICKUP))
-		{
-			m_pSchedules->removeSchedule(SCHED_PICKUP);
-			CBotSchedule *pSched = new CBotSchedule();
-			pSched->setID(SCHED_PICKUP);
-			pSched->addTask(new CFindPathTask(m_pNearbyCrate));
-			pSched->addTask(new CMoveToTask(m_pNearbyCrate));
-			pSched->addTask(new CBotHL2DMUseButton(m_pNearbyCrate, true));
-			m_pSchedules->addFront(pSched);
-			debugMsg(BOT_DEBUG_THINK, "[MOD THINK] Using ammo crate");
-			m_flUseCrateTime = engine->Time() + randomFloat(25.0f, 45.0f);
-		}
-	}
-
-	if(m_pNearbyHealthCharger && getHealthPercent() < 1.0f && distanceFrom(m_pNearbyHealthCharger) <= 512.0f && m_flPickUpTime <= engine->Time())
-	{
-		if(CClassInterface::getAnimCycle(m_pNearbyHealthCharger) == 1.0f)
-		{
-			m_pNearbyHealthCharger = NULL;
-		}
-		else
-		{
-			if(!m_pSchedules->isCurrentSchedule(SCHED_USE_DISPENSER))
-			{
-				m_pSchedules->removeSchedule(SCHED_USE_DISPENSER);
-				CBotSchedule *pSched = new CBotSchedule();
-				pSched->setID(SCHED_USE_DISPENSER);
-				pSched->addTask(new CFindPathTask(m_pNearbyHealthCharger));
-				pSched->addTask(new CMoveToTask(m_pNearbyHealthCharger));
-				pSched->addTask(new CBotSynUseCharger(m_pNearbyHealthCharger, CHARGER_HEALTH));
-				m_pSchedules->addFront(pSched);
-				debugMsg(BOT_DEBUG_THINK, "[MOD THINK] Using health charger");
-				m_flPickUpTime = engine->Time() + randomFloat(5.0f, 10.0f);
-			}
-		}
-	}
-
-	if(m_pNearbyArmorCharger && getArmorPercent() < 1.0f && distanceFrom(m_pNearbyArmorCharger) <= 512.0f && m_flPickUpTime <= engine->Time())
-	{
-		if(CClassInterface::getAnimCycle(m_pNearbyArmorCharger) == 1.0f)
-		{
-			m_pNearbyArmorCharger = NULL;
-		}
-		else
-		{
-			if(!m_pSchedules->isCurrentSchedule(SCHED_USE_DISPENSER))
-			{
-				m_pSchedules->removeSchedule(SCHED_USE_DISPENSER);
-				CBotSchedule *pSched = new CBotSchedule();
-				pSched->setID(SCHED_USE_DISPENSER);
-				pSched->addTask(new CFindPathTask(m_pNearbyArmorCharger));
-				pSched->addTask(new CMoveToTask(m_pNearbyArmorCharger));
-				pSched->addTask(new CBotSynUseCharger(m_pNearbyArmorCharger, CHARGER_ARMOR));
-				m_pSchedules->addFront(pSched);
-				debugMsg(BOT_DEBUG_THINK, "[MOD THINK] Using armor charger");
-				m_flPickUpTime = engine->Time() + randomFloat(5.0f, 10.0f);
-			}
-		}
-	}
-
+	/**
+	 * Bot sprinting logic
+	 **/
 	if(hasSomeConditions(CONDITION_RUN) && m_flSuitPower > 1.0f && m_flNextSprintTime <= engine->Time()) // The bot wants to sprint
 	{
 		m_pButtons->holdButton(IN_SPEED, 0.0f, 1.0f, 0.0f);
@@ -456,8 +346,6 @@ bool CBotSynergy::isEnemy(edict_t *pEdict, bool bCheckWeapons)
 	// BUGBUG!! Maps can override NPC relationship with the ai_relationship entity, making this classname filter useless
     if(strncmp(szclassname, "npc_", 4) == 0) // Attack NPCs
     {
-
-
 		if (strcmp(szclassname, "npc_metropolice") == 0 || strcmp(szclassname, "npc_combine_s") == 0 || strcmp(szclassname, "npc_manhack") == 0 ||
 			strcmp(szclassname, "npc_zombie") == 0 || strcmp(szclassname, "npc_fastzombie") == 0 || strcmp(szclassname, "npc_poisonzombie") == 0 || strcmp(szclassname, "npc_zombine") == 0 ||
 			strcmp(szclassname, "npc_antlionguard") == 0 || strcmp(szclassname, "npc_antlion") == 0 || strcmp(szclassname, "npc_headcrab") == 0 || strcmp(szclassname, "npc_headcrab_fast") == 0 ||
@@ -653,6 +541,7 @@ void CBotSynergy::getTasks (unsigned int iIgnore)
 		if (executeAction(next->getId()))
 		{
 			m_CurrentUtil = next->getId();
+			m_flInterruptTime = engine->Time() + randomFloat(30.0f, 45.0f);
 
 			if (m_fUtilTimes[next->getId()] < engine->Time())
 				m_fUtilTimes[next->getId()] = engine->Time() + randomFloat(0.1f, 2.0f); // saves problems with consistent failing
@@ -728,6 +617,7 @@ bool CBotSynergy::executeAction(eBotAction iAction)
 		CWaypoint* pWaypoint = NULL;
 		CWaypoint* pRoute = NULL;
 		CBotSchedule* pSched = new CBotSchedule();
+		CBotTask* pFindPath;
 		m_fUtilTimes[BOT_UTIL_ATTACK_POINT] = engine->Time() + randomFloat(60.0f, 180.0f);
 
 		pSched->setID(SCHED_ATTACKPOINT);
@@ -748,14 +638,19 @@ bool CBotSynergy::executeAction(eBotAction iAction)
 				if (pRoute)
 				{
 					int iRoute = CWaypoints::getWaypointIndex(pRoute); // Route waypoint
-					pSched->addTask(new CFindPathTask(iRoute, LOOK_WAYPOINT));
+					pFindPath = new CFindPathTask(iRoute, LOOK_WAYPOINT);
+					pFindPath->setInterruptFunction(new CBotSYNRoamInterrupt());
+					pSched->addTask(pFindPath);
 					pSched->addTask(new CMoveToTask(pRoute->getOrigin()));
 					m_pSchedules->add(pSched);
+					m_fUseRouteTime = engine->Time() + 30.0f;
 				}
 			}
 
 			int iWaypoint = CWaypoints::getWaypointIndex(pWaypoint);
-			pSched->addTask(new CFindPathTask(iWaypoint, LOOK_WAYPOINT));
+			pFindPath = new CFindPathTask(iWaypoint, LOOK_WAYPOINT);
+			pFindPath->setInterruptFunction(new CBotSYNRoamInterrupt());
+			pSched->addTask(pFindPath);
 			pSched->addTask(new CMoveToTask(pWaypoint->getOrigin()));
 			m_pSchedules->add(pSched);
 
@@ -770,6 +665,7 @@ bool CBotSynergy::executeAction(eBotAction iAction)
 		CWaypoint* pWaypoint = NULL;
 		CWaypoint* pRoute = NULL;
 		CBotSchedule* pSched = new CBotSchedule();
+		CBotTask* pFindPath;
 
 		pSched->setID(SCHED_GOTO_ORIGIN);
 
@@ -789,7 +685,9 @@ bool CBotSynergy::executeAction(eBotAction iAction)
 				if (pRoute)
 				{
 					int iRoute = CWaypoints::getWaypointIndex(pRoute); // Route waypoint
-					pSched->addTask(new CFindPathTask(iRoute, LOOK_WAYPOINT));
+					pFindPath = new CFindPathTask(iRoute, LOOK_WAYPOINT);
+					pFindPath->setInterruptFunction(new CBotSYNRoamInterrupt());
+					pSched->addTask(pFindPath);
 					pSched->addTask(new CMoveToTask(pRoute->getOrigin()));
 					m_pSchedules->add(pSched);
 					m_fUseRouteTime = engine->Time() + 30.0f;
@@ -797,7 +695,9 @@ bool CBotSynergy::executeAction(eBotAction iAction)
 			}
 
 			int iWaypoint = CWaypoints::getWaypointIndex(pWaypoint);
-			pSched->addTask(new CFindPathTask(iWaypoint, LOOK_WAYPOINT));
+			pFindPath = new CFindPathTask(iWaypoint, LOOK_WAYPOINT);
+			pFindPath->setInterruptFunction(new CBotSYNRoamInterrupt());
+			pSched->addTask(pFindPath);
 			pSched->addTask(new CMoveToTask(pWaypoint->getOrigin()));
 			m_pSchedules->add(pSched);
 
@@ -1071,4 +971,14 @@ bool CBotSynergy::filterAmmo(edict_t *pAmmo, const char *szclassname)
 	}
 
 	return false;
+}
+
+/**
+ * This functions is called by task interruptions check to see if the bot should change it's current task
+ * 
+ * @return 		TRUE if the bot should interrupt it's current task
+ **/
+bool CBotSynergy::wantsToChangeCourseOfAction()
+{
+	return false; // TO-DO
 }
