@@ -674,14 +674,24 @@ public:
 	}
 	static bool canHearPlantedBomb(CBot *pBot);
 	static bool isScoped(CBot *pBot);
+	static void updateHostages();
+	static edict_t *getRandomHostage();
+	static bool canRescueHostages();
+	inline static std::vector<CBaseHandle> getHostageVector()
+	{
+		return m_hHostages;
+	}
 	//void entitySpawn ( edict_t *pEntity );
+
 private:
+
 	static eCSSMapType m_MapType; // Map Type
 	static float m_fRoundStartTime; // The time when the round started
 	static float m_fBombPlantedTime; // The time when the bomb was planted
 	static bool m_bIsBombPlanted; // Is the bomb planted?
 	static bool m_bBombWasFound; // Did the CTs locate the bomb?
 	static CBaseHandle m_hBomb; // The bomb. Experimental CBaseHandle instead of MyEHandle
+	static std::vector<CBaseHandle> m_hHostages; // Vector with hostage handles
 };
 
 class CTimCoopMod : public CBotMod
