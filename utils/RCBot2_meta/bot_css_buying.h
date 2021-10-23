@@ -79,7 +79,7 @@ typedef enum
     CS_BUY_GRENADE_SMOKE,
     CS_BUY_GRENADE_FLASHBANG,
     CS_BUY_MAX,
-}eCSSBuyItem;
+} eCSSBuyItem;
 
 /**
  * CS Buy Profile
@@ -97,7 +97,7 @@ typedef enum
     CS_BUY_PROFILE_AUTOSNIPER,
     CS_BUY_PROFILE_MACHINEGUNNER,
     CS_BUY_PROFILE_MAX
-}eCSSBuyProfile;
+} eCSSBuyProfile;
 
 /**
  * List of buy "types" for the bot
@@ -106,11 +106,11 @@ typedef enum
 {
     CS_BUY_TYPE_INVALID = -1,
     CS_BUY_TYPE_ECO = 0, // Save money
-    CS_BUY_TYPE_FORCE, // Save some money
-    CS_BUY_TYPE_FULL, // Buy everything
+    CS_BUY_TYPE_FORCE,   // Save some money
+    CS_BUY_TYPE_FULL,    // Buy everything
     CS_BUY_TYPE_UPGRADE, // Upgrade current weapon
     CS_BUY_TYPE_MAX
-}eCSSBuyType;
+} eCSSBuyType;
 
 /**
  * This class manages the Counter-Strike: Source bot buying logic
@@ -140,13 +140,13 @@ private:
     eCSSBuyType determineBuyType();
     void processBuyList(std::queue<eCSSBuyItem> &queue);
 
-    CBot *m_pBot; // Bot pointer
-    int m_money; // Amount of money the bot have
-    int m_deaths; // How many times the bot died
-    float m_fLastBuyTime; // The last time the bot bought something
-    CBotWeapon *m_pPrimaryWeapon; // Primary weapon
+    CBot *m_pBot;                   // Bot pointer
+    int m_money;                    // Amount of money the bot have
+    int m_deaths;                   // How many times the bot died
+    float m_fLastBuyTime;           // The last time the bot bought something
+    CBotWeapon *m_pPrimaryWeapon;   // Primary weapon
     CBotWeapon *m_pSecondaryWeapon; // Secondary weapon
-    eCSSBuyProfile m_eProfile; // Bot weapon preference profile
+    eCSSBuyProfile m_eProfile;      // Bot weapon preference profile
 };
 
 #endif

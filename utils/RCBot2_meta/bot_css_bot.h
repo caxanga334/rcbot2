@@ -49,17 +49,17 @@ class CCSSBot : public CBot
 {
 public:
 	bool isCSS() override { return true; }
-    void init(bool bVarInit=false) override;
-    void spawnInit() override;
+	void init(bool bVarInit = false) override;
+	void spawnInit() override;
 	void died(edict_t *pKiller, const char *pszWeapon) override;
 	void setup() override;
 	void selectTeam();
 	void selectModel();
 	bool startGame() override;
 	bool isAlive() override;
-	bool isEnemy(edict_t *pEdict,bool bCheckWeapons = true) override;
-    void handleWeapons() override;
-    bool handleAttack(CBotWeapon *pWeapon, edict_t *pEnemy) override;
+	bool isEnemy(edict_t *pEdict, bool bCheckWeapons = true) override;
+	void handleWeapons() override;
+	bool handleAttack(CBotWeapon *pWeapon, edict_t *pEnemy) override;
 	void modAim(edict_t *pEntity, Vector &v_origin, Vector *v_desired_offset, Vector &v_size, float fDist, float fDist2D) override;
 	void updateConditions() override;
 	void modThink() override;
@@ -68,7 +68,7 @@ public:
 	void touchedWpt(CWaypoint *pWaypoint, int iNextWaypoint = -1, int iPrevWaypoint = -1) override;
 	virtual void modThinkSlow();
 	unsigned int maxEntityIndex() override { return gpGlobals->maxEntities; }
-	void getTasks (unsigned int iIgnore=0) override;
+	void getTasks(unsigned int iIgnore = 0) override;
 	virtual bool executeAction(eBotAction iAction);
 	virtual void runBuy();
 	virtual void say(const char *message);
@@ -79,11 +79,12 @@ public:
 	virtual bool IsSniper();
 	virtual void onRoundStart();
 	virtual bool IsLeadingHostage();
+
 private:
-	edict_t *m_pCurrentWeapon; // The bot current weapon
-	float m_fNextAttackTime; // Control timer for bot primary attack
-	float m_fNextThinkSlow; // Control timer for slow think
-	float m_fVisibleEnemyTime; // The last time my enemy was visible
+	edict_t *m_pCurrentWeapon;	  // The bot current weapon
+	float m_fNextAttackTime;	  // Control timer for bot primary attack
+	float m_fNextThinkSlow;		  // Control timer for slow think
+	float m_fVisibleEnemyTime;	  // The last time my enemy was visible
 	CCSSBotBuying *m_pBuyManager; // CSS Bot buy manager
 };
 
