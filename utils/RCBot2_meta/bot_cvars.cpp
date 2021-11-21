@@ -104,33 +104,24 @@ ConVar rcbot_syn_use_search_range("rcbot_syn_use_search_range", "256", 0, "Sets 
 // Counter-Strike:Source Cvars
 ConVar rcbot_css_economy_eco_limit("rcbot_css_economy_eco_limit", "2000", 0, "If the bot money is less than this, it won't purchase anything.");
 
-ConVar *sv_gravity = NULL;
-ConVar *mp_teamplay = NULL;
-ConVar *sv_tags = NULL;
-ConVar *mp_friendlyfire = NULL;
-ConVar *mp_stalemate_enable = NULL;
-ConVar *mp_stalemate_meleeonly = NULL;
+ConVarRef sv_gravity("sv_gravity");
+ConVarRef mp_teamplay("mp_teamplay");
+ConVarRef sv_tags("sv_tags");
+ConVarRef mp_friendlyfire("mp_friendlyfire");
+ConVarRef mp_stalemate_enable("mp_stalemate_enable");
+ConVarRef mp_stalemate_meleeonly("mp_stalemate_meleeonly");
 
 // For CS:S
-ConVar *mp_roundtime = NULL;
-ConVar *mp_c4timer = NULL;
+ConVarRef mp_roundtime("mp_roundtime");
+ConVarRef mp_c4timer("mp_c4timer");
 
 void RCBOT2_Cvar_setup (ICvar *cvar)
 {
-	mp_stalemate_enable = cvar->FindVar("mp_stalemate_enable");
-	mp_stalemate_meleeonly = cvar->FindVar("mp_stalemate_meleeonly");
-	sv_gravity = cvar->FindVar("sv_gravity");
-	mp_friendlyfire = cvar->FindVar("mp_friendlyfire");
-	sv_tags = cvar->FindVar("sv_tags");
-	mp_teamplay = cvar->FindVar("mp_teamplay");
-	mp_roundtime = cvar->FindVar("mp_roundtime");
-	mp_c4timer = cvar->FindVar("mp_c4timer");
-
-	if ( sv_tags != NULL )
+	if ( sv_tags.IsValid() )
 	{
 		char sv_tags_str[512];
 	
-		strcpy(sv_tags_str,sv_tags->GetString());
+		strcpy(sv_tags_str,sv_tags.GetString());
 
 		// fix
 		if ( strstr(sv_tags_str,"rcbot2") == NULL )
@@ -141,7 +132,7 @@ void RCBOT2_Cvar_setup (ICvar *cvar)
 			else
 				strcat(sv_tags_str,",rcbot2");
 
-			sv_tags->SetValue(sv_tags_str);
+			sv_tags.SetValue(sv_tags_str);
 
 		}
 	}

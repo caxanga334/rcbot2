@@ -226,7 +226,7 @@ float CBotGlobals :: grenadeWillLand ( Vector vOrigin, Vector vEnemy, float fPro
 
 	v_comp = v_comp/fDistance;
 
-	g = sv_gravity->GetFloat();
+	g = sv_gravity.GetFloat();
 
 	if ( fAngle == NULL )
 	{

@@ -648,11 +648,11 @@ public:
 	static bool isBombCarrier(CBot *pBot);
 	inline static float getRemainingRoundTime()
 	{
-		return ((m_fRoundStartTime + (mp_roundtime->GetFloat() * 60.0f)) - engine->Time());
+		return ((m_fRoundStartTime + (mp_roundtime.GetFloat() * 60.0f)) - engine->Time());
 	}
 	inline static float getRemainingBombTime()
 	{
-		return ((m_fRoundStartTime + mp_c4timer->GetFloat()) - engine->Time());
+		return ((m_fRoundStartTime + mp_c4timer.GetFloat()) - engine->Time());
 	}
 	inline static bool isBombPlanted()
 	{
