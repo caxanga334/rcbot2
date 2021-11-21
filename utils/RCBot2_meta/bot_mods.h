@@ -652,7 +652,7 @@ public:
 	}
 	inline static float getRemainingBombTime()
 	{
-		return ((m_fRoundStartTime + mp_c4timer.GetFloat()) - engine->Time());
+		return ((m_fBombPlantedTime + mp_c4timer.GetFloat()) - engine->Time());
 	}
 	inline static bool isBombPlanted()
 	{
