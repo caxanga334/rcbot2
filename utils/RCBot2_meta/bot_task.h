@@ -1248,6 +1248,7 @@ public:
 	void debugString(char *string);
 private:
 	CBaseHandle m_hEnemy;
+	bool isBrush; // Is my enemy a brush entity?
 };
 
 class CCSSDefuseTheBombTask : public CBotTask

@@ -347,6 +347,11 @@ public:
 		//return distanceFrom(CBotGlobals::entityOrigin(pEntity));
 	}
 
+	inline float distanceFrom2D(Vector vOrigin)
+	{
+		return (vOrigin - m_pController->GetLocalOrigin()).Length2D();
+	}
+
 	inline float distanceFrom2D(edict_t *pEntity)
 	{
 		return (pEntity->GetCollideable()->GetCollisionOrigin() - m_pController->GetLocalOrigin()).Length2D();

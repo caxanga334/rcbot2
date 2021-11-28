@@ -137,7 +137,21 @@ bool CCSSBot::isEnemy(edict_t *pEdict, bool bCheckWeapons)
 		return false;
 
 	if (ENTINDEX(pEdict) > CBotGlobals::maxClients())
+	{
+		if (pEdict->GetUnknown() && pEdict == INDEXENT(m_NearestBreakable.GetEntryIndex()) && CClassInterface::getPlayerHealth(pEdict) > 0)
+		{
+			if (distanceFrom(CBotGlobals::worldCenter(pEdict)) < (rcbot_jump_obst_dist.GetFloat() * 2))
+			{
+				if (BotFunc_BreakableIsEnemy(INDEXENT(m_NearestBreakable.GetEntryIndex()), pEdict) ||
+					((CBotGlobals::worldCenter(pEdict) - m_vMoveTo).Length() + 48) < (getOrigin() - m_vMoveTo).Length())
+				{
+					return true;
+				}
+			}
+		}
+
 		return false;
+	}
 
 	if (pEdict->IsFree())
 		return false;
@@ -198,6 +212,7 @@ void CCSSBot::spawnInit()
 	m_fNextAttackTime = engine->Time();
 	m_fCheckStuckTime = engine->Time() + 6.0f;
 	m_fNextThinkSlow = engine->Time() + 1.0f;
+	m_NearestBreakable.Term();
 	updateCondition(CONDITION_CHANGED); // Re-execute the utility system
 }
 
@@ -348,7 +363,44 @@ void CCSSBot::runBuy()
 }
 
 /**
- * Gets the bot primary weapon (will fallback to secondary)
+ * Update visible entities
+ **/
+bool CCSSBot::setVisible(edict_t *pEntity, bool bVisible)
+{
+	static float fDist;
+	const char *szClassname;
+
+	const bool bValid = CBot::setVisible(pEntity, bVisible);
+
+	if (CBotGlobals::isBrushEntity(pEntity))
+		fDist = distanceFrom(CBotGlobals::worldCenter(pEntity));
+	else
+		fDist = distanceFrom(pEntity);
+
+	// if no draw effect it is invisible
+	if (bValid && bVisible && !(CClassInterface::getEffects(pEntity) & EF_NODRAW))
+	{
+		szClassname = pEntity->GetClassName();
+
+		if ((strncmp(szClassname, "func_breakable", 14) == 0 || strncmp(szClassname, "func_breakable_surf", 19) == 0))
+		{
+			if ((INDEXENT(m_NearestBreakable.GetEntryIndex()) == NULL || fDist < distanceFrom(CBotGlobals::worldCenter(INDEXENT(m_NearestBreakable.GetEntryIndex())))))
+			{
+				m_NearestBreakable.Init(engine->IndexOfEdict(pEntity), pEntity->m_NetworkSerialNumber);
+			}
+		}
+	}
+	else
+	{
+		if (INDEXENT(m_NearestBreakable.GetEntryIndex()) == pEntity)
+			m_NearestBreakable.Term();
+	}
+
+	return bValid;
+}
+
+/**
+ * Gets the bot primary weapon (will fallback to secondary if the bot doesn't have a primary)
  **/
 CBotWeapon *CCSSBot::getPrimaryWeapon()
 {
@@ -409,12 +461,12 @@ void CCSSBot::primaryattackCS(bool hold)
 		if (m_fNextAttackTime <= engine->Time())
 		{
 			tapButton(IN_ATTACK);
-			CClients::clientDebugMsg(this, BOT_DEBUG_AIM, "[CSS-ATTACK] Primary Fire!");
+			//CClients::clientDebugMsg(this, BOT_DEBUG_AIM, "[CSS-ATTACK] Primary Fire!");
 			m_fNextAttackTime = engine->Time() + getNextAttackDelay(); // 50 ms delay between shots
 		}
 		else
 		{
-			CClients::clientDebugMsg(this, BOT_DEBUG_AIM, "[CSS-ATTACK] Wait!");
+			//CClients::clientDebugMsg(this, BOT_DEBUG_AIM, "[CSS-ATTACK] Wait!");
 			letGoOfButton(IN_ATTACK);
 		}
 	}
@@ -431,7 +483,7 @@ void CCSSBot::handleWeapons()
 	{
 		CBotWeapon *pWeapon;
 
-		pWeapon = getBestWeapon(m_pEnemy);
+		pWeapon = getBestWeapon(m_pEnemy, true, true, rcbot_melee_only.GetBool());
 
 		if (m_bWantToChangeWeapon && (pWeapon != NULL) && (pWeapon != getCurrentWeapon()) && pWeapon->getWeaponIndex())
 		{
@@ -456,7 +508,17 @@ bool CCSSBot::handleAttack(CBotWeapon *pWeapon, edict_t *pEnemy)
 		clearFailedWeaponSelect();
 
 		if (pWeapon->isMelee())
-			setMoveTo(CBotGlobals::entityOrigin(pEnemy));
+		{
+			if (CBotGlobals::isBrushEntity(pEnemy))
+			{
+				setMoveTo(CBotGlobals::worldCenter(pEnemy));
+			}
+			else
+			{
+				setMoveTo(CBotGlobals::entityOrigin(pEnemy));
+			}
+			setMoveSpeed(CClassInterface::getMaxSpeed(m_pEdict)); // in case some task changed the move speed
+		}
 
 		if (pWeapon->isZoomable() && !CCounterStrikeSourceMod::isScoped(this))
 			secondaryAttack(false);
@@ -481,8 +543,7 @@ float CCSSBot::getNextAttackDelay()
 	dist = distanceFrom(getEnemy());
 	delay = dist / max;
 	clamp(delay, 0.050f, 0.300f);
-
-	CClients::clientDebugMsg(this, BOT_DEBUG_AIM, "[CSS-ATTACK] Next Attack Delay: %2.4f", delay);
+	//CClients::clientDebugMsg(this, BOT_DEBUG_AIM, "[CSS-ATTACK] Next Attack Delay: %2.4f", delay);
 
 	return delay;
 }
@@ -518,6 +579,7 @@ void CCSSBot::modAim(edict_t *pEntity, Vector &v_origin, Vector *v_desired_offse
 	{
 		fDistFactor = 0;
 		fVelFactor = 0;
+		aimforhead = false;
 	}
 	else
 	{
@@ -917,7 +979,7 @@ bool CCSSBot::executeAction(eBotAction iAction)
 		edict_t *pHostage = CCounterStrikeSourceMod::getRandomHostage();
 		pSched->setID(SCHED_GOTONEST);
 
-		if (CBotGlobals::entityIsAlive(pHostage))
+		if (pHostage)
 		{
 			Vector vHostage = CBotGlobals::entityOrigin(pHostage);
 			pRoute = CWaypoints::randomRouteWaypoint(this, getOrigin(), vHostage, getTeam(), 0);
@@ -936,6 +998,7 @@ bool CCSSBot::executeAction(eBotAction iAction)
 			pSched->addTask(new CBotHL2DMUseButton(pHostage));
 			pSched->addTask(new CBotWaitTask(1.0f));
 			m_pSchedules->add(pSched);
+			return true;
 		}
 
 		break;
@@ -966,6 +1029,7 @@ bool CCSSBot::executeAction(eBotAction iAction)
 			pSched->addTask(new CFindPathTask(CWaypoints::getWaypointIndex(pWaypoint)));
 			pSched->addTask(new CBotWaitTask(3.0f));
 			m_pSchedules->add(pSched);
+			return true;
 		}
 		break;
 	}
