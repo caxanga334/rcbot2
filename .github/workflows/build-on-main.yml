@@ -114,4 +114,11 @@ jobs:
       with:
         name: rcbot2-${{ runner.os }}-${{ steps.short-sha.outputs.sha }}
         path: |
-            rcbot2/post/package/*  
+            rcbot2/post/package/*
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: dbgsym-rcbot2-${{ runner.os }}-${{ steps.short-sha.outputs.sha }}
+        path: |
+            rcbot2/post/**/*.{pdb,dbg}
