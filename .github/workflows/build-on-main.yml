@@ -1,0 +1,120 @@
+name: Build Main Branch
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build for ${{ matrix.os_short }}
+    needs: create_release
+    runs-on: ${{ matrix.os }}
+
+    # skip build on '[ci skip]'
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-18.04
+          - windows-latest
+        include:
+          - meta_branch: "1.10-dev"
+            sm_branch: "1.10-dev"
+
+          - os: ubuntu-18.04
+            os_short: linux
+            package_ext: tar.gz
+            dbg_ext: dbg
+
+          - os: windows-latest
+            os_short: win
+            package_ext: zip
+            dbg_ext: pdb
+
+    steps:
+    - name: Get short SHA
+      id: vars
+      run: |
+        echo "::set-output name=sha_short::${GITHUB_SHA::7}"
+
+    - name: Install (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo dpkg --add-architecture i386
+        sudo apt-get update
+        sudo apt-get install -y clang g++-multilib
+        echo "CC=clang" >> $GITHUB_ENV
+        echo "CXX=clang++" >> $GITHUB_ENV
+
+    - name: Add msbuild to PATH (Windows)
+      if: runner.os == 'Windows'
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Install (Windows)
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: |
+        :: See https://github.com/microsoft/vswhere/wiki/Find-VC
+        for /f "usebackq delims=*" %%i in (`vswhere -latest -property installationPath`) do (
+          call "%%i"\Common7\Tools\vsdevcmd.bat -arch=x86 -host_arch=x64
+        )
+        
+        :: Loop over all environment variables and make them global.
+        for /f "delims== tokens=1,2" %%a in ('set') do (
+          echo>>"%GITHUB_ENV%" %%a=%%b
+        )
+
+    - name: Setup Python
+      uses: actions/setup-python@v2
+
+    - name: Setup ambuild
+      run: |
+        python -m pip install wheel
+        pip install git+https://github.com/alliedmodders/ambuild
+
+    - name: Fetch Metamod:Source ${{ matrix.meta_branch }}
+      uses: actions/checkout@v2
+      with:
+        repository: alliedmodders/metamod-source
+        ref: ${{ matrix.meta_branch }}
+        path: mmsource
+
+    - name: Fetch SourceMod ${{ matrix.sm_branch }}
+      uses: actions/checkout@v2
+      with:
+        repository: alliedmodders/sourcemod
+        ref: ${{ matrix.sm_branch }}
+        path: sourcemod
+        submodules: recursive
+
+    - name: Fetch SDKs
+      shell: bash
+      run: |
+        git clone --mirror https://github.com/alliedmodders/hl2sdk hl2sdk-proxy-repo
+        sdks=(tf2 css hl2dm dods bms sdk2013)
+        for sdk in "${sdks[@]}"
+        do
+          git clone hl2sdk-proxy-repo -b $sdk hl2sdk-$sdk
+        done
+
+    - name: Fetch RCBot2
+      uses: actions/checkout@v2
+      with:
+        path: rcbot2
+
+    - name: Build Files
+      working-directory: rcbot2
+      run: |
+        mkdir post
+        cd post
+        python3 ../configure.py --sdks=present --sm-path="${{ github.workspace }}/sourcemod" --mms_path="${{ github.workspace }}/mmsource" --symbol-files
+        ambuild
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: rcbot2-${{ runner.os }}-${{ steps.vars.outputs.sha_short }}
+        path: |
+            rcbot2/post/package/*  
