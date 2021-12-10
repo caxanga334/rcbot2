@@ -5,20 +5,8 @@ on:
     branches: [ main ]
 
 jobs:
-  pre_setup:
-    name: Setup
-    runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '[ci skip]')"
-    steps:
-      - name: Get short SHA
-        id: vars
-        run: |
-          echo "::set-output name=sha_short::${GITHUB_SHA::7}"
-
-
-  run:
+  build_main:
     name: Build for ${{ matrix.os_short }}
-    needs: pre_setup
     runs-on: ${{ matrix.os }}
 
     # skip build on '[ci skip]'
@@ -118,9 +106,12 @@ jobs:
         python3 ../configure.py --sdks=present --sm-path="${{ github.workspace }}/sourcemod" --mms_path="${{ github.workspace }}/mmsource" --symbol-files
         ambuild
 
+    - uses: benjlevesque/short-sha@v1.2
+      id: short-sha
+
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: rcbot2-${{ runner.os }}-${{ steps.vars.outputs.sha_short }}
+        name: rcbot2-${{ runner.os }}-${{ steps.short-sha.outputs.sha }}
         path: |
             rcbot2/post/package/*  
