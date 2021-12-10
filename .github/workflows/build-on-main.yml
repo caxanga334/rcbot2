@@ -5,9 +5,20 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  pre_setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+    steps:
+      - name: Get short SHA
+        id: vars
+        run: |
+          echo "::set-output name=sha_short::${GITHUB_SHA::7}"
+
+
+  run:
     name: Build for ${{ matrix.os_short }}
-    needs: create_release
+    needs: pre_setup
     runs-on: ${{ matrix.os }}
 
     # skip build on '[ci skip]'
@@ -34,11 +45,6 @@ jobs:
             dbg_ext: pdb
 
     steps:
-    - name: Get short SHA
-      id: vars
-      run: |
-        echo "::set-output name=sha_short::${GITHUB_SHA::7}"
-
     - name: Install (Linux)
       if: runner.os == 'Linux'
       run: |
