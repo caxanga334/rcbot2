@@ -713,6 +713,10 @@ void CCSSBot::getTasks(unsigned int iIgnore)
 			ADD_UTILITY(BOT_UTIL_PICKUP_BOMB, CCounterStrikeSourceMod::isBombDropped(), 0.80f);
 			ADD_UTILITY(BOT_UTIL_DEFEND_NEAREST_BOMB, CCounterStrikeSourceMod::isBombPlanted(), 0.85f);
 		}
+		else if (CCounterStrikeSourceMod::isMapType(CS_MAP_HOSTAGERESCUE))
+		{
+			ADD_UTILITY(BOT_UTIL_GUARD_RESCUE_ZONE, CCounterStrikeSourceMod::canRescueHostages(), 0.70f);
+		}
 		break;
 	}
 	}
@@ -944,7 +948,6 @@ bool CCSSBot::executeAction(eBotAction iAction)
 	case BOT_UTIL_GET_HOSTAGE:
 	{
 		// Select a random hostage to rescue
-		CWaypoint *pWaypoint = NULL;
 		CWaypoint *pRoute = NULL;
 		CBotSchedule *pSched = new CBotSchedule();
 		edict_t *pHostage = CCounterStrikeSourceMod::getRandomHostage();
@@ -968,6 +971,25 @@ bool CCSSBot::executeAction(eBotAction iAction)
 			pSched->addTask(new CMoveToTask(pHostage));
 			pSched->addTask(new CBotHL2DMUseButton(pHostage));
 			pSched->addTask(new CBotWaitTask(1.0f));
+			m_pSchedules->add(pSched);
+			return true;
+		}
+
+		break;
+	}
+	case BOT_UTIL_GUARD_RESCUE_ZONE:
+	{
+		edict_t* pRescueZone = CClassInterface::FindEntityByClassnameNearest(getOrigin(), "func_hostage_rescue");
+		CBotSchedule* pSched = new CBotSchedule();
+		pSched->setID(SCHED_GOTONEST);
+		m_fUtilTimes[BOT_UTIL_GUARD_RESCUE_ZONE] = engine->Time() + randomFloat(20.0f, 40.0f);
+
+		if (pRescueZone)
+		{
+			Vector vRescue = CBotGlobals::worldCenter(pRescueZone);
+			pSched->addTask(new CFindPathTask(vRescue));
+			pSched->addTask(new CMoveToTask(vRescue));
+			pSched->addTask(new CBotWaitTask(0.50f));
 			m_pSchedules->add(pSched);
 			return true;
 		}
