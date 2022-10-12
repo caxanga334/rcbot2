@@ -61,7 +61,7 @@ jobs:
         )
 
     - name: Setup Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
 
     - name: Setup ambuild
       run: |
@@ -69,14 +69,14 @@ jobs:
         pip install git+https://github.com/alliedmodders/ambuild
 
     - name: Fetch Metamod:Source ${{ matrix.meta_branch }}
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: alliedmodders/metamod-source
         ref: ${{ matrix.meta_branch }}
         path: mmsource
 
     - name: Fetch SourceMod ${{ matrix.sm_branch }}
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: alliedmodders/sourcemod
         ref: ${{ matrix.sm_branch }}
@@ -94,7 +94,7 @@ jobs:
         done
 
     - name: Fetch RCBot2
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: rcbot2
 
@@ -110,7 +110,7 @@ jobs:
       id: short-sha
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: rcbot2-${{ runner.os }}-${{ steps.short-sha.outputs.sha }}
         path: |
