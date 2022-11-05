@@ -108,7 +108,7 @@ jobs:
         python3 ../configure.py --sdks=present --sm-path="${{ github.workspace }}/sourcemod" --mms_path="${{ github.workspace }}/mmsource" --symbol-files
         ambuild
 
-    - uses: benjlevesque/short-sha@v1.2
+    - uses: benjlevesque/short-sha@v2.1
       id: short-sha
 
     - name: Upload Artifact
