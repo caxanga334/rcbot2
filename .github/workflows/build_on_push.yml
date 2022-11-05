@@ -2,7 +2,7 @@ name: Build Main Branch
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main nosoop-fork nosoop-rebase ns-getprop ns-tf2-mvm ]
 
 jobs:
   build_main:
