@@ -66,6 +66,11 @@ class MMSConfig(object):
       self.configure_cxx(cxx)
     
   def configure_cxx(self, cxx):
+
+    # Valve Profiler
+    if builder.options.vprof == '1':
+      cxx.defines += ['RCBOT_VPROF_ENABLED', 'RAD_TELEMETRY_DISABLED']
+
     if cxx.behavior == 'gcc':
       cxx.defines += [
         'HAVE_STDINT_H',

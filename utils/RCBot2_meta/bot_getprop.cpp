@@ -10,6 +10,10 @@
 
 #include <cstring>
 
+#ifdef RCBOT_VPROF_ENABLED
+#include <tier0/vprof.h>
+#endif // RCBOT_VPROF_ENABLED
+
 #if defined(_WIN64) || defined(_WIN32)
 #define strcmpi _strcmpi
 #endif 
@@ -686,6 +690,10 @@ void CClassInterfaceValue :: getData ( void *edict, const bool bIsEdict )
 
 edict_t *CClassInterface::FindEntityByClassnameNearest(const Vector& vstart, const char *classname, float fMinDist, const edict_t *pOwner)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CClassInterface::FindEntityByClassnameNearest", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	edict_t *pfound = nullptr;
 	// speed up loop by by using smaller ints in register
 	const short max = static_cast<short>(gpGlobals->maxEntities);
@@ -725,6 +733,10 @@ edict_t *CClassInterface::FindEntityByClassnameNearest(const Vector& vstart, con
 
 edict_t *CClassInterface::FindEntityByNetClassNearest(const Vector& vstart, const char *classname)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CClassInterface::FindEntityByNetClassNearest", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	edict_t *pfound = nullptr;
 	float fMindist = 8192.0f;
 
@@ -767,6 +779,10 @@ edict_t *CClassInterface::FindEntityByNetClassNearest(const Vector& vstart, cons
 
 const char *CClassInterface::FindEntityNetClass(const int start, const char *classname)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CClassInterface::FindEntityNetClass", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	for (int i = start != -1 ? start : 0; i < gpGlobals->maxEntities; i++)
 	{
 		edict_t* current = engine->PEntityOfEntIndex(i);

@@ -60,6 +60,10 @@
 #include "valve_minmax_off.h"
 //#endif
 
+#ifdef RCBOT_VPROF_ENABLED
+#include <tier0/vprof.h>
+#endif // RCBOT_VPROF_ENABLED
+
 extern IServerGameEnts *servergameents;
 
 ///////////
@@ -355,6 +359,10 @@ private:
 
 bool CBotGlobals :: checkOpensLater (const Vector& vSrc, const Vector& vDest)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CBotGlobals::checkOpensLater", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	CTraceFilterSimple traceFilter(nullptr, nullptr, MASK_PLAYERSOLID );
 
 	traceLine (vSrc,vDest,MASK_PLAYERSOLID,&traceFilter);

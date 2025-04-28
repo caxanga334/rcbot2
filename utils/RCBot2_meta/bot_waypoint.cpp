@@ -68,6 +68,10 @@
 #include "valve_minmax_off.h"
 //#endif
 
+#ifdef RCBOT_VPROF_ENABLED
+#include <tier0/vprof.h>
+#endif // RCBOT_VPROF_ENABLED
+
 int CWaypoints::m_iNumWaypoints = 0;
 CWaypoint CWaypoints::m_theWaypoints[MAX_WAYPOINTS];
 float CWaypoints::m_fNextDrawWaypoints = 0.0f;
@@ -353,6 +357,10 @@ float CWaypointNavigator :: getNextYaw ()
 // best waypoints are those with lowest danger
 CWaypoint *CWaypointNavigator :: chooseBestFromBeliefBetweenAreas ( const std::vector<AStarNode*> &goals, const bool bHighDanger, const bool bIgnoreBelief ) const
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CWaypointNavigator::chooseBestFromBeliefBetweenAreas", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	CWaypoint *pWpt = nullptr;
 	//CWaypoint *pCheck;
 
@@ -421,6 +429,10 @@ CWaypoint *CWaypointNavigator :: chooseBestFromBeliefBetweenAreas ( const std::v
 // best waypoints are those with lowest danger
 CWaypoint *CWaypointNavigator :: chooseBestFromBelief ( const std::vector<CWaypoint*> &goals, const bool bHighDanger, const int iSearchFlags, const int iTeam ) const
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CWaypointNavigator::chooseBestFromBelief", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	CWaypoint *pWpt = nullptr;
 
 	// simple checks
@@ -851,6 +863,10 @@ bool CWaypointNavigator :: workRoute (const Vector vFrom,
 									  const int iGoalId,
 									  const int iConditions, const int iDangerId)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CWaypointNavigator::workRoute", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	if ( bRestart )
 	{
 		if ( wantToSaveBelief() )
@@ -1261,6 +1277,10 @@ void CWaypointNavigator :: rollBackPosition ()
 // update the bots current walk vector
 void CWaypointNavigator :: updatePosition ()
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CWaypointNavigator::updatePosition", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	static Vector vWptOrigin;
 	static float fRadius; //Unused? [APG]RoboCop[CL]
 	static float fPrevBelief; //Unused? [APG]RoboCop[CL]
@@ -2428,6 +2448,10 @@ bool CWaypoints::checkReachable(CWaypoint* pWaypoint, int iStart)
 
 int CWaypoints::nearestWaypointGoal(const int iFlags, const Vector& origin, float fDist, const int iTeam)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CWaypoints::nearestWaypointGoal", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	static int size;
 
 	float distance;
@@ -2678,6 +2702,10 @@ CWaypoint* CWaypoints::randomWaypointGoalNearestArea(const int iFlags, const int
 													 const CBot* pBot, const bool bHighDanger, const Vector* origin,
 													 const int iIgnore, const bool bIgnoreBelief, int iWpt1)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CWaypoints::randomWaypointGoalNearestArea", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	static int size; 
 	CWaypoint *pWpt;
 	AStarNode *node;
@@ -2763,6 +2791,10 @@ CWaypoint* CWaypoints::randomWaypointGoalBetweenArea(const int iFlags, const int
 													 const bool bHighDanger, const Vector* org1, const Vector* org2, const bool
 													 bIgnoreBelief, int iWpt1, int iWpt2)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CWaypoints::randomWaypointGoalBetweenArea", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	static int size; 
 	CWaypoint *pWpt;
 	AStarNode *node;
@@ -2844,6 +2876,10 @@ CWaypoint* CWaypoints::randomWaypointGoalBetweenArea(const int iFlags, const int
 CWaypoint* CWaypoints::randomWaypointGoal(const int iFlags, const int iTeam, const int iArea, const bool bForceArea,
                                           const CBot* pBot, const bool bHighDanger, const int iSearchFlags, const int iIgnore)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CWaypoints::randomWaypointGoal", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	static int size; 
 	CWaypoint *pWpt;
 
@@ -2958,6 +2994,10 @@ int CWaypoint :: getPath (const int i) const
 
 bool CWaypoint :: isPathOpened (const Vector& vPath)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CWaypoint::isPathOpened", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	for (wpt_opens_later_t& info : m_OpensLaterInfo)
 	{
 		if ( info.vOrigin == vPath )

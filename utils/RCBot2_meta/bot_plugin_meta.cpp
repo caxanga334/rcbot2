@@ -68,6 +68,11 @@
 #if defined SM_EXT
 #include "rcbot/entprops.h"
 #endif
+
+#ifdef RCBOT_VPROF_ENABLED
+#include <tier0/vprof.h>
+#endif // RCBOT_VPROF_ENABLED
+
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, 0, bool, char const *, char const *, char const *, char const *, bool, bool);
 SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
 SH_DECL_HOOK1_void(IServerGameDLL, GameFrame, SH_NOATTRIB, 0, bool);
@@ -289,6 +294,10 @@ void RCBotPluginMeta::BroadcastTextMessage(const char* szMessage)
 
 void RCBotPluginMeta::Hook_PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("RCBotPluginMeta::Hook_PlayerRunCmd", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	static CBot *pBot;
 
 	CBaseEntity *pPlayer = META_IFACEPTR(CBaseEntity);
@@ -562,6 +571,10 @@ bool RCBotPluginMeta::Load(PluginId id, ISmmAPI *ismm, char *error, std::size_t 
 
 bool RCBotPluginMeta::FireGameEvent(IGameEvent * pevent, bool bDontBroadcast)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("RCBotPluginMeta::FireGameEvent", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	CBotEvents::executeEvent(pevent,TYPE_IGAMEEVENT);
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
@@ -667,6 +680,10 @@ void RCBotPluginMeta::Hook_ClientCommand(edict_t *pEntity, const CCommand &args)
 void RCBotPluginMeta::Hook_ClientCommand(edict_t *pEntity)
 #endif
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("RCBotPluginMeta::Hook_ClientCommand", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	static CBotMod *pMod = nullptr;
 
 #if SOURCE_ENGINE <= SE_DARKMESSIAH
@@ -798,6 +815,10 @@ void RCBotPluginMeta::Hook_ClientDisconnect(edict_t *pEntity)
 
 void RCBotPluginMeta::Hook_GameFrame(const bool simulating)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("RCBotPluginMeta::Hook_GameFrame", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	/**
 	 * simulating:
 	 * ***********

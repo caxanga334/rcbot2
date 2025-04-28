@@ -49,6 +49,10 @@
 #include "valve_minmax_off.h"
 //#endif
 
+#ifdef RCBOT_VPROF_ENABLED
+#include <tier0/vprof.h>
+#endif // RCBOT_VPROF_ENABLED
+
 extern IVDebugOverlay *debugoverlay;
 ////////////////////////////////////////////
 
@@ -171,6 +175,10 @@ void CBotVisibles::debugString(char* string)
 
 void CBotVisibles::checkVisible(edict_t* pEntity, int* iTicks, bool* bVisible, const int iIndex, const bool bCheckHead) const
 {
+#ifdef RCBOT_VPROF_ENABLED
+    VPROF_BUDGET("CBotVisibles::checkVisible", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	// reset
     *bVisible = false;
 
@@ -233,6 +241,10 @@ void CBotVisibles::checkVisible(edict_t* pEntity, int* iTicks, bool* bVisible, c
 
 void CBotVisibles::updateVisibles()
 {
+#ifdef RCBOT_VPROF_ENABLED
+    VPROF_BUDGET("CBotVisibles::updateVisibles", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
     static bool bVisible;
     static edict_t* pEntity;
     static edict_t* pGroundEntity;
@@ -372,6 +384,10 @@ void CBotVisibles::updateVisibles()
 
 bool CBotVisibles::isVisible(const edict_t* pEdict) const
 {
+#ifdef RCBOT_VPROF_ENABLED
+    VPROF_BUDGET("CBotVisibles::isVisible", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
     const int iIndex = ENTINDEX(pEdict) - 1;
     const std::size_t iByte = static_cast<std::size_t>(iIndex / 8); // Use size_t for indexing [APG]RoboCop[CL]
     const int iBit = iIndex % 8;

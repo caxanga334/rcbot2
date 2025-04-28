@@ -54,6 +54,10 @@
 #include <cstdint>
 #include <array>
 
+#ifdef RCBOT_VPROF_ENABLED
+#include <tier0/vprof.h>
+#endif // RCBOT_VPROF_ENABLED
+
 const char *g_DODClassCmd[2][6] = 
 { {"cls_garand","cls_tommy","cls_bar","cls_spring","cls_30cal","cls_bazooka"},
 {"cls_k98","cls_mp40","cls_mp44","cls_k98s","cls_mg42","cls_pschreck"} };
@@ -132,6 +136,10 @@ void CDODBot :: freeMapMemory ()
 
 bool CDODBot::canGotoWaypoint(const Vector vPrevWaypoint, CWaypoint* pWaypoint, CWaypoint* pPrev)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CDODBot::canGotoWaypoint", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	if ( CBot::canGotoWaypoint(vPrevWaypoint,pWaypoint,pPrev) )
 	{
 		if ( (m_iTeam == TEAM_ALLIES) && pWaypoint->hasFlag(CWaypointTypes::W_FL_NOALLIES) )
@@ -300,6 +308,10 @@ void CDODBot :: selectedClass (const int iClass)
 
 bool CDODBot :: startGame ()
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CDODBot::startGame", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	static int iTeam;
 
 	iTeam = m_pPlayerInfo->GetTeamIndex();
@@ -788,6 +800,10 @@ void CDODBot :: spawnInit ()
 
 bool CDODBot :: isEnemy ( edict_t *pEdict, const bool bCheckWeapons )
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CDODBot::isEnemy", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	const int entity_index = ENTINDEX(pEdict);
 //#ifdef _DEBUG
 //	const char *pszClassname = pEdict->GetClassName();
@@ -1157,6 +1173,10 @@ void CDODBot :: unProne()
 
 void CDODBot :: modThink ()
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CDODBot::modThink", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	static float fMaxSpeed;
 	static CBotWeapon *pWeapon;
 
@@ -3043,6 +3063,10 @@ enum : std::uint8_t
 
 void CDODBot :: getTasks (unsigned iIgnore)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CDODBot::getTasks", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	static CBotUtilities utils;
 	static CBotUtility *next;
 	static CBotWeapon *grenade; //Unused? [APG]RoboCop[CL]
@@ -3439,6 +3463,10 @@ void CDODBot :: modAim ( edict_t *pEntity, Vector &v_origin,
 						Vector *v_desired_offset, Vector &v_size,
 						const float fDist, const float fDist2D )
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CDODBot::modAim", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	//static Vector vAim;
 	//static bool bProne;
 

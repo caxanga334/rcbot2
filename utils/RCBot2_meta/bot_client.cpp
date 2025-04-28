@@ -46,6 +46,10 @@
 #include "in_buttons.h"
 #include "bot_plugin_meta.h"
 
+#ifdef RCBOT_VPROF_ENABLED
+#include <tier0/vprof.h>
+#endif // RCBOT_VPROF_ENABLED
+
 // setup static client array
 CClient CClients::m_Clients[RCBOT_MAXPLAYERS];
 CClient *CClients::m_pListenServerClient = nullptr;
@@ -247,6 +251,10 @@ private:
 // called each frame
 void CClient :: think ()
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CClient::think", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	//if ( m_pPlayer  )
 	//	HookGiveNamedItem(m_pPlayer);
 
@@ -1102,6 +1110,10 @@ void CClients :: clientDisconnected (const edict_t *pPlayer)
 
 void CClients :: clientThink ()
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CClients::clientThink", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	static CClient *pClient;
 
 	m_bClientsDebugging = false;

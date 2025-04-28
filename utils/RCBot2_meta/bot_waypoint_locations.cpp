@@ -41,6 +41,10 @@
 #include <vector>    //bir3yk
 #include <cmath>
 
+#ifdef RCBOT_VPROF_ENABLED
+#include <tier0/vprof.h>
+#endif // RCBOT_VPROF_ENABLED
+
 unsigned char CWaypointLocations :: g_iFailedWaypoints[CWaypoints::MAX_WAYPOINTS];
 WaypointList CWaypointLocations :: m_iLocations[MAX_WPT_BUCKETS][MAX_WPT_BUCKETS][MAX_WPT_BUCKETS];
 float CWaypointLocations :: m_fIgnoreSize = 0;
@@ -646,6 +650,10 @@ int CWaypointLocations :: NearestWaypoint (const Vector &vOrigin, float fNearest
 										   const bool bGetVisibleFromOther, const Vector& vOther, const int iFlagsOnly, 
 										   edict_t *pPlayer, const bool bIgnorevOther, const float fIgnoreSize)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CWaypointLocations::NearestWaypoint", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	int iNearestIndex = -1;
 
 	const int iLoc = READ_LOC(vOrigin.x)

@@ -59,6 +59,10 @@
 #include "valve_minmax_off.h"
 //#endif
 
+#ifdef RCBOT_VPROF_ENABLED
+#include <tier0/vprof.h>
+#endif // RCBOT_VPROF_ENABLED
+
 eTFMapType CTeamFortress2Mod :: m_MapType = TF_MAP_CTF;
 tf_tele_t CTeamFortress2Mod :: m_Teleporters[RCBOT_MAXPLAYERS];
 
@@ -182,6 +186,10 @@ void CTeamFortress2Mod :: getTeamOnlyWaypointFlags (const int iTeam, int *iOn, i
 
 void CTeamFortress2Mod ::modFrame ()
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CTeamFortress2Mod::modFrame", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	if( m_bPlayerHasSpawned )
 	{
 		if ( m_ObjectiveResource.m_ObjectiveResource == nullptr )
@@ -530,6 +538,10 @@ bool CTeamFortress2Mod :: isFlag (edict_t *pEntity, const int iTeam)
 
 bool CTeamFortress2Mod::isBoss(edict_t* pEntity, float* fFactor)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CTeamFortress2Mod::isBoss", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	if (m_bBossSummoned)
 	{
 		if (m_pBoss.get() && CBotGlobals::entityIsAlive(m_pBoss.get()))
@@ -859,6 +871,10 @@ int CTeamFortress2Mod::getArea()
 
 bool CTeamFortress2Mod::isPayloadBomb(edict_t* pEdict, int iTeam)
 {
+#ifdef RCBOT_VPROF_ENABLED
+	VPROF_BUDGET("CTeamFortress2Mod::isPayloadBomb", "RCBot2")
+#endif // RCBOT_VPROF_ENABLED
+
 	const string_t mapname = gpGlobals->mapname;
 
 	const char* szmapname = mapname.ToCStr();

@@ -28,6 +28,12 @@ newoption {
     category    = "Paths"
 }
 
+newoption {
+    trigger     = "valve-prof",
+    description = "Enables VPROF.",
+    category    = "BuildOptions"
+}
+
 Path_HL2SDKROOT = ""
 Path_SM = ""
 Path_MMS = ""
@@ -116,6 +122,9 @@ workspace "rcbot2"
     else
         toolset "gcc"
     end
+
+    filter { "options:valve-prof" }
+        defines { "RCBOT_VPROF_ENABLED" }
 
     filter { "system:Windows" }
         defines { "_CRT_SECURE_NO_DEPRECATE", "_CRT_SECURE_NO_WARNINGS", "_CRT_NONSTDC_NO_DEPRECATE", "_WINDOWS", "_ITERATOR_DEBUG_LEVEL=0" }
